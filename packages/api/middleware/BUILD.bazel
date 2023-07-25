@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "middleware",
+    srcs = [
+        "cors.go",
+        "midleware.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/api/middleware",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/api/config",
+        "//packages/api/server",
+        "@com_github_gin_contrib_cors//:cors",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_zap//:zap",
+    ],
+)

@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "route",
+    srcs = [
+        "route.go",
+        "website.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/api/route",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/api/controller",
+        "//packages/api/server",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_zap//:zap",
+    ],
+)

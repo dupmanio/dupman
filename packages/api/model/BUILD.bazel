@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "model",
+    srcs = [
+        "base.go",
+        "website.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/api/model",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_google_uuid//:uuid",
+        "@io_gorm_gorm//:gorm",
+    ],
+)
