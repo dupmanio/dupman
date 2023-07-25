@@ -1,24 +1,51 @@
 package controller
 
 import (
-	"github.com/dupmanio/dupman/packages/api/model"
+	"net/http"
+
+	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type WebsiteController struct {
+	httpSvc    *service.HTTPService
 	websiteSvc *service.WebsiteService
 }
 
-func NewWebsiteController(websiteSvc *service.WebsiteService) (*WebsiteController, error) {
-	return &WebsiteController{websiteSvc: websiteSvc}, nil
+func NewWebsiteController(
+	httpSvc *service.HTTPService,
+	websiteSvc *service.WebsiteService,
+) (*WebsiteController, error) {
+	return &WebsiteController{httpSvc: httpSvc, websiteSvc: websiteSvc}, nil
 }
 
 func (ctrl *WebsiteController) Create(ctx *gin.Context) {
-	// @todo: needs implementation.
-	ctrl.websiteSvc.Create(&model.Website{
-		URL:    "https://example.com",
-		UserID: uuid.New(),
-	})
+	var payload *dto.WebsiteOnCreate
+
+	if err := ctx.ShouldBind(&payload); err != nil {
+		ctrl.httpSvc.HTTPValidationError(ctx, err)
+
+		return
+	}
+
+	website, err := ctrl.websiteSvc.Create(payload)
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusCreated, website)
+}
+
+func (ctrl *WebsiteController) GetAll(ctx *gin.Context) {
+	websites, err := ctrl.websiteSvc.GetAll()
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, websites)
 }

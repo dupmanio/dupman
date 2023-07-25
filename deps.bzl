@@ -406,6 +406,12 @@ def go_dependencies():
         sum = "h1:RdcDk92EJBuBS55nQMMYFXTxwstHug4jkhT5pq8VxPk=",
         version = "v2.2.0",
     )
+    go_repository(
+        name = "com_github_jinzhu_copier",
+        importpath = "github.com/jinzhu/copier",
+        sum = "h1:GlvfUwHk62RokgqVNvYsku0TATCF7bAHVwEXoBh3iJg=",
+        version = "v0.3.5",
+    )
 
     go_repository(
         name = "com_github_jinzhu_inflection",

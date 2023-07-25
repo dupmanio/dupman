@@ -29,6 +29,7 @@ func (route *WebsiteRoute) Setup() {
 
 	group := route.server.Engine.Group("/website")
 	{
+		group.GET("/", route.controller.GetAll)
 		group.POST("/", route.controller.Create)
 	}
 }

@@ -6,6 +6,7 @@ import (
 
 func Create() fx.Option {
 	return fx.Options(
+		fx.Provide(NewHTTPService),
 		fx.Provide(NewWebsiteService),
 	)
 }

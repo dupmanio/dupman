@@ -9,10 +9,9 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/api/controller",
     visibility = ["//visibility:public"],
     deps = [
-        "//packages/api/model",
+        "//packages/api/dto",
         "//packages/api/service",
         "@com_github_gin_gonic_gin//:gin",
-        "@com_github_google_uuid//:uuid",
         "@org_uber_go_fx//:fx",
     ],
 )

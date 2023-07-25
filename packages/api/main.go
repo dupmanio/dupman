@@ -23,7 +23,7 @@ func main() {
 			config.New,
 			server.New,
 			database.New,
-			zap.NewProduction,
+			zap.NewDevelopment,
 		),
 		controller.Create(),
 		middleware.Create(),

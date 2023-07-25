@@ -29,7 +29,12 @@ func (repo *WebsiteRepository) Setup() {
 	}
 }
 
-func (repo *WebsiteRepository) Create(website *model.Website) {
-	// @todo: refactor.
-	repo.db.Create(website)
+func (repo *WebsiteRepository) Create(website *model.Website) error {
+	return repo.db.Create(website).Error
+}
+
+func (repo *WebsiteRepository) FindAll() ([]model.Website, error) {
+	var websites []model.Website
+
+	return websites, repo.db.Find(&websites).Error
 }
