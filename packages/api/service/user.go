@@ -3,9 +3,11 @@ package service
 import (
 	"fmt"
 
+	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
@@ -44,4 +46,12 @@ func (svc *UserService) CreateIfNotExists(userID string) (*dto.UserAccount, erro
 	_ = copier.Copy(&response, &newUser)
 
 	return &response, nil
+}
+
+func (svc *UserService) CurrentUserID(ctx *gin.Context) string {
+	return ctx.GetString(constant.UserIDKey)
+}
+
+func (svc *UserService) CurrentUser(ctx *gin.Context) *model.User {
+	return svc.userRepo.FindByID(svc.CurrentUserID(ctx))
 }

@@ -44,3 +44,9 @@ func (repo *WebsiteRepository) FindAll() ([]model.Website, error) {
 
 	return websites, repo.db.Find(&websites).Error
 }
+
+func (repo *WebsiteRepository) FindByUserID(userID string) ([]model.Website, error) {
+	var websites []model.Website
+
+	return websites, repo.db.Where("user_id", userID).Find(&websites).Error
+}

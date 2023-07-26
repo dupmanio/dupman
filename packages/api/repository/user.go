@@ -39,7 +39,7 @@ func (repo *UserRepository) Create(user *model.User) error {
 func (repo *UserRepository) FindByID(id string) *model.User {
 	var user model.User
 
-	err := repo.db.First(&user, "id = ?", id).Error
+	err := repo.db.Joins("KeyPair").First(&user, "users.id = ?", id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil
 	}

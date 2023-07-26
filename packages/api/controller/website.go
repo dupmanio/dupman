@@ -29,7 +29,7 @@ func (ctrl *WebsiteController) Create(ctx *gin.Context) {
 		return
 	}
 
-	website, err := ctrl.websiteSvc.Create(payload)
+	website, err := ctrl.websiteSvc.Create(payload, ctx)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 
@@ -40,7 +40,7 @@ func (ctrl *WebsiteController) Create(ctx *gin.Context) {
 }
 
 func (ctrl *WebsiteController) GetAll(ctx *gin.Context) {
-	websites, err := ctrl.websiteSvc.GetAll()
+	websites, err := ctrl.websiteSvc.GetAll(ctx)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 

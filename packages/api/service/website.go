@@ -6,21 +6,23 @@ import (
 	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
-	"github.com/dupmanio/dupman/packages/encryptor"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 )
 
 type WebsiteService struct {
 	websiteRepo *repository.WebsiteRepository
+	userSvc     *UserService
 }
 
-func NewWebsiteService(websiteRepo *repository.WebsiteRepository) *WebsiteService {
+func NewWebsiteService(websiteRepo *repository.WebsiteRepository, userSvc *UserService) *WebsiteService {
 	return &WebsiteService{
 		websiteRepo: websiteRepo,
+		userSvc:     userSvc,
 	}
 }
 
-func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnResponse, error) {
+func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate, ctx *gin.Context) (*dto.WebsiteOnResponse, error) {
 	var (
 		entity   model.Website
 		response dto.WebsiteOnResponse
@@ -28,12 +30,10 @@ func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnR
 
 	_ = copier.Copy(&entity, &payload)
 
-	// @todo: refactor!
-	rsaEncryptor := encryptor.NewRSAEncryptor()
-	_ = rsaEncryptor.GenerateKeyPair()
-	pk, _ := rsaEncryptor.PublicKey()
+	currentUser := svc.userSvc.CurrentUser(ctx)
+	entity.UserID = currentUser.ID
 
-	if err := svc.websiteRepo.Create(&entity, pk); err != nil {
+	if err := svc.websiteRepo.Create(&entity, currentUser.KeyPair.PublicKey); err != nil {
 		return nil, fmt.Errorf("unable to create website: %w", err)
 	}
 
@@ -42,10 +42,10 @@ func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnR
 	return &response, nil
 }
 
-func (svc *WebsiteService) GetAll() (*dto.WebsitesOnResponse, error) {
-	var response dto.WebsitesOnResponse
+func (svc *WebsiteService) GetAll(ctx *gin.Context) (*dto.WebsitesOnResponse, error) {
+	response := dto.WebsitesOnResponse{}
 
-	websites, err := svc.websiteRepo.FindAll()
+	websites, err := svc.websiteRepo.FindByUserID(svc.userSvc.CurrentUserID(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("unable to get websites: %w", err)
 	}
