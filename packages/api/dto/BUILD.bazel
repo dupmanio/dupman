@@ -4,6 +4,7 @@ go_library(
     name = "dto",
     srcs = [
         "http.go",
+        "user.go",
         "website.go",
     ],
     importpath = "github.com/dupmanio/dupman/packages/api/dto",

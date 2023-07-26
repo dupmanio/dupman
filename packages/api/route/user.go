@@ -7,20 +7,20 @@ import (
 	"go.uber.org/zap"
 )
 
-type WebsiteRoute struct {
+type UserRoute struct {
 	server         *server.Server
-	controller     *controller.WebsiteController
+	controller     *controller.UserController
 	authMiddleware *middleware.AuthMiddleware
 	logger         *zap.Logger
 }
 
-func NewWebsiteRoute(
+func NewUserRoute(
 	server *server.Server,
-	controller *controller.WebsiteController,
+	controller *controller.UserController,
 	authMiddleware *middleware.AuthMiddleware,
 	logger *zap.Logger,
-) *WebsiteRoute {
-	return &WebsiteRoute{
+) *UserRoute {
+	return &UserRoute{
 		server:         server,
 		controller:     controller,
 		authMiddleware: authMiddleware,
@@ -28,12 +28,11 @@ func NewWebsiteRoute(
 	}
 }
 
-func (route *WebsiteRoute) Setup() {
-	route.logger.Debug("Setting up Website route")
+func (route *UserRoute) Setup() {
+	route.logger.Debug("Setting up User route")
 
-	group := route.server.Engine.Group("/website")
+	group := route.server.Engine.Group("/user")
 	{
-		group.GET("/", route.authMiddleware.RequiresAuth(), route.controller.GetAll)
 		group.POST("/", route.authMiddleware.RequiresAuth(), route.controller.Create)
 	}
 }

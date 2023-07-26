@@ -5,13 +5,16 @@ go_library(
     srcs = [
         "key_pair.go",
         "repository.go",
+        "user.go",
         "website.go",
     ],
     importpath = "github.com/dupmanio/dupman/packages/api/repository",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/api/constant",
         "//packages/api/database",
         "//packages/api/model",
+        "@io_gorm_gorm//:gorm",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",
     ],

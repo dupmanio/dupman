@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "base.go",
         "key_pair.go",
+        "user.go",
         "website.go",
     ],
     importpath = "github.com/dupmanio/dupman/packages/api/model",

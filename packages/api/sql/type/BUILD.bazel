@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/api/sql/type",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/api/constant",
         "//packages/encryptor",
         "@io_gorm_gorm//:gorm",
         "@io_gorm_gorm//clause",

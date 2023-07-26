@@ -4,11 +4,13 @@ go_library(
     name = "controller",
     srcs = [
         "controller.go",
+        "user.go",
         "website.go",
     ],
     importpath = "github.com/dupmanio/dupman/packages/api/controller",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/api/constant",
         "//packages/api/dto",
         "//packages/api/service",
         "@com_github_gin_gonic_gin//:gin",

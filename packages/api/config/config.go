@@ -28,11 +28,16 @@ type CORSConfig struct {
 	ExposeHeaders []string `mapstructure:"CORS_EXPOSE_HEADERS" default:"[*]"`
 }
 
+type OAuthConfig struct {
+	Issuer string `mapstructure:"OAUTH_ISSUER"`
+}
+
 type Config struct {
 	Env      string         `mapstructure:"ENV" default:"prod"`
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
 	CORS     CORSConfig     `mapstructure:",squash"`
+	OAuth    OAuthConfig    `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {
