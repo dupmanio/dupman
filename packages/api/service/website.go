@@ -6,6 +6,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
+	"github.com/dupmanio/dupman/packages/encryptor"
 	"github.com/jinzhu/copier"
 )
 
@@ -27,7 +28,12 @@ func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnR
 
 	_ = copier.Copy(&entity, &payload)
 
-	if err := svc.websiteRepo.Create(&entity); err != nil {
+	// @todo: refactor!
+	rsaEncryptor := encryptor.NewRSAEncryptor()
+	_ = rsaEncryptor.GenerateKeyPair()
+	pk, _ := rsaEncryptor.PublicKey()
+
+	if err := svc.websiteRepo.Create(&entity, pk); err != nil {
 		return nil, fmt.Errorf("unable to create website: %w", err)
 	}
 
