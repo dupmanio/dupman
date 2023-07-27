@@ -14,6 +14,7 @@ go_library(
         "//packages/api/constant",
         "//packages/api/database",
         "//packages/api/model",
+        "//packages/dbutils/pagination",
         "@io_gorm_gorm//:gorm",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",

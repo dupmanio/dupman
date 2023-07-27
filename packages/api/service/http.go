@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dupmanio/dupman/packages/api/dto"
+	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -27,6 +28,14 @@ func (svc *HTTPService) HTTPResponse(ctx *gin.Context, code int, data any) {
 	ctx.JSON(code, dto.HTTPResponse{
 		Code: code,
 		Data: data,
+	})
+}
+
+func (svc *HTTPService) HTTPPaginatedResponse(ctx *gin.Context, code int, data any, pagination *pagination.Pagination) {
+	ctx.JSON(code, dto.HTTPResponse{
+		Code:       code,
+		Data:       data,
+		Pagination: pagination,
 	})
 }
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/service"
+	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,12 +41,14 @@ func (ctrl *WebsiteController) Create(ctx *gin.Context) {
 }
 
 func (ctrl *WebsiteController) GetAll(ctx *gin.Context) {
-	websites, err := ctrl.websiteSvc.GetAll(ctx)
+	pager := pagination.Paginate(ctx)
+
+	websites, err := ctrl.websiteSvc.GetAll(ctx, pager)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 
 		return
 	}
 
-	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, websites)
+	ctrl.httpSvc.HTTPPaginatedResponse(ctx, http.StatusOK, websites, pager)
 }

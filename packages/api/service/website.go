@@ -6,6 +6,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
+	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 )
@@ -42,10 +43,13 @@ func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate, ctx *gin.Context
 	return &response, nil
 }
 
-func (svc *WebsiteService) GetAll(ctx *gin.Context) (*dto.WebsitesOnResponse, error) {
+func (svc *WebsiteService) GetAll(
+	ctx *gin.Context,
+	pagination *pagination.Pagination,
+) (*dto.WebsitesOnResponse, error) {
 	response := dto.WebsitesOnResponse{}
 
-	websites, err := svc.websiteRepo.FindByUserID(svc.userSvc.CurrentUserID(ctx))
+	websites, err := svc.websiteRepo.FindByUserID(svc.userSvc.CurrentUserID(ctx), pagination)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get websites: %w", err)
 	}

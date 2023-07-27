@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "pagination",
+    srcs = [
+        "pagination.go",
+        "paginator.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/pagination",
+    visibility = ["//visibility:public"],
+    deps = ["@io_gorm_gorm//:gorm"],
+)

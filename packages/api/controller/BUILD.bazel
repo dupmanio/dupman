@@ -13,6 +13,7 @@ go_library(
         "//packages/api/constant",
         "//packages/api/dto",
         "//packages/api/service",
+        "//packages/dbutils/pagination",
         "@com_github_gin_gonic_gin//:gin",
         "@org_uber_go_fx//:fx",
     ],
