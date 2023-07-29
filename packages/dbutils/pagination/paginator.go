@@ -18,7 +18,7 @@ func Paginate(ctx *gin.Context) *Pagination {
 	}
 
 	if pagination.Page, err = strconv.Atoi(ctx.Query("page")); err != nil {
-		pagination.Limit = 1
+		pagination.Page = 1
 	}
 
 	return pagination
