@@ -31,9 +31,21 @@ func NewWebsiteRoute(
 func (route *WebsiteRoute) Setup() {
 	route.logger.Debug("Setting up Website route")
 
-	group := route.server.Engine.Group("/website")
+	group := route.server.Engine.Group(
+		"/website",
+		route.authMiddleware.RequiresAuth(),
+		route.authMiddleware.RequiresRole("user"),
+	)
 	{
-		group.GET("/", route.authMiddleware.RequiresAuth(), route.controller.GetAll)
-		group.POST("/", route.authMiddleware.RequiresAuth(), route.controller.Create)
+		group.GET(
+			"/",
+			route.authMiddleware.RequiresScope("website", "website:read"),
+			route.controller.GetAll,
+		)
+		group.POST(
+			"/",
+			route.authMiddleware.RequiresScope("website", "website:create"),
+			route.controller.Create,
+		)
 	}
 }

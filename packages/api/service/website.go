@@ -48,8 +48,9 @@ func (svc *WebsiteService) GetAll(
 	pagination *pagination.Pagination,
 ) (*dto.WebsitesOnResponse, error) {
 	response := dto.WebsitesOnResponse{}
+	currentUser := svc.userSvc.CurrentUser(ctx)
 
-	websites, err := svc.websiteRepo.FindByUserID(svc.userSvc.CurrentUserID(ctx), pagination)
+	websites, err := svc.websiteRepo.FindByUserID(currentUser.ID.String(), pagination)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get websites: %w", err)
 	}

@@ -31,8 +31,16 @@ func NewUserRoute(
 func (route *UserRoute) Setup() {
 	route.logger.Debug("Setting up User route")
 
-	group := route.server.Engine.Group("/user")
+	group := route.server.Engine.Group(
+		"/user",
+		route.authMiddleware.RequiresAuth(),
+		route.authMiddleware.RequiresRole("service"),
+	)
 	{
-		group.POST("/", route.authMiddleware.RequiresAuth(), route.controller.Create)
+		group.POST(
+			"/",
+			route.authMiddleware.RequiresScope("user", "user:create"),
+			route.controller.Create,
+		)
 	}
 }

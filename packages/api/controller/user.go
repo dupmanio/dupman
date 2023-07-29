@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"github.com/dupmanio/dupman/packages/api/constant"
+	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +18,15 @@ func NewUserController(httpSvc *service.HTTPService, userSvc *service.UserServic
 }
 
 func (ctrl *UserController) Create(ctx *gin.Context) {
-	user, err := ctrl.userSvc.CreateIfNotExists(ctx.GetString(constant.UserIDKey))
+	var payload *dto.UserOnCreate
+
+	if err := ctx.ShouldBind(&payload); err != nil {
+		ctrl.httpSvc.HTTPValidationError(ctx, err)
+
+		return
+	}
+
+	user, err := ctrl.userSvc.CreateIfNotExists(payload)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 	}

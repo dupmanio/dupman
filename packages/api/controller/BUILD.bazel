@@ -10,7 +10,6 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/api/controller",
     visibility = ["//visibility:public"],
     deps = [
-        "//packages/api/constant",
         "//packages/api/dto",
         "//packages/api/service",
         "//packages/dbutils/pagination",

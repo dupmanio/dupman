@@ -8,7 +8,6 @@ import (
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
 
@@ -22,36 +21,35 @@ func NewUserService(userRepo *repository.UserRepository) *UserService {
 	}
 }
 
-func (svc *UserService) CreateIfNotExists(userID string) (*dto.UserAccount, error) {
-	var response dto.UserAccount
+func (svc *UserService) CreateIfNotExists(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
+	var (
+		entity   model.User
+		response dto.UserAccount
+	)
 
-	if user := svc.userRepo.FindByID(userID); user != nil {
+	if user := svc.userRepo.FindByID(payload.ID.String()); user != nil {
 		_ = copier.Copy(&response, &user)
 
 		return &response, nil
 	}
 
-	var newUser model.User
+	_ = copier.Copy(&entity, &payload)
 
-	userUUID, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse User ID: %w", err)
-	}
-
-	newUser.ID = userUUID
-	if err = svc.userRepo.Create(&newUser); err != nil {
+	if err := svc.userRepo.Create(&entity); err != nil {
 		return nil, fmt.Errorf("unable to parse create User: %w", err)
 	}
 
-	_ = copier.Copy(&response, &newUser)
+	_ = copier.Copy(&response, &entity)
 
 	return &response, nil
 }
 
-func (svc *UserService) CurrentUserID(ctx *gin.Context) string {
-	return ctx.GetString(constant.UserIDKey)
-}
-
 func (svc *UserService) CurrentUser(ctx *gin.Context) *model.User {
-	return svc.userRepo.FindByID(svc.CurrentUserID(ctx))
+	if user, ok := ctx.Get(constant.CurrentUserKey); ok {
+		if currentUser, ok := user.(*model.User); ok {
+			return currentUser
+		}
+	}
+
+	return nil
 }

@@ -13,6 +13,7 @@ type User struct {
 	Websites  []Website
 	KeyPairID uuid.UUID `gorm:"->;<-:create"`
 	KeyPair   KeyPair   `gorm:"->;<-:create"`
+	Roles     []string  `gorm:"-"`
 }
 
 func (entity *User) BeforeCreate(tx *gorm.DB) error {
