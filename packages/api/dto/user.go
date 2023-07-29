@@ -14,6 +14,8 @@ type UserOnCreate struct {
 	LastName  string    `json:"lastName" binding:"required"`
 }
 
+type UserOnUpdate UserOnCreate
+
 type UserAccount struct {
 	ID        uuid.UUID `json:"id" binding:"required"`
 	Username  string    `json:"username" binding:"required"`

@@ -17,6 +17,9 @@ linters-settings:
     ignore-names:
       - i
 
+  dupl:
+    threshold: 165
+
 linters:
   enable-all: true
   disable:

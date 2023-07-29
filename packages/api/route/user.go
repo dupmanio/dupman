@@ -42,5 +42,10 @@ func (route *UserRoute) Setup() {
 			route.authMiddleware.RequiresScope("user", "user:create"),
 			route.controller.Create,
 		)
+		group.PATCH(
+			"/",
+			route.authMiddleware.RequiresScope("user", "user:update"),
+			route.controller.Update,
+		)
 	}
 }

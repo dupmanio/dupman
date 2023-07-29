@@ -33,3 +33,20 @@ func (ctrl *UserController) Create(ctx *gin.Context) {
 
 	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, user)
 }
+
+func (ctrl *UserController) Update(ctx *gin.Context) {
+	var payload *dto.UserOnUpdate
+
+	if err := ctx.ShouldBind(&payload); err != nil {
+		ctrl.httpSvc.HTTPValidationError(ctx, err)
+
+		return
+	}
+
+	user, err := ctrl.userSvc.Update(payload)
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+	}
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, user)
+}

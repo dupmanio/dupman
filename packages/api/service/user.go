@@ -36,7 +36,24 @@ func (svc *UserService) CreateIfNotExists(payload *dto.UserOnCreate) (*dto.UserA
 	_ = copier.Copy(&entity, &payload)
 
 	if err := svc.userRepo.Create(&entity); err != nil {
-		return nil, fmt.Errorf("unable to parse create User: %w", err)
+		return nil, fmt.Errorf("unable to create User: %w", err)
+	}
+
+	_ = copier.Copy(&response, &entity)
+
+	return &response, nil
+}
+
+func (svc *UserService) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
+	var (
+		entity   model.User
+		response dto.UserAccount
+	)
+
+	_ = copier.Copy(&entity, &payload)
+
+	if err := svc.userRepo.Update(&entity); err != nil {
+		return nil, fmt.Errorf("unable to update User: %w", err)
 	}
 
 	_ = copier.Copy(&response, &entity)

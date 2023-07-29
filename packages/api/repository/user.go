@@ -36,6 +36,10 @@ func (repo *UserRepository) Create(user *model.User) error {
 	return repo.db.Create(user).Error
 }
 
+func (repo *UserRepository) Update(user *model.User) error {
+	return repo.db.Save(user).Error
+}
+
 func (repo *UserRepository) FindByID(id string) *model.User {
 	var user model.User
 
