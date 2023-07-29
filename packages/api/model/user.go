@@ -10,6 +10,10 @@ import (
 type User struct {
 	Base
 
+	Username  string `gorm:"unique"`
+	Email     string `gorm:"unique"`
+	FirstName string
+	LastName  string
 	Websites  []Website
 	KeyPairID uuid.UUID `gorm:"->;<-:create"`
 	KeyPair   KeyPair   `gorm:"->;<-:create"`

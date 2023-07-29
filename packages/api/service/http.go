@@ -63,6 +63,8 @@ func (svc *HTTPService) formatValidationErrors(validationErrors validator.Valida
 			errorMessage = fmt.Sprintf("Key '%s' is required", fieldError.Field())
 		case "url":
 			errorMessage = fmt.Sprintf("Value of field '%s' is not a valid URL address", fieldError.Field())
+		case "email":
+			errorMessage = fmt.Sprintf("Value of field '%s' is not a valid Email address", fieldError.Field())
 		default:
 			errorMessage = fieldError.Error()
 		}
