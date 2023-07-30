@@ -4,6 +4,7 @@ go_library(
     name = "route",
     srcs = [
         "route.go",
+        "system.go",
         "user.go",
         "website.go",
     ],

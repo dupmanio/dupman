@@ -40,10 +40,15 @@ func (repo *WebsiteRepository) Create(website *model.Website, encryptionKKey str
 	return repo.db.WithContext(ctx).Create(website).Error
 }
 
-func (repo *WebsiteRepository) FindAll() ([]model.Website, error) {
+func (repo *WebsiteRepository) FindAll(pager *pagination.Pagination) ([]model.Website, error) {
 	var websites []model.Website
 
-	return websites, repo.db.Find(&websites).Error
+	tx := repo.db.DB
+
+	return websites, tx.
+		Scopes(pagination.WithPagination(tx, &websites, pager)).
+		Find(&websites).
+		Error
 }
 
 func (repo *WebsiteRepository) FindByUserID(userID string, pager *pagination.Pagination) ([]model.Website, error) {

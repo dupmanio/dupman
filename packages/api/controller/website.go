@@ -43,7 +43,7 @@ func (ctrl *WebsiteController) Create(ctx *gin.Context) {
 func (ctrl *WebsiteController) GetAll(ctx *gin.Context) {
 	pager := pagination.Paginate(ctx)
 
-	websites, err := ctrl.websiteSvc.GetAll(ctx, pager)
+	websites, err := ctrl.websiteSvc.GetAllForCurrentUser(ctx, pager)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 
