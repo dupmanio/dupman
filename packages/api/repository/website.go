@@ -2,12 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/database"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type WebsiteRepository struct {
@@ -60,4 +62,15 @@ func (repo *WebsiteRepository) FindByUserID(userID string, pager *pagination.Pag
 		Scopes(pagination.WithPagination(tx, &websites, pager)).
 		Find(&websites).
 		Error
+}
+
+func (repo *WebsiteRepository) FindByID(id string) *model.Website {
+	var website model.Website
+
+	err := repo.db.First(&website, "id = ?", id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+
+	return &website
 }

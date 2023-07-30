@@ -8,7 +8,8 @@ import (
 type Website struct {
 	Base
 
-	URL    string
-	Token  sqltype.WebsiteToken
-	UserID uuid.UUID
+	URL     string
+	Token   sqltype.WebsiteToken
+	UserID  uuid.UUID
+	Updates []Update
 }

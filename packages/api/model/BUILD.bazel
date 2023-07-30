@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "base.go",
         "key_pair.go",
+        "update.go",
         "user.go",
         "website.go",
     ],

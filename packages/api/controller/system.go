@@ -5,9 +5,11 @@ import (
 	"net/http"
 
 	"github.com/dupmanio/dupman/packages/api/constant"
+	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type SystemController struct {
@@ -40,4 +42,30 @@ func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
 	}
 
 	ctrl.httpSvc.HTTPPaginatedResponse(ctx, http.StatusOK, websites, pager)
+}
+
+func (ctrl *SystemController) PutWebsiteUpdates(ctx *gin.Context) {
+	var payload dto.Updates
+
+	websiteID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid website ID: %s", err))
+
+		return
+	}
+
+	if err = ctx.ShouldBind(&payload); err != nil {
+		ctrl.httpSvc.HTTPValidationError(ctx, err)
+
+		return
+	}
+
+	updates, code, err := ctrl.websiteSvc.CreateUpdates(websiteID, payload)
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, code, err.Error())
+
+		return
+	}
+
+	ctrl.httpSvc.HTTPResponse(ctx, code, updates)
 }
