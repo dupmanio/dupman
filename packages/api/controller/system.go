@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
+	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -68,14 +70,19 @@ func (ctrl *SystemController) PutWebsiteUpdates(ctx *gin.Context) {
 		return
 	}
 
-	updates, code, err := ctrl.websiteSvc.CreateUpdates(websiteID, payload)
+	updates, err := ctrl.websiteSvc.CreateUpdates(websiteID, payload)
 	if err != nil {
-		ctrl.httpSvc.HTTPError(ctx, code, err.Error())
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrWebsiteNotFound) {
+			statusCode = http.StatusNotFound
+		}
+
+		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
 
 		return
 	}
 
 	_ = copier.Copy(&response, &updates)
 
-	ctrl.httpSvc.HTTPResponse(ctx, code, response)
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusCreated, response)
 }

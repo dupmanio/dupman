@@ -1,21 +1,18 @@
 package service
 
 import (
-	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	sqltype "github.com/dupmanio/dupman/packages/api/sql/type"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
+	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
-
-var errWebsiteNotFound = errors.New("website not found")
 
 type WebsiteService struct {
 	websiteRepo *repository.WebsiteRepository
@@ -94,15 +91,15 @@ func (svc *WebsiteService) GetAllWithToken(
 	return websites, nil
 }
 
-func (svc *WebsiteService) CreateUpdates(websiteID uuid.UUID, payload dto.Updates) ([]model.Update, int, error) {
+func (svc *WebsiteService) CreateUpdates(websiteID uuid.UUID, payload dto.Updates) ([]model.Update, error) {
 	updates := make([]model.Update, 0, len(payload))
 
 	if website := svc.websiteRepo.FindByID(websiteID.String()); website == nil {
-		return nil, http.StatusNotFound, errWebsiteNotFound
+		return nil, errors.ErrWebsiteNotFound
 	}
 
 	if err := svc.updateRepo.DeleteByWebsiteID(websiteID.String()); err != nil {
-		return nil, http.StatusInternalServerError, fmt.Errorf("unable to delete Website Updates: %w", err)
+		return nil, fmt.Errorf("unable to delete Website Updates: %w", err)
 	}
 
 	for i := range payload {
@@ -112,11 +109,11 @@ func (svc *WebsiteService) CreateUpdates(websiteID uuid.UUID, payload dto.Update
 		entity.WebsiteID = websiteID
 
 		if err := svc.updateRepo.Create(&entity); err != nil {
-			return nil, http.StatusInternalServerError, fmt.Errorf("unable to create Website Update: %w", err)
+			return nil, fmt.Errorf("unable to create Website Update: %w", err)
 		}
 
 		updates = append(updates, entity)
 	}
 
-	return updates, http.StatusCreated, nil
+	return updates, nil
 }
