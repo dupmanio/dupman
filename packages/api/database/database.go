@@ -22,6 +22,7 @@ func New(config *config.Config) (*Database, error) {
 		config.Database.Database,
 	)
 
+	// @todo: implement logging.
 	db, err := gorm.Open(postgres.Open(url))
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)

@@ -12,6 +12,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	"github.com/dupmanio/dupman/packages/api/service"
+	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -56,7 +57,7 @@ func (mid *AuthMiddleware) RequiresAuth() gin.HandlerFunc {
 
 		accessToken := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
 		if accessToken == "" {
-			mid.httpSvc.HTTPError(ctx, http.StatusUnauthorized, "authentication required")
+			mid.httpSvc.HTTPError(ctx, http.StatusUnauthorized, errors.ErrAuthorizationRequired.Error())
 
 			return
 		}
@@ -114,7 +115,7 @@ func (mid *AuthMiddleware) RequiresRole(roles ...string) gin.HandlerFunc {
 			return
 		}
 
-		mid.httpSvc.HTTPError(ctx, http.StatusForbidden, "access is forbidden")
+		mid.httpSvc.HTTPError(ctx, http.StatusForbidden, errors.ErrAccessIsForbidden.Error())
 	}
 }
 
@@ -152,6 +153,6 @@ func (mid *AuthMiddleware) RequiresScope(scopes ...string) gin.HandlerFunc {
 			return
 		}
 
-		mid.httpSvc.HTTPError(ctx, http.StatusForbidden, "missing scopes")
+		mid.httpSvc.HTTPError(ctx, http.StatusForbidden, errors.ErrMissingScopes.Error())
 	}
 }
