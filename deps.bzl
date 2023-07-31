@@ -232,6 +232,13 @@ def go_dependencies():
         version = "v10.14.0",
     )
     go_repository(
+        name = "com_github_go_resty_resty_v2",
+        importpath = "github.com/go-resty/resty/v2",
+        sum = "h1:me+K9p3uhSmXtrBZ4k9jcEAfJmuC8IivWHwaLZwPrFY=",
+        version = "v2.7.0",
+    )
+
+    go_repository(
         name = "com_github_goccy_go_json",
         importpath = "github.com/goccy/go-json",
         sum = "h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=",

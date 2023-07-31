@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "user",
+    srcs = ["service.go"],
+    importpath = "github.com/dupmanio/dupman/packages/sdk/service/user",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/domain/dto",
+        "//packages/sdk/dupman/session",
+        "//packages/sdk/internal/errors",
+    ],
+)
