@@ -89,16 +89,14 @@ func (svc *WebsiteService) GetAllWithToken(
 	for i := 0; i < len(websites); i++ {
 		// @todo: Implement user key caching.
 		user := svc.userRepo.FindByID(websites[i].UserID.String())
-		if user == nil {
-			continue
-		}
 
-		// @todo: Fix!
 		if rawToken, err := websites[i].Token.Decrypt(user.KeyPair.PrivateKey); err == nil {
 			websites[i].Token = sqltype.WebsiteToken(rawToken)
 
 			if tokenEncrypted, err := websites[i].Token.Encrypt(publicKey); err == nil {
 				websites[i].Token = sqltype.WebsiteToken(tokenEncrypted)
+			} else {
+				websites[i].Token = ""
 			}
 		}
 	}
