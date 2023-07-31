@@ -7,6 +7,7 @@ import (
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 )
 
 type WebsiteController struct {
@@ -22,7 +23,10 @@ func NewWebsiteController(
 }
 
 func (ctrl *WebsiteController) Create(ctx *gin.Context) {
-	var payload *dto.WebsiteOnCreate
+	var (
+		payload  *dto.WebsiteOnCreate
+		response dto.WebsiteOnResponse
+	)
 
 	if err := ctx.ShouldBind(&payload); err != nil {
 		ctrl.httpSvc.HTTPValidationError(ctx, err)
@@ -37,10 +41,14 @@ func (ctrl *WebsiteController) Create(ctx *gin.Context) {
 		return
 	}
 
-	ctrl.httpSvc.HTTPResponse(ctx, http.StatusCreated, website)
+	_ = copier.Copy(&response, &website)
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusCreated, response)
 }
 
 func (ctrl *WebsiteController) GetAll(ctx *gin.Context) {
+	var response dto.WebsitesOnResponse
+
 	pager := pagination.Paginate(ctx)
 
 	websites, err := ctrl.websiteSvc.GetAllForCurrentUser(ctx, pager)
@@ -50,5 +58,7 @@ func (ctrl *WebsiteController) GetAll(ctx *gin.Context) {
 		return
 	}
 
-	ctrl.httpSvc.HTTPPaginatedResponse(ctx, http.StatusOK, websites, pager)
+	_ = copier.Copy(&response, &websites)
+
+	ctrl.httpSvc.HTTPPaginatedResponse(ctx, http.StatusOK, response, pager)
 }

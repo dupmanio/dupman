@@ -38,11 +38,8 @@ func NewWebsiteService(
 	}
 }
 
-func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate, ctx *gin.Context) (*dto.WebsiteOnResponse, error) {
-	var (
-		entity   model.Website
-		response dto.WebsiteOnResponse
-	)
+func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate, ctx *gin.Context) (*model.Website, error) {
+	var entity model.Website
 
 	_ = copier.Copy(&entity, &payload)
 
@@ -53,16 +50,13 @@ func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate, ctx *gin.Context
 		return nil, fmt.Errorf("unable to create website: %w", err)
 	}
 
-	_ = copier.Copy(&response, &entity)
-
-	return &response, nil
+	return &entity, nil
 }
 
 func (svc *WebsiteService) GetAllForCurrentUser(
 	ctx *gin.Context,
 	pagination *pagination.Pagination,
-) (*dto.WebsitesOnResponse, error) {
-	response := dto.WebsitesOnResponse{}
+) ([]model.Website, error) {
 	currentUser := svc.userSvc.CurrentUser(ctx)
 
 	websites, err := svc.websiteRepo.FindByUserID(currentUser.ID.String(), pagination)
@@ -70,17 +64,13 @@ func (svc *WebsiteService) GetAllForCurrentUser(
 		return nil, fmt.Errorf("unable to get websites: %w", err)
 	}
 
-	_ = copier.Copy(&response, &websites)
-
-	return &response, nil
+	return websites, nil
 }
 
 func (svc *WebsiteService) GetAllWithToken(
 	pagination *pagination.Pagination,
 	publicKey string,
-) (*dto.WebsitesOnSystemResponse, error) {
-	response := dto.WebsitesOnSystemResponse{}
-
+) ([]model.Website, error) {
 	websites, err := svc.websiteRepo.FindAll(pagination)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get websites: %w", err)
@@ -101,16 +91,11 @@ func (svc *WebsiteService) GetAllWithToken(
 		}
 	}
 
-	_ = copier.Copy(&response, &websites)
-
-	return &response, nil
+	return websites, nil
 }
 
-func (svc *WebsiteService) CreateUpdates(
-	websiteID uuid.UUID,
-	payload dto.Updates,
-) (*dto.UpdatesOnResponse, int, error) {
-	response := dto.UpdatesOnResponse{}
+func (svc *WebsiteService) CreateUpdates(websiteID uuid.UUID, payload dto.Updates) ([]model.Update, int, error) {
+	updates := make([]model.Update, 0, len(payload))
 
 	if website := svc.websiteRepo.FindByID(websiteID.String()); website == nil {
 		return nil, http.StatusNotFound, errWebsiteNotFound
@@ -121,10 +106,7 @@ func (svc *WebsiteService) CreateUpdates(
 	}
 
 	for i := range payload {
-		var (
-			entity           = model.Update{}
-			updateOnResponse = dto.UpdateOnResponse{}
-		)
+		entity := model.Update{}
 
 		_ = copier.Copy(&entity, &payload[i])
 		entity.WebsiteID = websiteID
@@ -133,9 +115,8 @@ func (svc *WebsiteService) CreateUpdates(
 			return nil, http.StatusInternalServerError, fmt.Errorf("unable to create Website Update: %w", err)
 		}
 
-		_ = copier.Copy(&updateOnResponse, &entity)
-		response = append(response, updateOnResponse)
+		updates = append(updates, entity)
 	}
 
-	return &response, http.StatusCreated, nil
+	return updates, http.StatusCreated, nil
 }

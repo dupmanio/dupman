@@ -21,16 +21,11 @@ func NewUserService(userRepo *repository.UserRepository) *UserService {
 	}
 }
 
-func (svc *UserService) CreateIfNotExists(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
-	var (
-		entity   model.User
-		response dto.UserAccount
-	)
+func (svc *UserService) CreateIfNotExists(payload *dto.UserOnCreate) (*model.User, error) {
+	var entity model.User
 
 	if user := svc.userRepo.FindByID(payload.ID.String()); user != nil {
-		_ = copier.Copy(&response, &user)
-
-		return &response, nil
+		return user, nil
 	}
 
 	_ = copier.Copy(&entity, &payload)
@@ -39,16 +34,11 @@ func (svc *UserService) CreateIfNotExists(payload *dto.UserOnCreate) (*dto.UserA
 		return nil, fmt.Errorf("unable to create User: %w", err)
 	}
 
-	_ = copier.Copy(&response, &entity)
-
-	return &response, nil
+	return &entity, nil
 }
 
-func (svc *UserService) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
-	var (
-		entity   model.User
-		response dto.UserAccount
-	)
+func (svc *UserService) Update(payload *dto.UserOnUpdate) (*model.User, error) {
+	var entity model.User
 
 	_ = copier.Copy(&entity, &payload)
 
@@ -56,9 +46,7 @@ func (svc *UserService) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, err
 		return nil, fmt.Errorf("unable to update User: %w", err)
 	}
 
-	_ = copier.Copy(&response, &entity)
-
-	return &response, nil
+	return &entity, nil
 }
 
 func (svc *UserService) CurrentUser(ctx *gin.Context) *model.User {

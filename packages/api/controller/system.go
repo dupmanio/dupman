@@ -10,6 +10,7 @@ import (
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 )
 
 type SystemController struct {
@@ -25,6 +26,8 @@ func NewSystemController(
 }
 
 func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
+	var response dto.WebsitesOnSystemResponse
+
 	publicKey := ctx.GetHeader(constant.PublicKeyHeaderKey)
 	if publicKey == "" {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusBadRequest, fmt.Sprintf("Header '%s' is missing", constant.PublicKeyHeaderKey))
@@ -41,11 +44,16 @@ func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
 		return
 	}
 
-	ctrl.httpSvc.HTTPPaginatedResponse(ctx, http.StatusOK, websites, pager)
+	_ = copier.Copy(&response, &websites)
+
+	ctrl.httpSvc.HTTPPaginatedResponse(ctx, http.StatusOK, response, pager)
 }
 
 func (ctrl *SystemController) PutWebsiteUpdates(ctx *gin.Context) {
-	var payload dto.Updates
+	var (
+		payload  dto.Updates
+		response dto.UpdatesOnResponse
+	)
 
 	websiteID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
@@ -67,5 +75,7 @@ func (ctrl *SystemController) PutWebsiteUpdates(ctx *gin.Context) {
 		return
 	}
 
-	ctrl.httpSvc.HTTPResponse(ctx, code, updates)
+	_ = copier.Copy(&response, &updates)
+
+	ctrl.httpSvc.HTTPResponse(ctx, code, response)
 }
