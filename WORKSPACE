@@ -2,23 +2,44 @@ workspace(name = "com_github_dupmanio_dupman")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+RULES_GO_EXTERNAL_TAG = "v0.39.1"
+
+RULES_GO_EXTERNAL_SHA = "6dc2da7ab4cf5d7bfc7c949776b1b7c733f05e56edc4bcd9022bb249d2e2a996"
+
+RULES_GAZELLE_EXTERNAL_TAG = "v0.32.0"
+
+RULES_GAZELLE_EXTERNAL_SHA = "29218f8e0cebe583643cbf93cae6f971be8a2484cdcfa1e45057658df8d54002"
+
+RULES_JVM_EXTERNAL_TAG = "5.3"
+
+RULES_JVM_EXTERNAL_SHA = "d31e369b854322ca5098ea12c69d7175ded971435e55c18dd9dd5f29cc5249ac"
+
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "6dc2da7ab4cf5d7bfc7c949776b1b7c733f05e56edc4bcd9022bb249d2e2a996",
+    sha256 = RULES_GO_EXTERNAL_SHA,
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.39.1/rules_go-v0.39.1.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.39.1/rules_go-v0.39.1.zip",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/%s/rules_go-%s.zip" % (RULES_GO_EXTERNAL_TAG, RULES_GO_EXTERNAL_TAG),
+        "https://github.com/bazelbuild/rules_go/releases/download/%s/rules_go-%s.zip" % (RULES_GO_EXTERNAL_TAG, RULES_GO_EXTERNAL_TAG),
     ],
 )
 
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "29218f8e0cebe583643cbf93cae6f971be8a2484cdcfa1e45057658df8d54002",
+    sha256 = RULES_GAZELLE_EXTERNAL_SHA,
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.32.0/bazel-gazelle-v0.32.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.32.0/bazel-gazelle-v0.32.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/%s/bazel-gazelle-%s.tar.gz" % (RULES_GO_EXTERNAL_TAG, RULES_GO_EXTERNAL_TAG),
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/%s/bazel-gazelle-%s.tar.gz" % (RULES_GO_EXTERNAL_TAG, RULES_GO_EXTERNAL_TAG),
     ],
 )
+
+http_archive(
+    name = "rules_jvm_external",
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/%s/rules_jvm_external-%s.tar.gz" % (RULES_JVM_EXTERNAL_TAG, RULES_JVM_EXTERNAL_TAG),
+)
+
+# Setup GO
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
@@ -32,3 +53,17 @@ go_rules_dependencies()
 go_register_toolchains(version = "1.19")
 
 gazelle_dependencies()
+
+# Setup Java.
+
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+
+rules_jvm_external_deps()
+
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+
+rules_jvm_external_setup()
+
+load("//packages/kc-user-syncer-extension:deps.bzl", "kc_user_syncer_deps")
+
+kc_user_syncer_deps()
