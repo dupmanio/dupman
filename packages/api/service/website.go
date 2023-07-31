@@ -7,11 +7,9 @@ import (
 	"github.com/dupmanio/dupman/packages/api/repository"
 	sqltype "github.com/dupmanio/dupman/packages/api/sql/type"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
-	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/jinzhu/copier"
 )
 
 type WebsiteService struct {
@@ -35,19 +33,15 @@ func NewWebsiteService(
 	}
 }
 
-func (svc *WebsiteService) Create(payload *dto.WebsiteOnCreate, ctx *gin.Context) (*model.Website, error) {
-	var entity model.Website
-
-	_ = copier.Copy(&entity, &payload)
-
+func (svc *WebsiteService) Create(entity *model.Website, ctx *gin.Context) (*model.Website, error) {
 	currentUser := svc.userSvc.CurrentUser(ctx)
 	entity.UserID = currentUser.ID
 
-	if err := svc.websiteRepo.Create(&entity, currentUser.KeyPair.PublicKey); err != nil {
+	if err := svc.websiteRepo.Create(entity, currentUser.KeyPair.PublicKey); err != nil {
 		return nil, fmt.Errorf("unable to create website: %w", err)
 	}
 
-	return &entity, nil
+	return entity, nil
 }
 
 func (svc *WebsiteService) GetAllForCurrentUser(
@@ -91,28 +85,22 @@ func (svc *WebsiteService) GetAllWithToken(
 	return websites, nil
 }
 
-func (svc *WebsiteService) CreateUpdates(websiteID uuid.UUID, payload dto.Updates) ([]model.Update, error) {
-	updates := make([]model.Update, 0, len(payload))
-
+func (svc *WebsiteService) CreateUpdates(websiteID uuid.UUID, updates []model.Update) ([]model.Update, error) {
 	if website := svc.websiteRepo.FindByID(websiteID.String()); website == nil {
 		return nil, errors.ErrWebsiteNotFound
 	}
 
+	// @todo: refactor: do not delete and rewrite updates.
 	if err := svc.updateRepo.DeleteByWebsiteID(websiteID.String()); err != nil {
 		return nil, fmt.Errorf("unable to delete Website Updates: %w", err)
 	}
 
-	for i := range payload {
-		entity := model.Update{}
+	for i := range updates {
+		updates[i].WebsiteID = websiteID
 
-		_ = copier.Copy(&entity, &payload[i])
-		entity.WebsiteID = websiteID
-
-		if err := svc.updateRepo.Create(&entity); err != nil {
+		if err := svc.updateRepo.Create(&updates[i]); err != nil {
 			return nil, fmt.Errorf("unable to create Website Update: %w", err)
 		}
-
-		updates = append(updates, entity)
 	}
 
 	return updates, nil

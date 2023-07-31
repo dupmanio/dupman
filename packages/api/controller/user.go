@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
@@ -22,6 +23,8 @@ func NewUserController(httpSvc *service.HTTPService, userSvc *service.UserServic
 
 func (ctrl *UserController) Create(ctx *gin.Context) {
 	var (
+		entity = &model.User{}
+
 		payload  *dto.UserOnCreate
 		response dto.UserAccount
 	)
@@ -32,7 +35,9 @@ func (ctrl *UserController) Create(ctx *gin.Context) {
 		return
 	}
 
-	user, err := ctrl.userSvc.Create(payload)
+	_ = copier.Copy(&entity, &payload)
+
+	user, err := ctrl.userSvc.Create(entity)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrUserAlreadyExists) {
@@ -51,6 +56,8 @@ func (ctrl *UserController) Create(ctx *gin.Context) {
 
 func (ctrl *UserController) Update(ctx *gin.Context) {
 	var (
+		entity = &model.User{}
+
 		payload  *dto.UserOnUpdate
 		response dto.UserAccount
 	)
@@ -61,9 +68,16 @@ func (ctrl *UserController) Update(ctx *gin.Context) {
 		return
 	}
 
-	user, err := ctrl.userSvc.Update(payload)
+	_ = copier.Copy(&entity, &payload)
+
+	user, err := ctrl.userSvc.Update(entity)
 	if err != nil {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrUserDoesNotExist) {
+			statusCode = http.StatusNotFound
+		}
+
+		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
 
 		return
 	}

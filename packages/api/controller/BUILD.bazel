@@ -12,6 +12,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/api/constant",
+        "//packages/api/model",
         "//packages/api/service",
         "//packages/dbutils/pagination",
         "//packages/domain/dto",

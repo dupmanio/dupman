@@ -6,10 +6,8 @@ import (
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
-	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
 )
 
 type UserService struct {
@@ -22,32 +20,28 @@ func NewUserService(userRepo *repository.UserRepository) *UserService {
 	}
 }
 
-func (svc *UserService) Create(payload *dto.UserOnCreate) (*model.User, error) {
-	var entity model.User
-
-	if user := svc.userRepo.FindByID(payload.ID.String()); user != nil {
+func (svc *UserService) Create(entity *model.User) (*model.User, error) {
+	if user := svc.userRepo.FindByID(entity.ID.String()); user != nil {
 		return nil, errors.ErrUserAlreadyExists
 	}
 
-	_ = copier.Copy(&entity, &payload)
-
-	if err := svc.userRepo.Create(&entity); err != nil {
+	if err := svc.userRepo.Create(entity); err != nil {
 		return nil, fmt.Errorf("unable to create User: %w", err)
 	}
 
-	return &entity, nil
+	return entity, nil
 }
 
-func (svc *UserService) Update(payload *dto.UserOnUpdate) (*model.User, error) {
-	var entity model.User
+func (svc *UserService) Update(entity *model.User) (*model.User, error) {
+	if user := svc.userRepo.FindByID(entity.ID.String()); user == nil {
+		return nil, errors.ErrUserDoesNotExist
+	}
 
-	_ = copier.Copy(&entity, &payload)
-
-	if err := svc.userRepo.Update(&entity); err != nil {
+	if err := svc.userRepo.Update(entity); err != nil {
 		return nil, fmt.Errorf("unable to update User: %w", err)
 	}
 
-	return &entity, nil
+	return entity, nil
 }
 
 func (svc *UserService) CurrentUser(ctx *gin.Context) *model.User {

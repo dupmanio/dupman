@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 
+	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
@@ -24,6 +25,8 @@ func NewWebsiteController(
 
 func (ctrl *WebsiteController) Create(ctx *gin.Context) {
 	var (
+		entity = &model.Website{}
+
 		payload  *dto.WebsiteOnCreate
 		response dto.WebsiteOnResponse
 	)
@@ -34,7 +37,9 @@ func (ctrl *WebsiteController) Create(ctx *gin.Context) {
 		return
 	}
 
-	website, err := ctrl.websiteSvc.Create(payload, ctx)
+	_ = copier.Copy(&entity, &payload)
+
+	website, err := ctrl.websiteSvc.Create(entity, ctx)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 

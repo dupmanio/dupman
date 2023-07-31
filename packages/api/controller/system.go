@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/dupmanio/dupman/packages/api/constant"
+	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
@@ -53,6 +54,8 @@ func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
 
 func (ctrl *SystemController) PutWebsiteUpdates(ctx *gin.Context) {
 	var (
+		entities []model.Update
+
 		payload  dto.Updates
 		response dto.UpdatesOnResponse
 	)
@@ -70,7 +73,9 @@ func (ctrl *SystemController) PutWebsiteUpdates(ctx *gin.Context) {
 		return
 	}
 
-	updates, err := ctrl.websiteSvc.CreateUpdates(websiteID, payload)
+	_ = copier.Copy(&entities, &payload)
+
+	updates, err := ctrl.websiteSvc.CreateUpdates(websiteID, entities)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrWebsiteNotFound) {
