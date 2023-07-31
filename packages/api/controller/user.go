@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
+	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 )
@@ -19,7 +21,6 @@ func NewUserController(httpSvc *service.HTTPService, userSvc *service.UserServic
 }
 
 func (ctrl *UserController) Create(ctx *gin.Context) {
-	// @todo: refactor: return error if user exists.
 	var (
 		payload  *dto.UserOnCreate
 		response dto.UserAccount
@@ -31,16 +32,21 @@ func (ctrl *UserController) Create(ctx *gin.Context) {
 		return
 	}
 
-	user, err := ctrl.userSvc.CreateIfNotExists(payload)
+	user, err := ctrl.userSvc.Create(payload)
 	if err != nil {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrUserAlreadyExists) {
+			statusCode = http.StatusBadRequest
+		}
+
+		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
 
 		return
 	}
 
 	_ = copier.Copy(&response, &user)
 
-	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusCreated, response)
 }
 
 func (ctrl *UserController) Update(ctx *gin.Context) {

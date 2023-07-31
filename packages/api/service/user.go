@@ -7,6 +7,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	"github.com/dupmanio/dupman/packages/domain/dto"
+	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 )
@@ -21,11 +22,11 @@ func NewUserService(userRepo *repository.UserRepository) *UserService {
 	}
 }
 
-func (svc *UserService) CreateIfNotExists(payload *dto.UserOnCreate) (*model.User, error) {
+func (svc *UserService) Create(payload *dto.UserOnCreate) (*model.User, error) {
 	var entity model.User
 
 	if user := svc.userRepo.FindByID(payload.ID.String()); user != nil {
-		return user, nil
+		return nil, errors.ErrUserAlreadyExists
 	}
 
 	_ = copier.Copy(&entity, &payload)
