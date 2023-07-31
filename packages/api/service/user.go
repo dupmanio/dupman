@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/api/constant"
-	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
+	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 )

@@ -3,8 +3,8 @@ package controller
 import (
 	"net/http"
 
-	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/service"
+	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/gin-gonic/gin"
 )
 

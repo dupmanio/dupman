@@ -8,7 +8,10 @@ go_library(
         "user.go",
         "website.go",
     ],
-    importpath = "github.com/dupmanio/dupman/packages/api/dto",
+    importpath = "github.com/dupmanio/dupman/packages/domain/dto",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_google_uuid//:uuid"],
+    deps = [
+        "//packages/dbutils/pagination",
+        "@com_github_google_uuid//:uuid",
+    ],
 )

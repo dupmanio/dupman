@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dupmanio/dupman/packages/api/dto"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	sqltype "github.com/dupmanio/dupman/packages/api/sql/type"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
+	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -93,6 +93,7 @@ func (svc *WebsiteService) GetAllWithToken(
 			continue
 		}
 
+		// @todo: Fix!
 		if rawToken, err := websites[i].Token.Decrypt(user.KeyPair.PrivateKey); err == nil {
 			websites[i].Token = sqltype.WebsiteToken(rawToken)
 
