@@ -47,7 +47,7 @@ func (svc *User) Create(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
 		return nil, fmt.Errorf("unable to create User: %w", err)
 	}
 
-	if resp.StatusCode() != http.StatusOK {
+	if resp.StatusCode() != http.StatusCreated {
 		return nil, errors.NewHTTPError(resp)
 	}
 
