@@ -2,6 +2,7 @@ package session
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
@@ -16,20 +17,33 @@ const (
 )
 
 type Session struct {
-	Config *dupman.Config
+	config *dupman.Config
 	Client *resty.Client
 }
 
 // New returns a new Session created from SDK defaults
 // or with user provided dupman.Config.
-func New(config *dupman.Config) *Session {
-	return &Session{
-		Config: config,
-		Client: createHTTPClient(config),
+//
+// Example:
+//
+//	// Create new instance of Credential Provider, e.g ClientCredentials.
+//	cred, err := credentials.NewClientCredentials("...", "...", []string{...})
+//
+//	// Create new session.
+//	sess, err := session.New(&dupman.Config{Credentials: cred})
+func New(config *dupman.Config) (*Session, error) {
+	token, err := config.Credentials.Retrieve()
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve credentials: %w", err)
 	}
+
+	return &Session{
+		config: config,
+		Client: createHTTPClient(config, token.AccessToken),
+	}, nil
 }
 
-func createHTTPClient(config *dupman.Config) *resty.Client {
+func createHTTPClient(config *dupman.Config, accessToken string) *resty.Client {
 	httpClient := resty.New()
 
 	if config.URL == "" {
@@ -40,12 +54,9 @@ func createHTTPClient(config *dupman.Config) *resty.Client {
 		config.Timeout = defaultTimeout
 	}
 
-	if config.AccessToken != "" {
-		httpClient.SetAuthToken(config.AccessToken)
-	}
-
 	httpClient.SetBaseURL(config.URL).
 		SetTimeout(config.Timeout).
+		SetAuthToken(accessToken).
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept-Type", "application/json").
 		SetHeader("User-Agent", "dupman-sdk (https://github.com/dupmanio/dupman/tree/main/packages/sdk)").

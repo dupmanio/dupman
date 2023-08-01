@@ -5,4 +5,5 @@ go_library(
     srcs = ["config.go"],
     importpath = "github.com/dupmanio/dupman/packages/sdk/dupman",
     visibility = ["//visibility:public"],
+    deps = ["//packages/sdk/dupman/credentials"],
 )
