@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "updater",
+    srcs = ["updater.go"],
+    importpath = "github.com/dupmanio/dupman/packages/worker/updater",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/domain/dto",
+        "//packages/encryptor",
+        "//packages/sdk/dupman",
+        "//packages/sdk/dupman/credentials",
+        "//packages/sdk/dupman/session",
+        "//packages/sdk/service/system",
+        "//packages/worker/config",
+        "//packages/worker/fetcher",
+        "//packages/worker/model",
+        "@com_github_google_uuid//:uuid",
+        "@com_github_jinzhu_copier//:copier",
+        "@org_uber_go_zap//:zap",
+    ],
+)

@@ -9,4 +9,5 @@ var (
 	ErrAuthorizationRequired = errors.New("authentication required")
 	ErrAccessIsForbidden     = errors.New("access is forbidden")
 	ErrMissingScopes         = errors.New("missing scopes")
+	ErrUnableToFetchUpdates  = errors.New("unable to fetch Website Updates")
 )
