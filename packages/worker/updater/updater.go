@@ -2,6 +2,7 @@ package updater
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/encryptor"
@@ -56,12 +57,15 @@ func (upd *Updater) Process() error {
 		return fmt.Errorf("unable to get public key: %w", err)
 	}
 
+	currentPage := 1
 	totalPages := 1
-	// @todo: make this process parallel.
-	for currentPage := 1; currentPage <= totalPages; currentPage++ {
+
+	var wg sync.WaitGroup
+
+	for currentPage <= totalPages {
 		websites, pager, err := upd.systemService.GetWebsites(publicKey, currentPage)
 		if err != nil {
-			return fmt.Errorf("unable to get Websites: %w", err)
+			upd.logger.Error("unable to get Websites", zap.Error(err))
 		}
 
 		totalPages = pager.TotalPages
@@ -70,15 +74,32 @@ func (upd *Updater) Process() error {
 			zap.Int("currentPage", currentPage),
 			zap.Int("totalPages", totalPages),
 		)
+		currentPage++
 
 		for _, website := range *websites {
-			if err = upd.processWebsite(website); err != nil {
-				upd.logger.Error("Unable to process website", zap.Error(err))
-			} else {
-				upd.logger.Info("Website has been processed successfully")
-			}
+			wg.Add(1)
+
+			go func(website dto.WebsiteOnSystemResponse) {
+				defer wg.Done()
+
+				if err = upd.processWebsite(website); err != nil {
+					upd.logger.Error(
+						"Unable to process website",
+						zap.Error(err),
+						zap.String("websiteID", website.ID.String()),
+						zap.String("websiteURL", website.URL),
+					)
+				} else {
+					upd.logger.Info(
+						"Website has been processed successfully",
+						zap.String("websiteID", website.ID.String()),
+						zap.String("websiteURL", website.URL),
+					)
+				}
+			}(website)
 		}
 	}
+	wg.Wait()
 
 	return nil
 }
