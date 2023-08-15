@@ -1,4 +1,8 @@
 import { useState, MouseEvent } from "react";
+import getNextConfig from "next/config";
+import { signOut, useSession } from "next-auth/react";
+import axios from "axios";
+
 import {
   Avatar,
   Box,
@@ -9,12 +13,10 @@ import {
   MenuItem,
   Tooltip,
 } from "@mui/material";
-import { Logout } from "@mui/icons-material";
-import { signOut, useSession } from "next-auth/react";
-import axios from "axios";
-import getNextConfig from "next/config";
 
-export default function AccountMenu() {
+import { Logout } from "@mui/icons-material";
+
+function AccountMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const { publicRuntimeConfig } = getNextConfig();
@@ -116,3 +118,5 @@ export default function AccountMenu() {
     </>
   );
 }
+
+export default AccountMenu;

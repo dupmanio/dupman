@@ -1,13 +1,7 @@
-import React, { ReactNode } from "react";
-import MenuIcon from "@mui/icons-material/Menu";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import Copyright from "@/components/Copyright";
+import React, { ReactNode, useState } from "react";
+import Image from "next/image";
+
 import {
-  Drawer,
-  CssBaseline,
-  AppBarProps,
-  AppBar,
   Box,
   Toolbar,
   Typography,
@@ -16,87 +10,41 @@ import {
   Badge,
   Container,
   Grid,
-  styled,
   Link,
   Tooltip,
 } from "@mui/material";
-import Image from "next/image";
-import AccountMenu from "@/components/AccountMenu";
-import Navbar from "@/components/Navbar";
 
-interface LayoutProps {
+import MenuIcon from "@mui/icons-material/Menu";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+
+import AccountMenu from "@/layouts/main/AccountMenu";
+import Navbar from "@/layouts/main/Navbar";
+import Copyright from "@/layouts/main/Copyright";
+import StyledAppBar from "@/layouts/main/StyledAppBar";
+import StyledDrawer from "@/layouts/main/StyledDrawer";
+
+interface MainLayoutProps {
   children: ReactNode;
 }
 
-interface MuiAppBarProps extends AppBarProps {
-  open?: boolean;
-}
-
-const drawerWidth: number = 240;
-
-const MuiAppBar = styled(AppBar, {
-  shouldForwardProp: (prop) => prop !== "open",
-})<MuiAppBarProps>(({ theme, open }) => ({
-  zIndex: theme.zIndex.drawer + 1,
-  transition: theme.transitions.create(["width", "margin"], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  ...(open && {
-    marginLeft: drawerWidth,
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(["width", "margin"], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  }),
-}));
-
-const MuiDrawer = styled(Drawer, {
-  shouldForwardProp: (prop) => prop !== "open",
-})(({ theme, open }) => ({
-  "& .MuiDrawer-paper": {
-    position: "relative",
-    whiteSpace: "nowrap",
-    width: drawerWidth,
-    transition: theme.transitions.create("width", {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    boxSizing: "border-box",
-    ...(!open && {
-      overflowX: "hidden",
-      transition: theme.transitions.create("width", {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      width: theme.spacing(7),
-      [theme.breakpoints.up("sm")]: {
-        width: theme.spacing(9),
-      },
-    }),
-  },
-}));
-
-export default function Layout({ children }: LayoutProps) {
-  const [open, setOpen] = React.useState(true);
-
-  const toggleDrawer = () => {
-    setOpen(!open);
-  };
+function MainLayout({ children }: MainLayoutProps) {
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(true);
 
   return (
     <>
       <Box sx={{ display: "flex" }}>
-        <CssBaseline />
-        <MuiAppBar position="absolute" open={open}>
+        <StyledAppBar position="absolute" drawerWidth={240} open={drawerOpen}>
           <Toolbar sx={{ pr: "24px" }}>
             <IconButton
               edge="start"
               color="inherit"
               aria-label="open drawer"
-              onClick={toggleDrawer}
-              sx={{ marginRight: "36px", ...(open && { display: "none" }) }}
+              onClick={() => setDrawerOpen(!drawerOpen)}
+              sx={{
+                marginRight: "36px",
+                ...(drawerOpen && { display: "none" }),
+              }}
             >
               <MenuIcon />
             </IconButton>
@@ -120,8 +68,8 @@ export default function Layout({ children }: LayoutProps) {
 
             <AccountMenu />
           </Toolbar>
-        </MuiAppBar>
-        <MuiDrawer variant="permanent" open={open}>
+        </StyledAppBar>
+        <StyledDrawer variant="permanent" width={240} open={drawerOpen}>
           <Toolbar
             sx={{
               display: "flex",
@@ -134,18 +82,19 @@ export default function Layout({ children }: LayoutProps) {
               <Image
                 src="/assets/dupman.png"
                 alt="dupman"
+                priority={true}
                 width={160}
                 height={40}
               />
             </Link>
 
-            <IconButton onClick={toggleDrawer}>
+            <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
               <ChevronLeftIcon />
             </IconButton>
           </Toolbar>
           <Divider />
           <Navbar />
-        </MuiDrawer>
+        </StyledDrawer>
         <Box
           component="main"
           sx={{
@@ -166,3 +115,5 @@ export default function Layout({ children }: LayoutProps) {
     </>
   );
 }
+
+export default MainLayout;

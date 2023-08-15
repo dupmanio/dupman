@@ -67,7 +67,6 @@ function Websites() {
       field: "url",
       headerName: "URL",
       width: 200,
-      resizable: true,
     },
     {
       field: "createdAt",
