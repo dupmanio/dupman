@@ -11,3 +11,5 @@ type HTTPResponse<T> = {
   error?: unknown;
   pagination?: Pagination | null;
 };
+
+export type { Pagination, HTTPResponse };

@@ -1,6 +1,8 @@
 import { DupmanAPIClient } from "@/lib/http/client/dupman-api";
 import { AxiosInstance } from "axios";
 import { Website } from "@/types/entities/website";
+import { WebsiteOnCreate } from "@/types/dtos/website";
+import { HTTPResponse } from "@/types/dtos/http";
 
 interface IWebsiteRepository {
   getAll: (page: number, limit: number) => Promise<HTTPResponse<Website[]>>;
