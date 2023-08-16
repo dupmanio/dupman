@@ -21,6 +21,7 @@ function produceLogoutInterceptor(
       try {
         await DupmanAPIClient.reloadAuth();
       } catch {
+        console.error("Unable to perform auth reload.");
         await cb();
       }
     }

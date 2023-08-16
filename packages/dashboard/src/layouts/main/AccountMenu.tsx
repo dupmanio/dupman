@@ -1,7 +1,5 @@
 import { useState, MouseEvent } from "react";
-import getNextConfig from "next/config";
 import { signOut, useSession } from "next-auth/react";
-import axios from "axios";
 
 import {
   Avatar,
@@ -19,23 +17,9 @@ import { Logout } from "@mui/icons-material";
 function AccountMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  const { publicRuntimeConfig } = getNextConfig();
   const { data: session } = useSession();
 
   const open = Boolean(anchorEl);
-
-  const logOut = async () => {
-    try {
-      await axios.put("/api/auth/logout");
-      await signOut();
-
-      return new Promise(() => {
-        window.location.assign(publicRuntimeConfig.DUPMAN_LANDING);
-      });
-    } catch (error) {
-      throw error;
-    }
-  };
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -108,7 +92,7 @@ function AccountMenu() {
 
         <Divider />
 
-        <MenuItem onClick={logOut}>
+        <MenuItem onClick={() => signOut({ callbackUrl: "/logout" })}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
