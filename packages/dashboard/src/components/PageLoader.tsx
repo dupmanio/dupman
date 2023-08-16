@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import NProgress from "nprogress";
+
 import { Box, CircularProgress } from "@mui/material";
 import { SxProps } from "@mui/system/styleFunctionSx";
 import { Theme } from "@mui/system/createTheme";

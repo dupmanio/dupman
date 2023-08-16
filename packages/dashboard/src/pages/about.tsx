@@ -1,7 +1,7 @@
-import { PageAccess } from "@/config/page-accesss";
-import { Grid, Paper } from "@mui/material";
 import * as React from "react";
-import Typography from "@mui/material/Typography";
+import { Grid, Paper, Typography } from "@mui/material";
+
+import { PageAccess } from "@/config/page-accesss";
 
 function About() {
   return (

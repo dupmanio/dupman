@@ -1,14 +1,15 @@
-import { SessionProvider } from "next-auth/react";
-
 import * as React from "react";
-import Head from "next/head";
-import { ThemeProvider, CssBaseline } from "@mui/material";
-import theme from "@/themes/main";
 import type { AppProps } from "next/app";
+import Head from "next/head";
 import type { Session } from "next-auth";
+import { SessionProvider } from "next-auth/react";
+import { SnackbarProvider } from "notistack";
+
+import { ThemeProvider, CssBaseline } from "@mui/material";
+
 import AccessChecker from "@/components/guards/AccessChecker";
 import { PageAccess } from "@/config/page-accesss";
-import { SnackbarProvider } from "notistack";
+import theme from "@/themes/main";
 
 export interface MyAppProps extends AppProps {
   session: Session;

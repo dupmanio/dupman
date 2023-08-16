@@ -1,6 +1,7 @@
-import { signIn, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
+import { signIn, useSession } from "next-auth/react";
+
 import { PageAccess } from "@/config/page-accesss";
 
 function Login() {

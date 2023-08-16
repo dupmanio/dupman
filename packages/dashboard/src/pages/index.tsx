@@ -1,8 +1,9 @@
 import * as React from "react";
-import { Grid, Paper } from "@mui/material";
+
+import { Grid, Paper, Typography } from "@mui/material";
+
 import Websites from "@/components/Websites";
 import { PageAccess } from "@/config/page-accesss";
-import Typography from "@mui/material/Typography";
 
 function Home() {
   return (

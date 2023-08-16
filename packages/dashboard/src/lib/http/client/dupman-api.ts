@@ -1,7 +1,8 @@
 import axios from "axios";
 import getNextConfig from "next/config";
-import { produceAccessTokenInterceptor } from "@/lib/http/client/interceptors";
 import { getSession } from "next-auth/react";
+
+import { produceAccessTokenInterceptor } from "@/lib/http/client/interceptors";
 import { CustomAxiosInstance } from "@/types/declarations/axios";
 
 const { publicRuntimeConfig } = getNextConfig();

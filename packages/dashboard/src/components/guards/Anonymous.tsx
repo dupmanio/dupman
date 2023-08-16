@@ -1,6 +1,7 @@
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/dist/client/router";
 import { ReactNode, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+
 import PageLoader from "@/components/PageLoader";
 
 type IProps = {

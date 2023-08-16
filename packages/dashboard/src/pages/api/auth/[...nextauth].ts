@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
 import { type NextAuthOptions } from "next-auth";
-import axios from "axios";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { JWT } from "next-auth/jwt";
+import axios from "axios";
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {

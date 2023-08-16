@@ -1,13 +1,14 @@
-import { signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/dist/client/router";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import PageLoader from "@/components/PageLoader";
-import Layout from "@/layouts/main";
-import { DupmanAPIClient } from "@/lib/http/client/dupman-api";
+import { useRouter } from "next/router";
+import { signOut, useSession } from "next-auth/react";
+
 import {
   produceAccessTokenInterceptor,
   produceLogoutInterceptor,
 } from "@/lib/http/client/interceptors";
+import { DupmanAPIClient } from "@/lib/http/client/dupman-api";
+import PageLoader from "@/components/PageLoader";
+import Layout from "@/layouts/main";
 
 type IProps = {
   children: ReactNode;
