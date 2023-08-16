@@ -1,9 +1,8 @@
 import * as React from "react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { useSnackbar } from "notistack";
-import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
+import { useFormik } from "formik";
 
 import { LoadingButton } from "@mui/lab";
 import {
@@ -24,49 +23,48 @@ export interface WebsiteFormDialogProps {
 }
 
 function WebsiteFormDialog({ open, onClose }: WebsiteFormDialogProps) {
-  const [url, setUrl] = useState<string>("");
-  const [token, setToken] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-
   const validationSchema = Yup.object().shape({
     url: Yup.string().required().url(),
     token: Yup.string().required(),
   });
 
   const { enqueueSnackbar } = useSnackbar();
-  const { register, handleSubmit, formState } = useForm({
-    resolver: yupResolver(validationSchema),
+  const formik = useFormik({
+    initialValues: {
+      url: "",
+      token: "",
+    },
+    validationSchema: validationSchema,
+    onSubmit: ({ url, token }, { setSubmitting }) => {
+      WebsiteRepository.create({ url, token })
+        .then(() => {
+          enqueueSnackbar("Website has been created successfully!", {
+            variant: "success",
+          });
+
+          onClose();
+        })
+        .catch((reason) => {
+          enqueueSnackbar(
+            `Unable to create website: ${reason.response.data.error}`,
+            {
+              variant: "error",
+            },
+          );
+        })
+        .finally(() => {
+          setSubmitting(false);
+        });
+    },
   });
 
-  const { errors } = formState;
-
-  const submitWebsite = async () => {
-    setLoading(true);
-
-    WebsiteRepository.create({ url, token })
-      .then(() => {
-        setLoading(false);
-
-        enqueueSnackbar("Website has been created successfully!", {
-          variant: "success",
-        });
-
-        onClose();
-      })
-      .catch((reason) => {
-        setLoading(false);
-
-        enqueueSnackbar(
-          `Unable to create website: ${reason.response.data.error}`,
-          {
-            variant: "error",
-          },
-        );
-      });
+  const handleClose = () => {
+    formik.resetForm();
+    onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Add new Website</DialogTitle>
       <DialogContent>
         <DialogContentText>Add new Website for monitoring.</DialogContentText>
@@ -79,11 +77,11 @@ function WebsiteFormDialog({ open, onClose }: WebsiteFormDialogProps) {
           type="url"
           fullWidth
           variant="standard"
-          value={url}
-          onInput={(e) => setUrl(e.target.value)}
-          error={!!errors.url}
-          helperText={errors.url?.message}
-          {...register("url")}
+          value={formik.values.url}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.url && Boolean(formik.errors.url)}
+          helperText={formik.touched.url && formik.errors.url}
         />
         <TextField
           required
@@ -93,18 +91,21 @@ function WebsiteFormDialog({ open, onClose }: WebsiteFormDialogProps) {
           type="password"
           fullWidth
           variant="standard"
-          value={token}
-          onInput={(e) => setToken(e.target.value)}
-          error={!!errors.token}
-          helperText={errors.token?.message}
-          {...register("token")}
+          value={formik.values.token}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.token && Boolean(formik.errors.token)}
+          helperText={formik.touched.url && formik.errors.token}
         />
       </DialogContent>
       <DialogActions>
-        <LoadingButton onClick={handleSubmit(submitWebsite)} loading={loading}>
+        <LoadingButton
+          onClick={formik.submitForm}
+          loading={formik.isSubmitting}
+        >
           Add
         </LoadingButton>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleClose}>Cancel</Button>
       </DialogActions>
     </Dialog>
   );
