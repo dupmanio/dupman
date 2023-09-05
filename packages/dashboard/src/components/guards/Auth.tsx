@@ -8,7 +8,6 @@ import {
   produceLogoutInterceptor,
 } from "@/lib/http/client/interceptors";
 import { DupmanAPIClient } from "@/lib/http/client/dupman-api";
-import Layout from "@/layouts/main";
 import PageLoader from "@/components/PageLoader";
 import { Route } from "@/config/routes";
 
@@ -71,7 +70,7 @@ function AuthGuard({ children }: AuthGuardProps) {
     return <PageLoader sx={{ width: "100%", height: "100vh" }} />;
   }
 
-  return <Layout>{children}</Layout>;
+  return children;
 }
 
 export default AuthGuard;
