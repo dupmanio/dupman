@@ -7,8 +7,7 @@ import { SnackbarProvider } from "notistack";
 
 import { ThemeProvider, CssBaseline } from "@mui/material";
 
-import AccessChecker from "@/components/guards/AccessChecker";
-import { PageAccess } from "@/config/page-accesss";
+import AuthGuard from "@/components/guards/Auth";
 import theme from "@/themes/main";
 
 export interface MyAppProps extends AppProps {
@@ -18,12 +17,10 @@ export interface MyAppProps extends AppProps {
 export default function MyApp({
   Component,
   pageProps: { session, ...pageProps },
-}: MyAppProps & {
-  Component: { Access: PageAccess };
-}) {
+}: MyAppProps) {
   return (
     <SessionProvider session={session}>
-      <AccessChecker access={Component.Access}>
+      <AuthGuard>
         <Head>
           <title>dupman</title>
           <meta name="viewport" content="initial-scale=1, width=device-width" />
@@ -40,7 +37,7 @@ export default function MyApp({
             <Component {...pageProps} />
           </SnackbarProvider>
         </ThemeProvider>
-      </AccessChecker>
+      </AuthGuard>
     </SessionProvider>
   );
 }

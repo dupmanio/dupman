@@ -14,6 +14,8 @@ import {
 
 import { Logout } from "@mui/icons-material";
 
+import { Route } from "@/config/routes";
+
 function AccountMenu() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -92,7 +94,7 @@ function AccountMenu() {
 
         <Divider />
 
-        <MenuItem onClick={() => signOut({ callbackUrl: "/logout" })}>
+        <MenuItem onClick={() => signOut({ callbackUrl: Route.LOGOUT })}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>

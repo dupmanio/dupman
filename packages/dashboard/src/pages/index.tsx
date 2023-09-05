@@ -3,7 +3,6 @@ import * as React from "react";
 import { Grid, Paper, Typography } from "@mui/material";
 
 import Websites from "@/components/Websites";
-import { PageAccess } from "@/config/page-accesss";
 
 function Home() {
   return (
@@ -18,7 +17,5 @@ function Home() {
     </Grid>
   );
 }
-
-Home.Access = PageAccess.SECURED;
 
 export default Home;

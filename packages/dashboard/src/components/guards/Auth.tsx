@@ -1,74 +1,77 @@
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { signOut, useSession } from "next-auth/react";
+import { AxiosRequestConfig } from "axios";
 
 import {
   produceAccessTokenInterceptor,
   produceLogoutInterceptor,
 } from "@/lib/http/client/interceptors";
 import { DupmanAPIClient } from "@/lib/http/client/dupman-api";
-import PageLoader from "@/components/PageLoader";
 import Layout from "@/layouts/main";
+import PageLoader from "@/components/PageLoader";
+import { Route } from "@/config/routes";
 
-type IProps = {
+interface AuthGuardProps {
   children: ReactNode;
-};
+}
 
-function AuthGuard({ children }: IProps) {
-  const [interceptor, setInterceptor] = useState(false);
-  const axiosClientRef = useRef<number>(0);
-  const axiosClientReqRef = useRef<number>(0);
+function AuthGuard({ children }: AuthGuardProps) {
+  const [interceptor, setInterceptor] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const dupmanAPIRequestInterceptorRef = useRef<number>(0);
+  const dupmanAPIResponseInterceptorRef = useRef<number>(0);
 
   const { data, status } = useSession();
   const router = useRouter();
   const logOutCallback = useCallback(async () => {
     await signOut({ redirect: false });
-    void router.push("/login");
+    void router.push(Route.LOGIN);
   }, [router]);
-  const hasAccess = !!data?.user;
-
-  useEffect(() => {
-    if (status === "loading") {
-      return;
-    }
-
-    if (!hasAccess) {
-      void router.push("/login");
-    }
-  }, [status, hasAccess, router]);
 
   useEffect(() => {
     if (status === "authenticated") {
-      axiosClientReqRef.current = DupmanAPIClient.interceptors.request.use(
-        produceAccessTokenInterceptor(data?.accessToken),
-      );
+      dupmanAPIRequestInterceptorRef.current =
+        DupmanAPIClient.interceptors.request.use(
+          produceAccessTokenInterceptor(data?.accessToken),
+        );
 
       setInterceptor(true);
+      setLoading(false);
+    }
+
+    if (status === "unauthenticated") {
+      setLoading(false);
     }
 
     return () => {
-      DupmanAPIClient.interceptors.request.eject(axiosClientReqRef.current);
+      DupmanAPIClient.interceptors.request.eject(
+        dupmanAPIRequestInterceptorRef.current,
+      );
     };
   }, [data, status]);
 
   useEffect(() => {
     if (interceptor) {
-      axiosClientRef.current = DupmanAPIClient.interceptors.response.use(
-        (req) => req,
-        produceLogoutInterceptor(logOutCallback),
-      );
+      dupmanAPIResponseInterceptorRef.current =
+        DupmanAPIClient.interceptors.response.use(
+          (req: AxiosRequestConfig) => req,
+          produceLogoutInterceptor(logOutCallback),
+        );
     }
 
     return () => {
-      DupmanAPIClient.interceptors.response.eject(axiosClientRef.current);
+      DupmanAPIClient.interceptors.response.eject(
+        dupmanAPIResponseInterceptorRef.current,
+      );
     };
   }, [interceptor, logOutCallback, router]);
 
-  if (hasAccess && interceptor) {
-    return <Layout>{children}</Layout>;
+  if (loading) {
+    return <PageLoader sx={{ width: "100%", height: "100vh" }} />;
   }
 
-  return <PageLoader sx={{ width: "100%", height: "100vh" }} />;
+  return <Layout>{children}</Layout>;
 }
 
 export default AuthGuard;

@@ -2,8 +2,6 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { signIn, useSession } from "next-auth/react";
 
-import { PageAccess } from "@/config/page-accesss";
-
 function Login() {
   const router = useRouter();
   const { status } = useSession();
@@ -22,7 +20,5 @@ function Login() {
 
   return <></>;
 }
-
-Login.Access = PageAccess.ANONYMOUS;
 
 export default Login;

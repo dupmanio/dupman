@@ -4,6 +4,8 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 import { JWT } from "next-auth/jwt";
 import axios from "axios";
 
+import { Route } from "@/config/routes";
+
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
     const { data: newToken, status } = await axios.post(
@@ -53,7 +55,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   pages: {
-    signIn: "/login",
+    signIn: Route.LOGIN,
     error: "/error",
   },
   session: {
@@ -95,7 +97,7 @@ export const authOptions: NextAuthOptions = {
     },
     redirect: async ({ url, baseUrl }) => {
       // Redirect to Keycloak logout page.
-      if (url.startsWith("/logout")) {
+      if (url.startsWith(Route.LOGOUT)) {
         const url = new URL(
           `${process.env.OIDC_ISSUER}/protocol/openid-connect/logout`,
         );
