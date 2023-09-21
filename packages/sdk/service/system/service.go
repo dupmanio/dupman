@@ -68,7 +68,7 @@ func (svc *System) GetWebsites(
 	return response.Data, response.Pagination, nil
 }
 
-// CreateWebsiteUpdates creates website update entity.
+// UpdateWebsiteStatus updates website status and creates update entities.
 //
 // Example:
 //
@@ -76,20 +76,28 @@ func (svc *System) GetWebsites(
 //	svc := system.New(sess)
 //
 //	// Create updates.
-//	updates, err := svc.CreateWebsiteUpdates(websiteID, &dto.Updates{...})
-func (svc *System) CreateWebsiteUpdates(websiteID uuid.UUID, payload *dto.Updates) (*dto.UpdatesOnResponse, error) {
-	var response *dto.HTTPResponse[*dto.UpdatesOnResponse]
+//	status, err := svc.UpdateWebsiteStatus(websiteID, &dto.Status{...}, &dto.Updates{...})
+func (svc *System) UpdateWebsiteStatus(websiteID uuid.UUID, status *dto.Status, updates *dto.Updates) (*dto.WebsiteStatusUpdateResponse, error) {
+	var response *dto.HTTPResponse[*dto.WebsiteStatusUpdateResponse]
+
+	var payload = dto.WebsiteStatusUpdatePayload{
+		Status: *status,
+	}
+
+	if status.State == "NEEDS_UPDATE" {
+		payload.Updates = *updates
+	}
 
 	resp, err := svc.session.Client.R().
 		SetResult(&response).
 		SetBody(payload).
 		SetPathParam("websiteId", websiteID.String()).
-		Put("/system/websites/{websiteId}/updates")
+		Post("/system/websites/{websiteId}/status")
 	if err != nil {
 		return nil, fmt.Errorf("unable to create Website Updates: %w", err)
 	}
 
-	if resp.StatusCode() != http.StatusCreated {
+	if resp.StatusCode() != http.StatusOK {
 		return nil, errors.NewHTTPError(resp)
 	}
 

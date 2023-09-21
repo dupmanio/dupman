@@ -5,13 +5,13 @@ import (
 	"time"
 )
 
-type StatusOnCreate struct {
+type Status struct {
 	State string `json:"state" binding:"required"`
 	Info  string `json:"info"`
 }
 
 type StatusOnSystemResponse struct {
-	StatusOnCreate
+	Status
 
 	ID        uuid.UUID `json:"id" binding:"required"`
 	CreatedAt time.Time `json:"createdAt" binding:"required"`
