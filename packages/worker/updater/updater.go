@@ -82,7 +82,7 @@ func (upd *Updater) Process() error {
 			go func(website dto.WebsiteOnSystemResponse) {
 				defer wg.Done()
 
-				if err = upd.processWebsite(website); err != nil {
+				if status, err := upd.processWebsite(website); err != nil {
 					upd.logger.Error(
 						"Unable to process website",
 						zap.Error(err),
@@ -94,6 +94,9 @@ func (upd *Updater) Process() error {
 						"Website has been processed successfully",
 						zap.String("websiteID", website.ID.String()),
 						zap.String("websiteURL", website.URL),
+						zap.String("statusID", status.ID.String()),
+						zap.String("statusInfo", status.Info),
+						zap.String("statusState", status.State),
 					)
 				}
 			}(website)
@@ -104,38 +107,64 @@ func (upd *Updater) Process() error {
 	return nil
 }
 
-func (upd *Updater) processWebsite(website dto.WebsiteOnSystemResponse) error {
+func (upd *Updater) processWebsite(website dto.WebsiteOnSystemResponse) (*dto.StatusOnSystemResponse, error) {
 	upd.logger.Info(
 		"Started processing Website",
 		zap.String("websiteID", website.ID.String()),
 		zap.String("websiteURL", website.URL),
 	)
 
+	status := dto.Status{
+		State: "UP_TO_DATED",
+	}
+
 	token, err := upd.encryptor.Decrypt(website.Token)
 	if err != nil {
-		return fmt.Errorf("unable to decrypt Website token: %w", err)
+		upd.logger.Error(
+			"unable to decrypt Website token",
+			zap.String("websiteID", website.ID.String()),
+			zap.String("websiteURL", website.URL),
+			zap.Error(err),
+		)
+
+		status.State = "SCANNING_FAILED"
+		status.Info = err.Error()
 	}
 
 	updates, err := upd.fetcher.Fetch(website.URL, token)
 	if err != nil {
-		return fmt.Errorf("unable to fetch Website Updates: %w", err)
+		upd.logger.Error(
+			"unable to fetch Website Updates",
+			zap.String("websiteID", website.ID.String()),
+			zap.String("websiteURL", website.URL),
+			zap.Error(err),
+		)
+
+		status.State = "SCANNING_FAILED"
+		status.Info = err.Error()
 	}
 
-	if err = upd.createWebsiteUpdates(website.ID, updates); err != nil {
-		return fmt.Errorf("unable to create Website Updates: %w", err)
+	if updates != nil && len(updates) != 0 {
+		status.State = "NEEDS_UPDATE"
 	}
 
-	return nil
+	websiteStatus, err := upd.updateWebsiteStatus(website.ID, status, updates)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create Website Updates: %w", err)
+	}
+
+	return websiteStatus, nil
 }
 
-func (upd *Updater) createWebsiteUpdates(websiteID uuid.UUID, updatesRaw []model.Update) error {
+func (upd *Updater) updateWebsiteStatus(websiteID uuid.UUID, status dto.Status, updatesRaw []model.Update) (*dto.StatusOnSystemResponse, error) {
 	var updates dto.Updates
 
 	_ = copier.Copy(&updates, &updatesRaw)
 
-	if _, err := upd.systemService.CreateWebsiteUpdates(websiteID, &updates); err != nil {
-		return fmt.Errorf("unable to create Website Updates: %w", err)
+	updateResponse, err := upd.systemService.UpdateWebsiteStatus(websiteID, &status, &updates)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create Website Updates: %w", err)
 	}
 
-	return nil
+	return &updateResponse.Status, nil
 }

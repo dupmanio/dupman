@@ -39,9 +39,15 @@ func (fetcher *Fetcher) Fetch(url, token string) ([]model.Update, error) {
 		return nil, fmt.Errorf("unable to fetch Website Updates: %w", err)
 	}
 
-	if resp.StatusCode() != http.StatusOK {
-		return nil, errors.ErrUnableToFetchUpdates
+	if resp.StatusCode() == http.StatusOK {
+		return response.Updates, nil
 	}
 
-	return response.Updates, nil
+	if resp.StatusCode() == http.StatusNotFound {
+		return nil, errors.ErrNoDupmanEndpoint
+	} else if resp.StatusCode() == http.StatusUnauthorized || resp.StatusCode() == http.StatusForbidden {
+		return nil, errors.ErrDupmanEndpointAccessDenied
+	}
+
+	return nil, errors.ErrUnableToFetchUpdates
 }
