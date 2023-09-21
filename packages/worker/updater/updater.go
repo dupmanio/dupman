@@ -144,7 +144,7 @@ func (upd *Updater) processWebsite(website dto.WebsiteOnSystemResponse) (*dto.St
 		status.Info = err.Error()
 	}
 
-	if updates != nil && len(updates) != 0 {
+	if len(updates) != 0 {
 		status.State = "NEEDS_UPDATE"
 	}
 
@@ -156,7 +156,10 @@ func (upd *Updater) processWebsite(website dto.WebsiteOnSystemResponse) (*dto.St
 	return websiteStatus, nil
 }
 
-func (upd *Updater) updateWebsiteStatus(websiteID uuid.UUID, status dto.Status, updatesRaw []model.Update) (*dto.StatusOnSystemResponse, error) {
+func (upd *Updater) updateWebsiteStatus(
+	websiteID uuid.UUID, status dto.Status,
+	updatesRaw []model.Update,
+) (*dto.StatusOnSystemResponse, error) {
 	var updates dto.Updates
 
 	_ = copier.Copy(&updates, &updatesRaw)

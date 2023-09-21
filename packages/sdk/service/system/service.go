@@ -77,12 +77,17 @@ func (svc *System) GetWebsites(
 //
 //	// Create updates.
 //	status, err := svc.UpdateWebsiteStatus(websiteID, &dto.Status{...}, &dto.Updates{...})
-func (svc *System) UpdateWebsiteStatus(websiteID uuid.UUID, status *dto.Status, updates *dto.Updates) (*dto.WebsiteStatusUpdateResponse, error) {
-	var response *dto.HTTPResponse[*dto.WebsiteStatusUpdateResponse]
-
-	var payload = dto.WebsiteStatusUpdatePayload{
-		Status: *status,
-	}
+func (svc *System) UpdateWebsiteStatus(
+	websiteID uuid.UUID,
+	status *dto.Status,
+	updates *dto.Updates,
+) (*dto.WebsiteStatusUpdateResponse, error) {
+	var (
+		response *dto.HTTPResponse[*dto.WebsiteStatusUpdateResponse]
+		payload  = dto.WebsiteStatusUpdatePayload{
+			Status: *status,
+		}
+	)
 
 	if status.State == "NEEDS_UPDATE" {
 		payload.Updates = *updates

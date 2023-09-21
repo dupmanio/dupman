@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+
 	"github.com/dupmanio/dupman/packages/api/database"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"go.uber.org/zap"
