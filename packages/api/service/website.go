@@ -17,6 +17,7 @@ type WebsiteService struct {
 	userSvc     *UserService
 	userRepo    *repository.UserRepository
 	updateRepo  *repository.UpdateRepository
+	statusRepo  *repository.StatusRepository
 }
 
 func NewWebsiteService(
@@ -24,12 +25,14 @@ func NewWebsiteService(
 	userSvc *UserService,
 	userRepo *repository.UserRepository,
 	updateRepo *repository.UpdateRepository,
+	statusRepo *repository.StatusRepository,
 ) *WebsiteService {
 	return &WebsiteService{
 		websiteRepo: websiteRepo,
 		userSvc:     userSvc,
 		userRepo:    userRepo,
 		updateRepo:  updateRepo,
+		statusRepo:  statusRepo,
 	}
 }
 
@@ -104,4 +107,28 @@ func (svc *WebsiteService) CreateUpdates(websiteID uuid.UUID, updates []model.Up
 	}
 
 	return updates, nil
+}
+
+func (svc *WebsiteService) UpdateStatus(websiteID uuid.UUID, status *model.Status) (*model.Status, error) {
+	if website := svc.websiteRepo.FindByID(websiteID.String()); website == nil {
+		return nil, errors.ErrWebsiteNotFound
+	}
+
+	if statusEntity := svc.statusRepo.FindByWebsiteID(websiteID.String()); statusEntity != nil {
+		statusEntity.State = status.State
+		statusEntity.Info = status.Info
+
+		if err := svc.statusRepo.Update(statusEntity); err != nil {
+			return nil, fmt.Errorf("unable to update website status: %w", err)
+		}
+
+		return statusEntity, nil
+	}
+
+	status.WebsiteID = websiteID
+	if err := svc.statusRepo.Create(status); err != nil {
+		return nil, fmt.Errorf("unable to create website status: %w", err)
+	}
+
+	return status, nil
 }

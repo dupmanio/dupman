@@ -42,10 +42,10 @@ func (route *SystemRoute) Setup() {
 			route.authMiddleware.RequiresScope("system", "system:get_websites"),
 			route.controller.GetWebsites,
 		)
-		group.PUT(
-			"/websites/:id/updates",
-			route.authMiddleware.RequiresScope("system", "system:put_website_updates"),
-			route.controller.PutWebsiteUpdates,
+		group.POST(
+			"/websites/:id/status",
+			route.authMiddleware.RequiresScope("system", "system:update_website_status"),
+			route.controller.UpdateWebsiteStatus,
 		)
 	}
 }

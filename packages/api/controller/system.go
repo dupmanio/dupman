@@ -52,12 +52,13 @@ func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
 	ctrl.httpSvc.HTTPPaginatedResponse(ctx, http.StatusOK, response, pager)
 }
 
-func (ctrl *SystemController) PutWebsiteUpdates(ctx *gin.Context) {
+func (ctrl *SystemController) UpdateWebsiteStatus(ctx *gin.Context) {
 	var (
-		entities []model.Update
+		statusEntity   model.Status
+		updateEntities []model.Update
 
-		payload  dto.Updates
-		response dto.UpdatesOnResponse
+		payload  dto.WebsiteStatusUpdatePayload
+		response dto.WebsiteStatusUpdateResponse
 	)
 
 	websiteID, err := uuid.Parse(ctx.Param("id"))
@@ -73,21 +74,33 @@ func (ctrl *SystemController) PutWebsiteUpdates(ctx *gin.Context) {
 		return
 	}
 
-	_ = copier.Copy(&entities, &payload)
+	_ = copier.Copy(&statusEntity, &payload.Status)
+	_ = copier.Copy(&updateEntities, &payload.Updates)
 
-	updates, err := ctrl.websiteSvc.CreateUpdates(websiteID, entities)
-	if err != nil {
-		statusCode := http.StatusInternalServerError
-		if errors.Is(err, domainErrors.ErrWebsiteNotFound) {
-			statusCode = http.StatusNotFound
+	if statusEntity.State == "NEEDS_UPDATE" && updateEntities != nil && len(updateEntities) != 0 {
+		updates, err := ctrl.websiteSvc.CreateUpdates(websiteID, updateEntities)
+		if err != nil {
+			statusCode := http.StatusInternalServerError
+			if errors.Is(err, domainErrors.ErrWebsiteNotFound) {
+				statusCode = http.StatusNotFound
+			}
+
+			ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+
+			return
 		}
 
-		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+		_ = copier.Copy(&response.Updates, &updates)
+	}
+
+	status, err := ctrl.websiteSvc.UpdateStatus(websiteID, &statusEntity)
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 
 		return
 	}
 
-	_ = copier.Copy(&response, &updates)
+	_ = copier.Copy(&response.Status, &status)
 
-	ctrl.httpSvc.HTTPResponse(ctx, http.StatusCreated, response)
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
 }

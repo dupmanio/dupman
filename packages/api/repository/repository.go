@@ -8,6 +8,7 @@ import (
 func Create() fx.Option {
 	return fx.Options(
 		fx.Provide(NewKeyPairRepository),
+		fx.Provide(NewStatusRepository),
 		fx.Provide(NewUpdateRepository),
 		fx.Provide(NewUserRepository),
 		fx.Provide(NewWebsiteRepository),
@@ -15,6 +16,7 @@ func Create() fx.Option {
 			func(
 				logger *zap.Logger,
 				keyPairRepo *KeyPairRepository,
+				statusRepo *StatusRepository,
 				updateRepo *UpdateRepository,
 				userRepo *UserRepository,
 				websiteRepo *WebsiteRepository,
@@ -23,6 +25,7 @@ func Create() fx.Option {
 
 				keyPairRepo.Setup()
 				updateRepo.Setup()
+				statusRepo.Setup()
 				userRepo.Setup()
 				websiteRepo.Setup()
 			},

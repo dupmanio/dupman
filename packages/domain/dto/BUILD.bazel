@@ -4,6 +4,8 @@ go_library(
     name = "dto",
     srcs = [
         "http.go",
+        "status.go",
+        "system.go",
         "update.go",
         "user.go",
         "website.go",

@@ -49,7 +49,7 @@ func (svc *HTTPService) normalizeHTTPValidationError(err error) []string {
 		return svc.formatValidationErrors(validationErr)
 	}
 
-	return []string{err.Error()}
+	return []string{"invalid payload"}
 }
 
 func (svc *HTTPService) formatValidationErrors(validationErrors validator.ValidationErrors) []string {
