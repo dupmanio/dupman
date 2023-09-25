@@ -56,7 +56,9 @@ func (repo *WebsiteRepository) FindAll(pager *pagination.Pagination) ([]model.We
 func (repo *WebsiteRepository) FindByUserID(userID string, pager *pagination.Pagination) ([]model.Website, error) {
 	var websites []model.Website
 
-	tx := repo.db.Where("user_id", userID)
+	tx := repo.db.
+		Preload("Status").
+		Where("websites.user_id", userID)
 
 	return websites, tx.
 		Scopes(pagination.WithPagination(tx, &websites, pager)).

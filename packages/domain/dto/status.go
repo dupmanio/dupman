@@ -18,3 +18,9 @@ type StatusOnSystemResponse struct {
 	CreatedAt time.Time `json:"createdAt" binding:"required"`
 	UpdatedAt time.Time `json:"updatedAt" binding:"required"`
 }
+
+type StatusOnWebsitesResponse struct {
+	Status
+
+	UpdatedAt time.Time `json:"updatedAt" binding:"required"`
+}

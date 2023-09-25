@@ -12,4 +12,5 @@ type Website struct {
 	Token   sqltype.WebsiteToken
 	UserID  uuid.UUID
 	Updates []Update
+	Status  Status
 }

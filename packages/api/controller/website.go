@@ -28,7 +28,7 @@ func (ctrl *WebsiteController) Create(ctx *gin.Context) {
 		entity = &model.Website{}
 
 		payload  *dto.WebsiteOnCreate
-		response dto.WebsiteOnResponse
+		response dto.WebsiteOnCreateResponse
 	)
 
 	if err := ctx.ShouldBind(&payload); err != nil {

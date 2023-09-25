@@ -37,8 +37,8 @@ func New(sess *session.Session) *Website {
 //
 //	// Create new website.
 //	newWebsite, err := svc.Create(&dto.WebsiteOnCreate{...})
-func (svc *Website) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnResponse, error) {
-	var response *dto.HTTPResponse[*dto.WebsiteOnResponse]
+func (svc *Website) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnCreateResponse, error) {
+	var response *dto.HTTPResponse[*dto.WebsiteOnCreateResponse]
 
 	resp, err := svc.session.Client.R().
 		SetResult(&response).

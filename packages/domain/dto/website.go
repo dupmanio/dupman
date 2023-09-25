@@ -11,11 +11,16 @@ type WebsiteOnCreate struct {
 	Token string `json:"token" binding:"required"`
 }
 
-type WebsiteOnResponse struct {
+type WebsiteOnCreateResponse struct {
 	ID        uuid.UUID `json:"id" binding:"required"`
 	CreatedAt time.Time `json:"createdAt" binding:"required"`
 	UpdatedAt time.Time `json:"updatedAt" binding:"required"`
 	URL       string    `json:"url" binding:"required"`
+}
+
+type WebsiteOnResponse struct {
+	WebsiteOnCreateResponse
+	Status StatusOnWebsitesResponse `json:"status"`
 }
 
 type WebsitesOnResponse []WebsiteOnResponse
