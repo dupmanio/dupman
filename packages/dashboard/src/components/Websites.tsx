@@ -9,12 +9,14 @@ import {
   GridColDef,
   GridToolbarContainer,
   GridValueGetterParams,
+  GridRenderCellParams,
 } from "@mui/x-data-grid";
 
 import AddIcon from "@mui/icons-material/Add";
 
 import PageLoader from "@/components/PageLoader";
 import WebsiteFormDialog from "@/components/WebsiteFormDialog";
+import WebsiteStatusCell from "@/components/WebsiteStatusCell";
 import { WebsiteRepository } from "@/lib/repositories/website";
 
 function Websites() {
@@ -65,25 +67,24 @@ function Websites() {
   }
 
   const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 300, sortable: false },
     {
       field: "url",
       headerName: "URL",
-      width: 200,
+      width: 300,
     },
     {
-      field: "createdAt",
-      headerName: "Created At",
-      width: 160,
+      field: "lastScanDate",
+      headerName: "Last Scan Date",
+      width: 180,
       valueGetter: (params: GridValueGetterParams) =>
-        format(parseISO(params.row.createdAt), "dd/MM/yyyy HH:mm:ss"),
+        format(parseISO(params.row.status.updatedAt), "dd/MM/yyyy HH:mm:ss"),
     },
     {
-      field: "updatedAt",
-      headerName: "Updated At",
-      width: 160,
-      valueGetter: (params: GridValueGetterParams) =>
-        format(parseISO(params.row.updatedAt), "dd/MM/yyyy HH:mm:ss"),
+      field: "status",
+      headerName: "Status",
+      renderCell: (params: GridRenderCellParams) => (
+        <WebsiteStatusCell status={params.row.status} />
+      ),
     },
   ];
 
