@@ -6,12 +6,17 @@ import { WebsiteOnCreate } from "@/types/dtos/website";
 import { HTTPResponse } from "@/types/dtos/http";
 
 interface IWebsiteRepository {
+  getSingle: (id: string) => Promise<HTTPResponse<Website>>;
   getAll: (page: number, limit: number) => Promise<HTTPResponse<Website[]>>;
   create: (payload: WebsiteOnCreate) => Promise<HTTPResponse<Website>>;
 }
 
 function UseRepositoryFactory(http: AxiosInstance): IWebsiteRepository {
   return {
+    getSingle: async (id) => {
+      const response = await http.get(`/website/${id}`);
+      return response.data;
+    },
     create: async (payload: WebsiteOnCreate) => {
       const response = await http.post("/website/", payload, {
         headers: {

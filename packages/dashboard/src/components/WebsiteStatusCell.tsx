@@ -7,22 +7,15 @@ import {
   tooltipClasses,
   styled,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
-import { StatusState, StatusOnWebsitesResponse } from "@/types/dtos/status";
+import { StatusOnWebsitesResponse } from "@/types/dtos/status";
+import { useStatusSettings } from "@/lib/util/website-status";
 
 export interface WebsiteStatusCellProps {
   status: StatusOnWebsitesResponse;
 }
-
-type StatusSettings = {
-  [state in StatusState]: {
-    color: string;
-    tooltipText: string;
-  };
-};
 
 const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -37,33 +30,21 @@ const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
 }));
 
 function WebsiteStatusCell({ status }: WebsiteStatusCellProps) {
-  const theme = useTheme();
-
-  const statusSettings: StatusSettings = {
-    [StatusState.NeedsUpdate]: {
-      color: theme.palette.warning.main,
-      tooltipText: "Website Needs to be Updated",
-    },
-    [StatusState.UpToDated]: {
-      color: theme.palette.success.main,
-      tooltipText: "Website is Up To Date",
-    },
-    [StatusState.ScanningFailed]: {
-      color: theme.palette.error.main,
-      tooltipText: `Scanning Failed: ${status.info}`,
-    },
-  };
+  const settings = useStatusSettings(status);
 
   return (
     <HtmlTooltip
-      title={statusSettings[status.state].tooltipText ?? ""}
+      title={
+        settings.title +
+        (settings.additionalText ? `: ${settings.additionalText}` : "")
+      }
       leaveDelay={100}
     >
       <IconButton>
         <FiberManualRecordIcon
           fontSize="small"
           sx={{
-            color: statusSettings[status.state].color,
+            color: settings.colorCode,
           }}
         />
       </IconButton>

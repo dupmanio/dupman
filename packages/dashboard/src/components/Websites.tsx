@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { format, parseISO } from "date-fns";
+import { useRouter } from "next/router";
 import useSWR, { useSWRConfig } from "swr";
 
-import { Button } from "@mui/material";
+import { Button, Tooltip, IconButton, Box } from "@mui/material";
 import {
   DataGrid,
   GridColDef,
@@ -13,13 +13,19 @@ import {
 } from "@mui/x-data-grid";
 
 import AddIcon from "@mui/icons-material/Add";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import PageLoader from "@/components/PageLoader";
 import WebsiteFormDialog from "@/components/WebsiteFormDialog";
 import WebsiteStatusCell from "@/components/WebsiteStatusCell";
 import { WebsiteRepository } from "@/lib/repositories/website";
+import { formatISO } from "@/lib/util/time";
 
 function Websites() {
+  const router = useRouter();
+
   const [rowCount, setRowCount] = useState<number>(0);
   const [paginationModel, setPaginationModel] = useState({
     pageSize: 10,
@@ -77,13 +83,53 @@ function Websites() {
       headerName: "Last Scan Date",
       width: 180,
       valueGetter: (params: GridValueGetterParams) =>
-        format(parseISO(params.row.status.updatedAt), "dd/MM/yyyy HH:mm:ss"),
+        formatISO(params.row.status.updatedAt),
     },
     {
       field: "status",
       headerName: "Status",
+      width: 70,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
       renderCell: (params: GridRenderCellParams) => (
         <WebsiteStatusCell status={params.row.status} />
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 130,
+      sortable: false,
+      filterable: false,
+      hideable: false,
+      disableColumnMenu: true,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box>
+          <Tooltip title="View">
+            <IconButton
+              color="info"
+              onClick={() => {
+                router.push({
+                  pathname: "/website/[id]",
+                  query: { id: params.row.id },
+                });
+              }}
+            >
+              <VisibilityIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Edit">
+            <IconButton color="info">
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton color="error">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
       ),
     },
   ];
