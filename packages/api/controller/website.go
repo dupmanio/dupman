@@ -1,13 +1,17 @@
 package controller
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
+	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
 
@@ -66,4 +70,32 @@ func (ctrl *WebsiteController) GetAll(ctx *gin.Context) {
 	_ = copier.Copy(&response, &websites)
 
 	ctrl.httpSvc.HTTPPaginatedResponse(ctx, http.StatusOK, response, pager)
+}
+
+func (ctrl *WebsiteController) GetSingle(ctx *gin.Context) {
+	var response dto.WebsiteOnResponse
+
+	websiteID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid website ID: %s", err))
+
+		return
+	}
+
+	website, err := ctrl.websiteSvc.GetSingle(ctx, websiteID)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrWebsiteNotFound) || errors.Is(err, domainErrors.ErrAccessIsForbidden) {
+			statusCode = http.StatusNotFound
+			err = domainErrors.ErrWebsiteNotFound
+		}
+
+		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+
+		return
+	}
+
+	_ = copier.Copy(&response, &website)
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
 }

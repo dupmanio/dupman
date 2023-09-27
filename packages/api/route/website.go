@@ -47,5 +47,10 @@ func (route *WebsiteRoute) Setup() {
 			route.authMiddleware.RequiresScope("website", "website:create"),
 			route.controller.Create,
 		)
+		group.GET(
+			"/:id",
+			route.authMiddleware.RequiresScope("website", "website:read"),
+			route.controller.GetSingle,
+		)
 	}
 }

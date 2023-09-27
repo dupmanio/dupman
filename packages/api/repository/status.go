@@ -30,11 +30,9 @@ func (repo *StatusRepository) Setup() {
 	repo.db.Exec(`
 DO $$ 
 BEGIN 
-    IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_state') THEN
-        DROP TYPE status_state CASCADE;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'status_state') THEN
+		CREATE TYPE status_state AS ENUM('UP_TO_DATED', 'NEEDS_UPDATE', 'SCANNING_FAILED');
     END IF;
-
-	CREATE TYPE status_state AS ENUM('UP_TO_DATED', 'NEEDS_UPDATE', 'SCANNING_FAILED');
 END $$;
 `)
 

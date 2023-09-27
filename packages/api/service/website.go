@@ -61,6 +61,24 @@ func (svc *WebsiteService) GetAllForCurrentUser(
 	return websites, nil
 }
 
+func (svc *WebsiteService) GetSingle(
+	ctx *gin.Context,
+	websiteID uuid.UUID,
+) (*model.Website, error) {
+	currentUser := svc.userSvc.CurrentUser(ctx)
+
+	website := svc.websiteRepo.FindByID(websiteID.String())
+	if website == nil {
+		return nil, errors.ErrWebsiteNotFound
+	}
+
+	if website.UserID != currentUser.ID {
+		return nil, errors.ErrAccessIsForbidden
+	}
+
+	return website, nil
+}
+
 func (svc *WebsiteService) GetAllWithToken(
 	pagination *pagination.Pagination,
 	publicKey string,
