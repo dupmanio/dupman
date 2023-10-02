@@ -8,6 +8,7 @@ import (
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
 	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
+	"github.com/google/uuid"
 )
 
 // Website provides the API operation methods for working with /website routes.
@@ -82,4 +83,31 @@ func (svc *Website) GetAll(page int) (*dto.WebsitesOnResponse, *pagination.Pagin
 	}
 
 	return response.Data, response.Pagination, nil
+}
+
+// Get gets single website.
+//
+// Example:
+//
+//	// Create new instance of service using session.
+//	svc := website.New(sess)
+//
+//	// Get single website.
+//	response, err := svc.Get(...)
+func (svc *Website) Get(id uuid.UUID) (*dto.WebsiteOnResponse, error) {
+	var response *dto.HTTPResponse[*dto.WebsiteOnResponse]
+
+	resp, err := svc.session.Client.R().
+		SetResult(&response).
+		SetPathParam("id", id.String()).
+		Get("/website/{id}")
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch Website: %w", err)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, errors.NewHTTPError(resp)
+	}
+
+	return response.Data, nil
 }
