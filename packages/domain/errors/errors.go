@@ -12,4 +12,5 @@ var (
 	ErrUnableToFetchUpdates       = errors.New("unable to fetch Website Updates")
 	ErrNoDupmanEndpoint           = errors.New("/dupman endpoint does not exist")
 	ErrDupmanEndpointAccessDenied = errors.New("access denied on /dupman endpoint")
+	ErrTokenIsExpired             = errors.New("token is expired")
 )
