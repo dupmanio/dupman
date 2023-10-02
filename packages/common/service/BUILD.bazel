@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "http",
+    srcs = ["service.go"],
+    importpath = "github.com/dupmanio/dupman/packages/common/http",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/dbutils/pagination",
+        "//packages/domain/dto",
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_go_playground_validator_v10//:validator",
+    ],
+)
+
+go_library(
+    name = "service",
+    srcs = ["http.go"],
+    importpath = "github.com/dupmanio/dupman/packages/common/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/dbutils/pagination",
+        "//packages/domain/dto",
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_go_playground_validator_v10//:validator",
+    ],
+)
