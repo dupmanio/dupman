@@ -7,6 +7,7 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
+	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/dbutils/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
@@ -16,12 +17,12 @@ import (
 )
 
 type WebsiteController struct {
-	httpSvc    *service.HTTPService
+	httpSvc    *commonServices.HTTPService
 	websiteSvc *service.WebsiteService
 }
 
 func NewWebsiteController(
-	httpSvc *service.HTTPService,
+	httpSvc *commonServices.HTTPService,
 	websiteSvc *service.WebsiteService,
 ) (*WebsiteController, error) {
 	return &WebsiteController{httpSvc: httpSvc, websiteSvc: websiteSvc}, nil

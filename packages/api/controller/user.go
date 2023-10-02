@@ -6,6 +6,7 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
+	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
@@ -13,11 +14,11 @@ import (
 )
 
 type UserController struct {
-	httpSvc *service.HTTPService
+	httpSvc *commonServices.HTTPService
 	userSvc *service.UserService
 }
 
-func NewUserController(httpSvc *service.HTTPService, userSvc *service.UserService) (*UserController, error) {
+func NewUserController(httpSvc *commonServices.HTTPService, userSvc *service.UserService) (*UserController, error) {
 	return &UserController{httpSvc: httpSvc, userSvc: userSvc}, nil
 }
 

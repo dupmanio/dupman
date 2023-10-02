@@ -1,47 +1,44 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-	"strings"
 
-	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/dupmanio/dupman/packages/api/config"
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	"github.com/dupmanio/dupman/packages/api/service"
+	"github.com/dupmanio/dupman/packages/auth"
+	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type AuthMiddleware struct {
-	oauthProvider *oidc.Provider
-	httpSvc       *service.HTTPService
-	userRepo      *repository.UserRepository
-	userSvc       *service.UserService
+	authHandler *auth.Handler
+	httpSvc     *commonServices.HTTPService
+	userRepo    *repository.UserRepository
+	userSvc     *service.UserService
 }
 
 func NewAuthMiddleware(
 	config *config.Config,
-	httpSvc *service.HTTPService,
+	httpSvc *commonServices.HTTPService,
 	userRepo *repository.UserRepository,
 	userSvc *service.UserService,
 ) (*AuthMiddleware, error) {
-	ctx := context.Background()
-
-	provider, err := oidc.NewProvider(ctx, config.OAuth.Issuer)
+	handler, err := auth.NewHandler(auth.HandlerOptions{OauthIssuer: config.OAuth.Issuer})
 	if err != nil {
-		return nil, fmt.Errorf("unable to initialize OIDC Provider: %w", err)
+		return nil, fmt.Errorf("unable to initialize auth handler: %w", err)
 	}
 
 	return &AuthMiddleware{
-		oauthProvider: provider,
-		httpSvc:       httpSvc,
-		userRepo:      userRepo,
-		userSvc:       userSvc,
+		authHandler: handler,
+		httpSvc:     httpSvc,
+		userRepo:    userRepo,
+		userSvc:     userSvc,
 	}, nil
 }
 
@@ -55,31 +52,8 @@ func (mid *AuthMiddleware) RequiresAuth() gin.HandlerFunc {
 			return
 		}
 
-		accessToken := strings.TrimPrefix(ctx.GetHeader("Authorization"), "Bearer ")
-		if accessToken == "" {
-			mid.httpSvc.HTTPError(ctx, http.StatusUnauthorized, errors.ErrAuthorizationRequired.Error())
-
-			return
-		}
-
-		verifier := mid.oauthProvider.Verifier(&oidc.Config{SkipClientIDCheck: true})
-
-		token, err := verifier.Verify(ctx, accessToken)
+		claims, err := mid.authHandler.ExtractAuthClaims(ctx.GetHeader("Authorization"))
 		if err != nil {
-			mid.httpSvc.HTTPError(ctx, http.StatusUnauthorized, err.Error())
-
-			return
-		}
-
-		var claims struct {
-			Sub         string
-			Scope       string
-			RealmAccess struct {
-				Roles []string
-			} `json:"realm_access"`
-		}
-
-		if err = token.Claims(&claims); err != nil {
 			mid.httpSvc.HTTPError(ctx, http.StatusUnauthorized, err.Error())
 
 			return
@@ -92,24 +66,15 @@ func (mid *AuthMiddleware) RequiresAuth() gin.HandlerFunc {
 		}
 
 		user.Roles = claims.RealmAccess.Roles
-
+		mid.authHandler.StoreAuthData(ctx, claims)
 		ctx.Set(constant.CurrentUserKey, user)
-		ctx.Set(constant.TokenScopesKey, strings.Split(claims.Scope, " "))
-
 		ctx.Next()
 	}
 }
 
 func (mid *AuthMiddleware) RequiresRole(roles ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if ctx.Request.Method == http.MethodOptions {
-			ctx.Next()
-
-			return
-		}
-
-		currentUser := mid.userSvc.CurrentUser(ctx)
-		if arrayContainsIntersection(roles, currentUser.Roles) {
+		if ctx.Request.Method == http.MethodOptions || mid.authHandler.HasRoles(ctx, roles) {
 			ctx.Next()
 
 			return
@@ -119,35 +84,9 @@ func (mid *AuthMiddleware) RequiresRole(roles ...string) gin.HandlerFunc {
 	}
 }
 
-func arrayContainsIntersection(arr1, arr2 []string) bool {
-	arr1Map := make(map[string]bool)
-	for _, str := range arr1 {
-		arr1Map[str] = true
-	}
-
-	for _, str := range arr2 {
-		if arr1Map[str] {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (mid *AuthMiddleware) RequiresScope(scopes ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if ctx.Request.Method == http.MethodOptions {
-			ctx.Next()
-
-			return
-		}
-
-		tokenScopes, ok := ctx.Value(constant.TokenScopesKey).([]string)
-		if !ok {
-			tokenScopes = []string{}
-		}
-
-		if arrayContainsIntersection(scopes, tokenScopes) {
+		if ctx.Request.Method == http.MethodOptions || mid.authHandler.HasScopes(ctx, scopes) {
 			ctx.Next()
 
 			return
