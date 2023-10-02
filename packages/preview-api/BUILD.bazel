@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "preview-api_lib",
+    srcs = ["main.go"],
+    data = [
+        ".env",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/preview-api",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//packages/preview-api/config",
+        "//packages/preview-api/controller",
+        "//packages/preview-api/middleware",
+        "//packages/preview-api/route",
+        "//packages/preview-api/server",
+        "//packages/preview-api/service",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_fx//fxevent",
+        "@org_uber_go_zap//:zap",
+    ],
+)
+
+go_binary(
+    name = "preview-api",
+    embed = [":preview-api_lib"],
+    visibility = ["//visibility:public"],
+)

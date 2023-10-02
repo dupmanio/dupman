@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "service",
+    srcs = [
+        "chrome.go",
+        "dupman_api.go",
+        "service.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/preview-api/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/service",
+        "//packages/domain/dto",
+        "//packages/preview-api/config",
+        "//packages/sdk/dupman",
+        "//packages/sdk/dupman/credentials",
+        "//packages/sdk/dupman/session",
+        "//packages/sdk/service/website",
+        "@com_github_chromedp_cdproto//inspector",
+        "@com_github_chromedp_chromedp//:chromedp",
+        "@com_github_google_uuid//:uuid",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_zap//:zap",
+    ],
+)
