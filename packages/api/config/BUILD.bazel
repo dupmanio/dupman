@@ -5,8 +5,5 @@ go_library(
     srcs = ["config.go"],
     importpath = "github.com/dupmanio/dupman/packages/api/config",
     visibility = ["//visibility:public"],
-    deps = [
-        "@com_github_mcuadros_go_defaults//:go-defaults",
-        "@com_github_spf13_viper//:viper",
-    ],
+    deps = ["//packages/config"],
 )

@@ -3,8 +3,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/mcuadros/go-defaults"
-	"github.com/spf13/viper"
+	"github.com/dupmanio/dupman/packages/config"
 )
 
 type ServerConfig struct {
@@ -39,26 +38,9 @@ type Config struct {
 }
 
 func New() (*Config, error) {
-	// @todo: refactor.
 	conf := new(Config)
-
-	viper.AddConfigPath("packages/preview-api")
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
-
-	viper.AllowEmptyEnv(true)
-	viper.AutomaticEnv()
-
-	defaults.SetDefaults(conf)
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
-	}
-
-	err = viper.Unmarshal(conf)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %w	", err)
+	if err := config.Load("packages/preview-api", conf); err != nil {
+		return nil, fmt.Errorf("unable to load config: %w", err)
 	}
 
 	return conf, nil
