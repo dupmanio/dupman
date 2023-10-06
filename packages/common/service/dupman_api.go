@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"

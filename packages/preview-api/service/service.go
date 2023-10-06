@@ -8,7 +8,7 @@ import (
 func Create() fx.Option {
 	return fx.Options(
 		fx.Provide(commonServices.NewHTTPService),
+		fx.Provide(commonServices.NewDupmanAPIService),
 		fx.Provide(NewChromeService),
-		fx.Provide(NewDupmanAPIService),
 	)
 }

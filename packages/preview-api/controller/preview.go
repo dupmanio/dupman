@@ -8,6 +8,7 @@ import (
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/preview-api/service"
+	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -15,13 +16,13 @@ import (
 type PreviewController struct {
 	chromeSvc *service.ChromeService
 	httpSvc   *commonServices.HTTPService
-	dupmanSvc *service.DupmanAPIService
+	dupmanSvc *commonServices.DupmanAPIService
 }
 
 func NewPreviewController(
 	chromeSvc *service.ChromeService,
 	httpSvc *commonServices.HTTPService,
-	dupmanSvc *service.DupmanAPIService,
+	dupmanSvc *commonServices.DupmanAPIService,
 ) (*PreviewController, error) {
 	return &PreviewController{
 		chromeSvc: chromeSvc,
@@ -38,14 +39,21 @@ func (ctrl *PreviewController) Preview(ctx *gin.Context) {
 		return
 	}
 
-	sess, err := ctrl.dupmanSvc.CreateSession(ctx.GetHeader("Authorization"))
+	cred, err := credentials.NewRawTokenCredentials(ctx.GetHeader("Authorization"))
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusUnauthorized, err.Error())
 
 		return
 	}
 
-	websiteInstance, err := ctrl.dupmanSvc.GetWebsite(sess, websiteID)
+	err = ctrl.dupmanSvc.CreateSession(cred)
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusUnauthorized, err.Error())
+
+		return
+	}
+
+	websiteInstance, err := ctrl.dupmanSvc.WebsiteSvc.Get(websiteID)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 
