@@ -660,6 +660,12 @@ def go_dependencies():
         sum = "h1:gQz4mCbXsO+nc9n1hCxHcGA3Zx3Eo+UHZoInFGUIXNM=",
         version = "v0.0.0-20190812154241-14fe0d1b01d4",
     )
+    go_repository(
+        name = "com_github_rabbitmq_amqp091_go",
+        importpath = "github.com/rabbitmq/amqp091-go",
+        sum = "h1:qrQtyzB4H8BQgEuJwhmVQqVHB9O4+MNDJCCAcpc3Aoo=",
+        version = "v1.9.0",
+    )
 
     go_repository(
         name = "com_github_rogpeppe_go_internal",
@@ -807,6 +813,12 @@ def go_dependencies():
         sum = "h1:VpgP7xuJadIUuKccphEpTJnWhS2jkQyMt6Y7pJCD7fY=",
         version = "v0.0.0-20190408044501-666a987793e9",
     )
+    go_repository(
+        name = "in_gopkg_alexcesaro_quotedprintable_v3",
+        importpath = "gopkg.in/alexcesaro/quotedprintable.v3",
+        sum = "h1:2gGKlE2+asNV9m7xrywl36YYNnBG5ZQ0r/BOOxqPpmk=",
+        version = "v3.0.0-20150716171945-2caba252f4dc",
+    )
 
     go_repository(
         name = "in_gopkg_check_v1",
@@ -825,6 +837,12 @@ def go_dependencies():
         importpath = "gopkg.in/ini.v1",
         sum = "h1:Dgnx+6+nfE+IfzjUEISNeydPJh9AXNNsWbGP9KzCsOA=",
         version = "v1.67.0",
+    )
+    go_repository(
+        name = "in_gopkg_mail_v2",
+        importpath = "gopkg.in/mail.v2",
+        sum = "h1:WYFn/oANrAGP2C0dcV6/pbkPzv8yGzqTjPmTeO7qoXk=",
+        version = "v2.3.1",
     )
 
     go_repository(
@@ -1073,8 +1091,8 @@ def go_dependencies():
     go_repository(
         name = "org_uber_go_goleak",
         importpath = "go.uber.org/goleak",
-        sum = "h1:wy28qYRKZgnJTxGxvye5/wgWr1EKjmUDGYox5mGlRlI=",
-        version = "v1.1.11",
+        sum = "h1:NBol2c7O1ZokfZ0LEU9K6Whx/KnwvepVetCUhtKja4A=",
+        version = "v1.2.1",
     )
     go_repository(
         name = "org_uber_go_multierr",

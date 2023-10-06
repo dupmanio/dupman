@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "deliverer",
+    srcs = ["deliverer.go"],
+    importpath = "github.com/dupmanio/dupman/packages/notifier/deliverer",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/domain/dto",
+        "//packages/notifier/deliverer/email",
+        "@org_uber_go_fx//:fx",
+    ],
+)

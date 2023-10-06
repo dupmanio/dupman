@@ -14,10 +14,12 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/mcuadros/go-defaults v1.2.0
+	github.com/rabbitmq/amqp091-go v1.9.0
 	github.com/spf13/viper v1.16.0
 	go.uber.org/fx v1.20.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/oauth2 v0.10.0
+	gopkg.in/mail.v2 v2.3.1
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/gorm v1.25.2
 )
@@ -73,6 +75,7 @@ require (
 	golang.org/x/text v0.11.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

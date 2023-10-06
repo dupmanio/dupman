@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "email",
+    srcs = [
+        "deliverer.go",
+        "notification_settings.go",
+    ],
+    data = [
+        "templates",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/notifier/deliverer/email",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/domain/dto",
+        "//packages/domain/errors",
+        "//packages/notifier/config",
+        "@in_gopkg_mail_v2//:mail_v2",
+    ],
+)
