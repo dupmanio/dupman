@@ -18,7 +18,7 @@ type Deliverer struct {
 }
 
 type TemplateData struct {
-	UserContactInfo     dto.UserContactInfo
+	UserContactInfo     *dto.ContactInfo
 	NotificationMessage dto.NotificationMessage
 	DeliveryType        NotificationSettings
 }
@@ -37,7 +37,7 @@ func (del *Deliverer) Name() string {
 	return "EmailDeliverer"
 }
 
-func (del *Deliverer) Deliver(message dto.NotificationMessage, contactInfo dto.UserContactInfo) error {
+func (del *Deliverer) Deliver(message dto.NotificationMessage, contactInfo *dto.ContactInfo) error {
 	notificationSettings, ok := del.notificationSettingsMapping[message.Type]
 	if !ok {
 		return domainErrors.ErrUnsupportedNotificationType

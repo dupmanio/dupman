@@ -8,7 +8,7 @@ import (
 
 type Deliverer interface {
 	Name() string
-	Deliver(dto.NotificationMessage, dto.UserContactInfo) error
+	Deliver(dto.NotificationMessage, *dto.ContactInfo) error
 }
 
 func Create() fx.Option {

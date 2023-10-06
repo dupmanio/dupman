@@ -5,25 +5,45 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/notifier/config"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer/email"
+	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
 )
 
 type Processor struct {
-	logger     *zap.Logger
-	config     *config.Config
-	deliverers []deliverer.Deliverer
+	logger            *zap.Logger
+	config            *config.Config
+	dupmanCredentials credentials.Provider
+	dupmanAPIService  *service.DupmanAPIService
+	deliverers        []deliverer.Deliverer
 }
 
-func NewProcessor(logger *zap.Logger, config *config.Config, emailDeliverer *email.Deliverer) (*Processor, error) {
+func NewProcessor(
+	logger *zap.Logger,
+	config *config.Config,
+	dupmanAPIService *service.DupmanAPIService,
+	emailDeliverer *email.Deliverer,
+) (*Processor, error) {
+	cred, err := credentials.NewClientCredentials(
+		config.DupmanAPIService.ClientID,
+		config.DupmanAPIService.ClientSecret,
+		config.DupmanAPIService.Scopes,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create dupman credentials provider: %w", err)
+	}
+
 	return &Processor{
-		logger: logger,
-		config: config,
+		logger:            logger,
+		config:            config,
+		dupmanCredentials: cred,
+		dupmanAPIService:  dupmanAPIService,
 		deliverers: []deliverer.Deliverer{
 			emailDeliverer,
 		},
@@ -47,18 +67,34 @@ func (proc *Processor) Process(delivery amqp.Delivery) error {
 	return nil
 }
 
-func (proc *Processor) getUserContactInfo(userID uuid.UUID) (dto.UserContactInfo, error) {
-	// @todo: replace with actual implementation.
+func (proc *Processor) getUserContactInfo(userID uuid.UUID) (*dto.ContactInfo, error) {
+	if err := proc.dupmanAPIService.CreateSession(proc.dupmanCredentials); err != nil {
+		return nil, fmt.Errorf("unable to create dupman session: %w", err)
+	}
 
-	return dto.UserContactInfo{
-		Email: "user1@ema.il",
-	}, nil
+	proc.logger.Info(
+		"Fetching user contact info",
+		zap.String("userID", userID.String()),
+	)
+
+	info, err := proc.dupmanAPIService.UserSvc.GetContactInfo(userID)
+	if err != nil {
+		proc.logger.Error(
+			"Unable to fetch user contact info",
+			zap.String("userID", userID.String()),
+			zap.Error(err),
+		)
+
+		return nil, fmt.Errorf("unable to fetch user contact info: %w", err)
+	}
+
+	return info, nil
 }
 
 func (proc *Processor) deliverNotification(
 	delivery amqp.Delivery,
 	message dto.NotificationMessage,
-	contactInfo dto.UserContactInfo,
+	contactInfo *dto.ContactInfo,
 ) {
 	for _, delivererInstance := range proc.deliverers {
 		go func(delivererInstance deliverer.Deliverer) {
@@ -85,7 +121,7 @@ func (proc *Processor) deliverNotification(
 
 func (proc *Processor) tryToDeliverNotificationUsingSingleDeliverer(
 	delivererInstance deliverer.Deliverer,
-	contactInfo dto.UserContactInfo,
+	contactInfo *dto.ContactInfo,
 	message dto.NotificationMessage,
 	delivery amqp.Delivery,
 ) bool {

@@ -7,7 +7,3 @@ type NotificationMessage struct {
 	Type   string
 	Meta   map[string]string
 }
-
-type UserContactInfo struct {
-	Email string
-}

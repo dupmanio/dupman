@@ -13,6 +13,7 @@ go_library(
         "//packages/notifier/config",
         "//packages/notifier/deliverer",
         "//packages/notifier/processor",
+        "//packages/notifier/service",
         "//packages/notifier/worker",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",

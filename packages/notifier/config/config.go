@@ -34,13 +34,20 @@ type Deliverer struct {
 	Retries int `mapstructure:"DELIVERER_RETRIES" default:"3"`
 }
 
+type DupmanAPIService struct {
+	ClientID     string   `mapstructure:"DUPMAN_API_SERVICE_CLIENT_ID"`
+	ClientSecret string   `mapstructure:"DUPMAN_API_SERVICE_CLIENT_SECRET"`
+	Scopes       []string `mapstructure:"DUPMAN_API_SERVICE_SCOPES" default:"[user:get_contact_info]"`
+}
+
 type Config struct {
-	Env       string    `mapstructure:"ENV" default:"prod"`
-	RabbitMQ  RabbitMQ  `mapstructure:",squash"`
-	Worker    Worker    `mapstructure:",squash"`
-	Mailer    Mailer    `mapstructure:",squash"`
-	Deliverer Deliverer `mapstructure:",squash"`
-	Email     Email     `mapstructure:",squash"`
+	Env              string           `mapstructure:"ENV" default:"prod"`
+	RabbitMQ         RabbitMQ         `mapstructure:",squash"`
+	Worker           Worker           `mapstructure:",squash"`
+	Mailer           Mailer           `mapstructure:",squash"`
+	Deliverer        Deliverer        `mapstructure:",squash"`
+	Email            Email            `mapstructure:",squash"`
+	DupmanAPIService DupmanAPIService `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {

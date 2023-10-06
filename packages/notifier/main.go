@@ -5,6 +5,7 @@ import (
 	"github.com/dupmanio/dupman/packages/notifier/config"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer"
 	"github.com/dupmanio/dupman/packages/notifier/processor"
+	"github.com/dupmanio/dupman/packages/notifier/service"
 	"github.com/dupmanio/dupman/packages/notifier/worker"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
@@ -23,6 +24,7 @@ func main() {
 			processor.NewProcessor,
 		),
 		deliverer.Create(),
+		service.Create(),
 		fx.Invoke(worker.Run),
 	)
 
