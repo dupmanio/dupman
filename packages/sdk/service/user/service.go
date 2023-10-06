@@ -1,4 +1,4 @@
-package website
+package user
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
 	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
+	"github.com/google/uuid"
 )
 
 // User provides the API operation methods for working with /user routes.
@@ -72,6 +73,33 @@ func (svc *User) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
 		Patch("/user")
 	if err != nil {
 		return nil, fmt.Errorf("unable to update User: %w", err)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, errors.NewHTTPError(resp)
+	}
+
+	return response.Data, nil
+}
+
+// GetContactInfo gets user contact info.
+//
+// Example:
+//
+//	// Create new instance of service using session.
+//	svc := user.New(sess)
+//
+//	// Get contact info.
+//	contactInfo, err := svc.GetContactInfo(...)
+func (svc *User) GetContactInfo(id uuid.UUID) (*dto.ContactInfo, error) {
+	var response *dto.HTTPResponse[*dto.ContactInfo]
+
+	resp, err := svc.session.Client.R().
+		SetResult(&response).
+		SetPathParam("id", id.String()).
+		Get("/user/contact-info/{id}")
+	if err != nil {
+		return nil, fmt.Errorf("unable to get User Contact Info: %w", err)
 	}
 
 	if resp.StatusCode() != http.StatusOK {
