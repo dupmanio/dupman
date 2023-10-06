@@ -25,3 +25,10 @@ type UserAccount struct {
 	CreatedAt time.Time `json:"createdAt" binding:"required"`
 	UpdatedAt time.Time `json:"updatedAt" binding:"required"`
 }
+
+type ContactInfo struct {
+	Username  string `json:"username" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	FirstName string `json:"firstName" binding:"required"`
+	LastName  string `json:"lastName" binding:"required"`
+}

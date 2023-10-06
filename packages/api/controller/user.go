@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/dupmanio/dupman/packages/api/model"
@@ -10,6 +11,7 @@ import (
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 )
 
@@ -72,6 +74,33 @@ func (ctrl *UserController) Update(ctx *gin.Context) {
 	_ = copier.Copy(&entity, &payload)
 
 	user, err := ctrl.userSvc.Update(entity)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrUserDoesNotExist) {
+			statusCode = http.StatusNotFound
+		}
+
+		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+
+		return
+	}
+
+	_ = copier.Copy(&response, &user)
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
+}
+
+func (ctrl *UserController) GetContactInfo(ctx *gin.Context) {
+	var response dto.ContactInfo
+
+	userID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid user ID: %s", err))
+
+		return
+	}
+
+	user, err := ctrl.userSvc.GetSingle(userID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrUserDoesNotExist) {

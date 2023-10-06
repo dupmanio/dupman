@@ -47,5 +47,10 @@ func (route *UserRoute) Setup() {
 			route.authMiddleware.RequiresScope("user", "user:update"),
 			route.controller.Update,
 		)
+		group.GET(
+			"/contact-info/:id",
+			route.authMiddleware.RequiresScope("user", "user:get_contact_info"),
+			route.controller.GetContactInfo,
+		)
 	}
 }

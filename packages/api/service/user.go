@@ -8,6 +8,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/repository"
 	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type UserService struct {
@@ -52,4 +53,15 @@ func (svc *UserService) CurrentUser(ctx *gin.Context) *model.User {
 	}
 
 	return nil
+}
+
+func (svc *UserService) GetSingle(
+	userID uuid.UUID,
+) (*model.User, error) {
+	user := svc.userRepo.FindByID(userID.String())
+	if user == nil {
+		return nil, errors.ErrUserDoesNotExist
+	}
+
+	return user, nil
 }
