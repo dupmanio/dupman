@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	defaultTimeout = 30 * time.Second
+	defaultTimeout    = 30 * time.Second
+	defaultRetryCount = 3
 	// @todo: update.
 	defaultURL = "http://127.0.0.1:8000"
 )
@@ -54,8 +55,13 @@ func createHTTPClient(config *dupman.Config, accessToken string) *resty.Client {
 		config.Timeout = defaultTimeout
 	}
 
+	if config.RetryCount == 0 {
+		config.RetryCount = defaultRetryCount
+	}
+
 	httpClient.SetBaseURL(config.URL).
 		SetTimeout(config.Timeout).
+		SetRetryCount(config.RetryCount).
 		SetAuthToken(accessToken).
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Accept-Type", "application/json").
