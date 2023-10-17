@@ -10,22 +10,13 @@ import {
   Stack,
   Chip,
 } from "@mui/material";
+import { UpdatesOnResponse } from "@/types/dtos/update";
 
-function WebsiteUpdates() {
-  const rows = [
-    {
-      name: "drupal",
-      title: "Drupal core",
-      link: "https://www.drupal.org/project/drupal",
-      type: "core",
-      currentVersion: "9.2.1",
-      latestVersion: "9.5.10",
-      recommendedVersion: "9.5.10",
-      installType: "official",
-      status: 1,
-    },
-  ];
+export interface WebsiteUpdatesProps {
+  updates: UpdatesOnResponse;
+}
 
+function WebsiteUpdates({ updates }: WebsiteUpdatesProps) {
   return (
     <Table aria-label="website updates">
       <TableHead>
@@ -38,30 +29,32 @@ function WebsiteUpdates() {
         </TableRow>
       </TableHead>
       <TableBody>
-        {rows.map((row) => (
+        {updates.map((update) => (
           <TableRow
-            key={row.name}
+            key={update.name}
             sx={{
               "&:last-child td, &:last-child th": { border: 0 },
             }}
           >
             <TableCell component="th" scope="row">
-              <Link href={row.link} target="_blank">
-                {row.title} ({row.name})
+              <Link href={update.link} target="_blank">
+                {update.title} ({update.name})
               </Link>
             </TableCell>
-            <TableCell>{row.currentVersion}</TableCell>
-            <TableCell>{row.latestVersion}</TableCell>
-            <TableCell>{row.recommendedVersion}</TableCell>
+            <TableCell>{update.currentVersion}</TableCell>
+            <TableCell>{update.latestVersion}</TableCell>
+            <TableCell>{update.recommendedVersion}</TableCell>
             <TableCell>
               <Stack direction="row" spacing={0.5}>
                 <Chip
-                  label={`Install Type: ${row.installType}`}
-                  color={row.installType === "official" ? "success" : "error"}
+                  label={`Install Type: ${update.installType}`}
+                  color={
+                    update.installType === "official" ? "success" : "error"
+                  }
                 />
                 <Chip
-                  label={`Type: ${row.type}`}
-                  color={row.type === "core" ? "primary" : "default"}
+                  label={`Type: ${update.type}`}
+                  color={update.type === "core" ? "primary" : "default"}
                 />
               </Stack>
             </TableCell>

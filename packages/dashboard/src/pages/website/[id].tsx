@@ -16,6 +16,7 @@ import PageLoader from "@/components/PageLoader";
 import WebsiteUpdates from "@/components/WebsiteUpdates";
 import WebsiteInfoCard from "@/components/WebsiteInfoCard";
 import { StatusState } from "@/types/dtos/status";
+import WebsitePreviewImage from "@/components/WebsitePreviewImage";
 
 function WebsitePage() {
   const router = useRouter();
@@ -58,7 +59,7 @@ function WebsitePage() {
                   </Typography>
 
                   <TableContainer component={Paper}>
-                    <WebsiteUpdates />
+                    <WebsiteUpdates updates={data.data.updates} />
                   </TableContainer>
                 </Grid>
               )}
