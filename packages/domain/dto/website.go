@@ -20,7 +20,8 @@ type WebsiteOnCreateResponse struct {
 
 type WebsiteOnResponse struct {
 	WebsiteOnCreateResponse
-	Status StatusOnWebsitesResponse `json:"status"`
+	Status  StatusOnWebsitesResponse `json:"status"`
+	Updates UpdatesOnResponse        `json:"updates"`
 }
 
 type WebsitesOnResponse []WebsiteOnResponse

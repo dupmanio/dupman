@@ -69,7 +69,11 @@ func (repo *WebsiteRepository) FindByUserID(userID string, pager *pagination.Pag
 func (repo *WebsiteRepository) FindByID(id string) *model.Website {
 	var website model.Website
 
-	err := repo.db.Preload("Status").First(&website, "id = ?", id).Error
+	err := repo.db.
+		Preload("Status").
+		Preload("Updates").
+		First(&website, "id = ?", id).
+		Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil
 	}
