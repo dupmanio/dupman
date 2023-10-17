@@ -1,5 +1,4 @@
 import * as React from "react";
-import Image from "next/image";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 
@@ -41,16 +40,7 @@ function WebsitePage() {
             <Grid container spacing={2}>
               <Grid item xs={4}>
                 <Box>
-                  <Image
-                    src="https://fakeimg.pl/1920x1080/edeff4/0678be?text=Preview+(TODO)"
-                    alt="dupman"
-                    priority={true}
-                    width="350"
-                    height="200"
-                    style={{
-                      objectFit: "contain",
-                    }}
-                  />
+                  <WebsitePreviewImage websiteId={data?.data.id} />
                 </Box>
               </Grid>
               <Grid item xs={8}>

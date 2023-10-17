@@ -8,6 +8,7 @@ import {
   produceLogoutInterceptor,
 } from "@/lib/http/client/interceptors";
 import { DupmanAPIClient } from "@/lib/http/client/dupman-api";
+import { PreviewAPIClient } from "@/lib/http/client/preview-api";
 import PageLoader from "@/components/PageLoader";
 import { Route } from "@/config/routes";
 
@@ -20,6 +21,8 @@ function AuthGuard({ children }: AuthGuardProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const dupmanAPIRequestInterceptorRef = useRef<number>(0);
   const dupmanAPIResponseInterceptorRef = useRef<number>(0);
+  const previewAPIRequestInterceptorRef = useRef<number>(0);
+  const previewAPIResponseInterceptorRef = useRef<number>(0);
 
   const { data, status } = useSession();
   const router = useRouter();
@@ -32,6 +35,10 @@ function AuthGuard({ children }: AuthGuardProps) {
     if (status === "authenticated") {
       dupmanAPIRequestInterceptorRef.current =
         DupmanAPIClient.interceptors.request.use(
+          produceAccessTokenInterceptor(data?.accessToken),
+        );
+      previewAPIRequestInterceptorRef.current =
+        PreviewAPIClient.interceptors.request.use(
           produceAccessTokenInterceptor(data?.accessToken),
         );
 
@@ -47,6 +54,9 @@ function AuthGuard({ children }: AuthGuardProps) {
       DupmanAPIClient.interceptors.request.eject(
         dupmanAPIRequestInterceptorRef.current,
       );
+      PreviewAPIClient.interceptors.request.eject(
+        previewAPIRequestInterceptorRef.current,
+      );
     };
   }, [data, status]);
 
@@ -57,11 +67,19 @@ function AuthGuard({ children }: AuthGuardProps) {
           (req: AxiosRequestConfig) => req,
           produceLogoutInterceptor(logOutCallback),
         );
+      previewAPIResponseInterceptorRef.current =
+        PreviewAPIClient.interceptors.response.use(
+          (req: AxiosRequestConfig) => req,
+          produceLogoutInterceptor(logOutCallback),
+        );
     }
 
     return () => {
       DupmanAPIClient.interceptors.response.eject(
         dupmanAPIResponseInterceptorRef.current,
+      );
+      PreviewAPIClient.interceptors.response.eject(
+        previewAPIResponseInterceptorRef.current,
       );
     };
   }, [interceptor, logOutCallback, router]);
