@@ -67,3 +67,7 @@ rules_jvm_external_setup()
 load("//packages/kc-user-syncer-extension:deps.bzl", "kc_user_syncer_deps")
 
 kc_user_syncer_deps()
+
+load("//packages/kc-themes:deps.bzl", "kc_themes_deps")
+
+kc_themes_deps()

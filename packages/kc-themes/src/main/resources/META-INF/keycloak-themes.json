@@ -1,0 +1,6 @@
+{
+  "themes": [{
+    "name" : "dupman",
+    "types": [ "login", "common" ]
+  }]
+}

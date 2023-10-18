@@ -1,0 +1,42 @@
+body, html {
+    height: 100%;
+}
+
+.divider:after,
+.divider:before {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #eee;
+}
+
+.login-right {
+    background-color: #8cd0ff;
+}
+
+.login-right .logo {
+    max-width: 10rem;
+}
+
+.btn-primary {
+    --bs-btn-bg: #0678be;
+    --bs-btn-border-color: #0678be;
+    --bs-btn-disabled-bg: #0678be;
+    --bs-btn-disabled-border-color: #0678be;
+
+    --bs-btn-hover-border-color: #005194;
+    --bs-btn-active-bg: #0a58ca;
+
+    --bs-btn-hover-bg: #005194;
+
+    --bs-btn-active-border-color: #0a53be;
+}
+
+:root {
+    --bs-link-color: #0678be;
+    --bs-link-hover-color: #005194;
+}
+
+a {
+    text-decoration: none;
+}
