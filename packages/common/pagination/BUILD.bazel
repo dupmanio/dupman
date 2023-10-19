@@ -6,7 +6,10 @@ go_library(
         "pagination.go",
         "paginator.go",
     ],
-    importpath = "github.com/dupmanio/dupman/packages/pagination",
+    importpath = "github.com/dupmanio/dupman/packages/common/pagination",
     visibility = ["//visibility:public"],
-    deps = ["@io_gorm_gorm//:gorm"],
+    deps = [
+        "@com_github_gin_gonic_gin//:gin",
+        "@io_gorm_gorm//:gorm",
+    ],
 )

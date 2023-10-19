@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/dupmanio/dupman/packages/dbutils/pagination"
+import "github.com/dupmanio/dupman/packages/common/pagination"
 
 type HTTPResponse[T any] struct {
 	Code       int                    `json:"code"`

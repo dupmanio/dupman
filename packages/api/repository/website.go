@@ -7,7 +7,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/database"
 	"github.com/dupmanio/dupman/packages/api/model"
-	"github.com/dupmanio/dupman/packages/dbutils/pagination"
+	"github.com/dupmanio/dupman/packages/common/pagination"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
