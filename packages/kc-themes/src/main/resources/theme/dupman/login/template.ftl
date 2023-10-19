@@ -50,9 +50,14 @@
         </div>
         <div class="col-12 col-md-6">
             <div class="row h-100">
-                <div class="col-12 pt-4 pe-5 d-flex justify-content-end mb-5">
-                    <#nested "leftTopContent">
+                <div class="col-12 pt-4 ps-4 d-block d-md-none">
+                    <div class="d-flex justify-content-center">
+                        <img src="${url.resourcesPath}/img/dupman.png" class="logo"
+                             alt="${kcSanitize(msg("loginTitleHtml",(realm.displayNameHtml!'')))?no_esc}">
+                    </div>
                 </div>
+
+                <#nested "leftTopContent">
 
                 <div class="d-flex justify-content-center">
                     <div class="col-12 w-75 w-xl-50">

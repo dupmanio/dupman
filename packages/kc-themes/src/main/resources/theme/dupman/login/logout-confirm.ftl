@@ -3,13 +3,17 @@
     <#if section = "header">
         <h2 class="h3 text-dark">${msg("logoutConfirmTitle")}</h2>
         <p class="text-secondary">${msg("logoutConfirmHeader")}</p>
-    <#elseif section = "form">
+    </#if>
+
+    <#if section = "form">
         <form action="${url.logoutConfirmAction}" method="POST">
             <input type="hidden" name="session_code" value="${logoutConfirm.code}">
-            <input tabindex="4" class="btn btn-primary btn-block" name="confirmLogout" id="kc-logout" type="submit" value="${msg("doLogout")}"/>
+            <div class="mt-4 d-grid">
+                <input tabindex="4" class="btn btn-primary btn-block" name="confirmLogout" id="kc-logout" type="submit" value="${msg("doLogout")}"/>
+            </div>
         </form>
 
-        <div class="mt-3">
+        <div class="mt-4">
             <#if logoutConfirm.skipLink>
             <#else>
                 <#if (client.baseUrl)?has_content>
