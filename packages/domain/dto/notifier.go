@@ -3,7 +3,7 @@ package dto
 import "github.com/google/uuid"
 
 type NotificationMessage struct {
-	UserID uuid.UUID
-	Type   string
-	Meta   map[string]string
+	UserID uuid.UUID         `json:"userID"`
+	Type   string            `json:"type"`
+	Meta   map[string]string `json:"meta"`
 }

@@ -58,7 +58,7 @@ func (del *Deliverer) Deliver(message dto.NotificationMessage, contactInfo *dto.
 		notificationSettings.Subject,
 		messageBody,
 	); err != nil {
-		return err
+		return fmt.Errorf("unable to send email: %w", err)
 	}
 
 	return nil

@@ -17,6 +17,7 @@ type RabbitMQ struct {
 type Worker struct {
 	PrefetchCount int `mapstructure:"WORKER_PREFETCH_COUNT" default:"1"`
 	PrefetchSize  int `mapstructure:"WORKER_PREFETCH_SIZE" default:"0"`
+	RetryAttempts int `mapstructure:"WORKER_RETRY_ATTEMPTS" default:"3"`
 }
 
 type Mailer struct {

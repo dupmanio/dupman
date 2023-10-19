@@ -3,10 +3,10 @@ package processor
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
+	"github.com/dupmanio/dupman/packages/notifier/broker"
 	"github.com/dupmanio/dupman/packages/notifier/config"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer/email"
@@ -19,6 +19,7 @@ import (
 type Processor struct {
 	logger            *zap.Logger
 	config            *config.Config
+	broker            *broker.RabbitMQ
 	dupmanCredentials credentials.Provider
 	dupmanAPIService  *service.DupmanAPIService
 	deliverers        []deliverer.Deliverer
@@ -27,6 +28,7 @@ type Processor struct {
 func NewProcessor(
 	logger *zap.Logger,
 	config *config.Config,
+	broker *broker.RabbitMQ,
 	dupmanAPIService *service.DupmanAPIService,
 	emailDeliverer *email.Deliverer,
 ) (*Processor, error) {
@@ -42,6 +44,7 @@ func NewProcessor(
 	return &Processor{
 		logger:            logger,
 		config:            config,
+		broker:            broker,
 		dupmanCredentials: cred,
 		dupmanAPIService:  dupmanAPIService,
 		deliverers: []deliverer.Deliverer{
@@ -50,7 +53,59 @@ func NewProcessor(
 	}, nil
 }
 
-func (proc *Processor) Process(delivery amqp.Delivery) error {
+func (proc *Processor) Process() error {
+	messages, err := proc.broker.Consume()
+	if err != nil {
+		return fmt.Errorf("unable to consume messages: %w", err)
+	}
+
+	for msg := range messages {
+		proc.processMessage(msg)
+	}
+
+	return nil
+}
+
+func (proc *Processor) processMessage(delivery amqp.Delivery) {
+	proc.logger.Info(
+		"Received a message",
+		zap.String("messageID", delivery.MessageId),
+		zap.Uint8("priority", delivery.Priority),
+		zap.String("userID", delivery.UserId),
+		zap.String("appID", delivery.AppId),
+		zap.Uint64("deliveryTag", delivery.DeliveryTag),
+		zap.String("routingKey", delivery.RoutingKey),
+	)
+
+	err := proc.processDelivery(delivery)
+	if err != nil {
+		proc.logger.Error(
+			"Unable to Process message",
+			zap.String("messageID", delivery.MessageId),
+			zap.Error(err),
+		)
+	}
+
+	if err == nil || (err != nil && proc.isLastDeliveryAttempt(delivery)) {
+		if err = delivery.Ack(false); err != nil {
+			proc.logger.Error(
+				"Unable to Ack message",
+				zap.String("messageID", delivery.MessageId),
+				zap.Error(err),
+			)
+		}
+	} else {
+		if err = delivery.Nack(false, false); err != nil {
+			proc.logger.Error(
+				"Unable to Nack message",
+				zap.String("messageID", delivery.MessageId),
+				zap.Error(err),
+			)
+		}
+	}
+}
+
+func (proc *Processor) processDelivery(delivery amqp.Delivery) error {
 	var message dto.NotificationMessage
 
 	if err := json.Unmarshal(delivery.Body, &message); err != nil {
@@ -62,7 +117,9 @@ func (proc *Processor) Process(delivery amqp.Delivery) error {
 		return fmt.Errorf("unable to get user contact info: %w", err)
 	}
 
-	proc.deliverNotification(delivery, message, contactInfo)
+	for _, delivererInstance := range proc.deliverers {
+		go proc.attemptNotificationDelivery(delivererInstance, contactInfo, delivery.MessageId, message)
+	}
 
 	return nil
 }
@@ -91,61 +148,46 @@ func (proc *Processor) getUserContactInfo(userID uuid.UUID) (*dto.ContactInfo, e
 	return info, nil
 }
 
-func (proc *Processor) deliverNotification(
-	delivery amqp.Delivery,
-	message dto.NotificationMessage,
+func (proc *Processor) attemptNotificationDelivery(
+	delivererInstance deliverer.Deliverer,
 	contactInfo *dto.ContactInfo,
+	messageID string,
+	message dto.NotificationMessage,
 ) {
-	for _, delivererInstance := range proc.deliverers {
-		go func(delivererInstance deliverer.Deliverer) {
-			proc.logger.Info(
-				"Starting delivering notification",
-				zap.String("messageID", delivery.MessageId),
-				zap.String("userID", message.UserID.String()),
-				zap.String("messageType", message.Type),
-				zap.String("deliverer", delivererInstance.Name()),
-			)
+	logFields := []zap.Field{
+		zap.String("messageID", messageID),
+		zap.String("userID", message.UserID.String()),
+		zap.String("messageType", message.Type),
+		zap.String("deliverer", delivererInstance.Name()),
+	}
 
-			if proc.tryToDeliverNotificationUsingSingleDeliverer(delivererInstance, contactInfo, message, delivery) {
-				proc.logger.Info(
-					"Notification has been delivered",
-					zap.String("messageID", delivery.MessageId),
-					zap.String("userID", message.UserID.String()),
-					zap.String("messageType", message.Type),
-					zap.String("deliverer", delivererInstance.Name()),
-				)
-			}
-		}(delivererInstance)
+	proc.logger.Info("Starting delivering notification", logFields...)
+
+	if err := delivererInstance.Deliver(message, contactInfo); err == nil {
+		proc.logger.Info("Notification has been delivered", logFields...)
+	} else {
+		proc.logger.Error("Unable to deliver notification", append(logFields, zap.Error(err))...)
 	}
 }
 
-func (proc *Processor) tryToDeliverNotificationUsingSingleDeliverer(
-	delivererInstance deliverer.Deliverer,
-	contactInfo *dto.ContactInfo,
-	message dto.NotificationMessage,
-	delivery amqp.Delivery,
-) bool {
-	for retryAttempt := 1; retryAttempt <= proc.config.Deliverer.Retries; retryAttempt++ {
-		err := delivererInstance.Deliver(message, contactInfo)
-		if err == nil {
-			return true
-		}
-
-		proc.logger.Error(
-			"Notification delivery attempt has failed",
-			zap.String("messageID", delivery.MessageId),
-			zap.String("userID", message.UserID.String()),
-			zap.String("messageType", message.Type),
-			zap.String("deliverer", delivererInstance.Name()),
-			zap.Int("retryAttempt", retryAttempt),
-			zap.Error(err),
-		)
-
-		// If this is a last attempt, do not sleep.
-		if retryAttempt < proc.config.Deliverer.Retries {
-			time.Sleep(time.Duration(retryAttempt) * time.Second)
-		}
+func (proc *Processor) isLastDeliveryAttempt(delivery amqp.Delivery) bool {
+	xDeath, ok := delivery.Headers["x-death"].([]interface{})
+	if !ok {
+		return false
 	}
 
-	return false
+	count, ok := xDeath[0].(amqp.Table)["count"].(int64)
+	if !ok {
+		return false
+	}
+
+	return int(count) >= proc.config.Worker.RetryAttempts
+}
+
+func (proc *Processor) Shutdown() error {
+	if err := proc.broker.Shutdown(); err != nil {
+		return fmt.Errorf("unable to shutdown broker: %w", err)
+	}
+
+	return nil
 }

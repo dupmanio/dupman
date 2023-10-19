@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//packages/common/service",
         "//packages/domain/dto",
+        "//packages/notifier/broker",
         "//packages/notifier/config",
         "//packages/notifier/deliverer",
         "//packages/notifier/deliverer/email",

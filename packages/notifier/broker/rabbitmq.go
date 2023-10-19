@@ -14,7 +14,6 @@ type RabbitMQ struct {
 	logger     *zap.Logger
 	connection *amqp.Connection
 	channel    *amqp.Channel
-	queue      amqp.Queue
 }
 
 func NewRabbitMQ(config *config.Config, logger *zap.Logger) (*RabbitMQ, error) {
@@ -29,9 +28,9 @@ func (brk *RabbitMQ) Consume() (<-chan amqp.Delivery, error) {
 		return nil, fmt.Errorf("unable to setup RabbitMQ: %w", err)
 	}
 
-	messages, err := brk.channel.Consume(brk.queue.Name, "", false, false, false, false, nil)
+	messages, err := brk.channel.Consume(brk.config.RabbitMQ.QueueName, "", false, false, false, false, nil)
 	if err != nil {
-		return nil, fmt.Errorf("unable to start conssuming: %w", err)
+		return nil, fmt.Errorf("unable to start consuming: %w", err)
 	}
 
 	return messages, nil
@@ -60,11 +59,6 @@ func (brk *RabbitMQ) setup() error {
 	err = brk.channel.Qos(brk.config.Worker.PrefetchCount, brk.config.Worker.PrefetchSize, false)
 	if err != nil {
 		return fmt.Errorf("failed to set QoS: %w", err)
-	}
-
-	brk.queue, err = brk.channel.QueueDeclare(brk.config.RabbitMQ.QueueName, true, false, false, false, nil)
-	if err != nil {
-		return fmt.Errorf("failed to declare a queue: %w", err)
 	}
 
 	return nil
