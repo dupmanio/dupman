@@ -6,4 +6,7 @@ const (
 
 	// TokenScopesKey represents key for storing Current JWT Tokens Scopes.
 	TokenScopesKey = "token_scopes"
+
+	// UserIDKey represents key for storing user ID from Current JWT Token.
+	UserIDKey = "user_id"
 )

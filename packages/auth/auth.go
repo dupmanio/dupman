@@ -76,6 +76,7 @@ func (hand *Handler) extractIDToken(rawToken string) (*oidc.IDToken, error) {
 }
 
 func (hand *Handler) StoreAuthData(ctx *gin.Context, claims Claims) {
+	ctx.Set(constant.UserIDKey, claims.Sub)
 	ctx.Set(constant.TokenScopesKey, strings.Split(claims.Scope, " "))
 	ctx.Set(constant.TokenRolesKey, claims.RealmAccess.Roles)
 }
