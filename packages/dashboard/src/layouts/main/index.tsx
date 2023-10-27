@@ -7,22 +7,20 @@ import {
   Typography,
   Divider,
   IconButton,
-  Badge,
   Container,
   Grid,
   Link,
-  Tooltip,
 } from "@mui/material";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 
 import AccountMenu from "@/layouts/main/AccountMenu";
 import Navbar from "@/layouts/main/Navbar";
 import Copyright from "@/layouts/main/Copyright";
 import StyledAppBar from "@/layouts/main/StyledAppBar";
 import StyledDrawer from "@/layouts/main/StyledDrawer";
+import Notifications from "@/layouts/main/Notifications";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -58,13 +56,7 @@ function MainLayout({ children }: MainLayoutProps) {
               Dashboard
             </Typography>
 
-            <Tooltip title="Notifications">
-              <IconButton color="inherit">
-                <Badge badgeContent={4} color="secondary">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+            <Notifications />
 
             <AccountMenu />
           </Toolbar>

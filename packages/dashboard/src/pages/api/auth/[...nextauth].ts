@@ -53,7 +53,8 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.OIDC_CLIENT_SECRET ?? "",
       authorization: {
         params: {
-          scope: "openid email profile website preview_api:preview:get",
+          scope:
+            "openid email profile website preview_api:preview:get notify:notification:read notify:notification:update notify:notification:delete",
         },
       },
     }),

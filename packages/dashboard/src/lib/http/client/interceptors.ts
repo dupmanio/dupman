@@ -20,6 +20,7 @@ function produceLogoutInterceptor(
   return async (error: AxiosError) => {
     if (error.response?.status === 401) {
       try {
+        // @todo: other services?
         await DupmanAPIClient.reloadAuth();
       } catch {
         console.error("Unable to perform auth reload.");
