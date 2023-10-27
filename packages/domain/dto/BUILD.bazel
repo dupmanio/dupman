@@ -4,6 +4,7 @@ go_library(
     name = "dto",
     srcs = [
         "http.go",
+        "notification.go",
         "notifier.go",
         "preview.go",
         "status.go",

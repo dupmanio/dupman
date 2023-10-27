@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "notify_lib",
+    srcs = ["main.go"],
+    data = [
+        ".env",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/notify",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//packages/notify/config",
+        "//packages/notify/controller",
+        "//packages/notify/database",
+        "//packages/notify/middleware",
+        "//packages/notify/repository",
+        "//packages/notify/route",
+        "//packages/notify/server",
+        "//packages/notify/service",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_fx//fxevent",
+        "@org_uber_go_zap//:zap",
+    ],
+)
+
+go_binary(
+    name = "notify",
+    embed = [":notify_lib"],
+    visibility = ["//visibility:public"],
+)

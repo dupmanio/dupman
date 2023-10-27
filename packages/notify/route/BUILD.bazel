@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "route",
+    srcs = [
+        "notification.go",
+        "route.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/notify/route",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/notify/controller",
+        "//packages/notify/middleware",
+        "//packages/notify/server",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_zap//:zap",
+    ],
+)

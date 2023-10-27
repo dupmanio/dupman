@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "database",
+    srcs = ["database.go"],
+    importpath = "github.com/dupmanio/dupman/packages/notify/database",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/notify/config",
+        "@io_gorm_driver_postgres//:postgres",
+        "@io_gorm_gorm//:gorm",
+    ],
+)

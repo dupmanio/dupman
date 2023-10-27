@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "controller",
+    srcs = [
+        "controller.go",
+        "notification.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/notify/controller",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/pagination",
+        "//packages/common/service",
+        "//packages/domain/dto",
+        "//packages/notify/model",
+        "//packages/notify/service",
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_google_uuid//:uuid",
+        "@com_github_jinzhu_copier//:copier",
+        "@org_uber_go_fx//:fx",
+    ],
+)

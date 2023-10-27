@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "service",
+    srcs = [
+        "notification.go",
+        "service.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/notify/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/pagination",
+        "//packages/common/service",
+        "//packages/notify/model",
+        "//packages/notify/repository",
+        "@com_github_gin_gonic_gin//:gin",
+        "@com_github_google_uuid//:uuid",
+        "@org_uber_go_fx//:fx",
+    ],
+)

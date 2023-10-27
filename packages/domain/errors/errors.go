@@ -14,4 +14,5 @@ var (
 	ErrDupmanEndpointAccessDenied  = errors.New("access denied on /dupman endpoint")
 	ErrTokenIsExpired              = errors.New("token is expired")
 	ErrUnsupportedNotificationType = errors.New("unsupported notification type")
+	ErrInvalidUserID               = errors.New("user id is invalid or missing")
 )
