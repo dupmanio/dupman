@@ -1,27 +1,46 @@
 package service
 
 import (
+	"context"
 	"fmt"
+	"net"
 
 	authConstant "github.com/dupmanio/dupman/packages/auth/constant"
 	"github.com/dupmanio/dupman/packages/common/pagination"
+	"github.com/dupmanio/dupman/packages/domain/dto"
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
+	"github.com/dupmanio/dupman/packages/notify/config"
 	"github.com/dupmanio/dupman/packages/notify/model"
 	"github.com/dupmanio/dupman/packages/notify/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 type NotificationService struct {
 	notificationRepo *repository.NotificationRepository
+	redisClient      *redis.Client
 }
 
 func NewNotificationService(
 	notificationRepo *repository.NotificationRepository,
-) *NotificationService {
+	config *config.Config,
+) (*NotificationService, error) {
+	redisOptions, err := redis.ParseURL(fmt.Sprintf(
+		"redis://%s:%s@%s/%s",
+		config.Redis.User,
+		config.Redis.Password,
+		net.JoinHostPort(config.Redis.Host, config.Redis.Port),
+		config.Redis.Database,
+	))
+	if err != nil {
+		return nil, fmt.Errorf("unable to estabish redis connection: %w", err)
+	}
+
 	return &NotificationService{
 		notificationRepo: notificationRepo,
-	}
+		redisClient:      redis.NewClient(redisOptions),
+	}, nil
 }
 
 func (svc *NotificationService) Create(entity *model.Notification) (*model.Notification, error) {
@@ -122,4 +141,32 @@ func (svc *NotificationService) getCurrentUserID(ctx *gin.Context) (uuid.UUID, e
 	}
 
 	return uuid.Nil, domainErrors.ErrInvalidUserID
+}
+
+func (svc *NotificationService) SendNotificationToChannel(notification dto.NotificationOnResponse) error {
+	backgroundContext := context.Background()
+	channelName := svc.getUserNotificationsChannelName(notification.UserID)
+
+	if err := svc.redisClient.Publish(backgroundContext, channelName, notification).Err(); err != nil {
+		return fmt.Errorf("unable to publish notification: %w", err)
+	}
+
+	return nil
+}
+
+func (svc *NotificationService) getUserNotificationsChannelName(userID uuid.UUID) string {
+	return fmt.Sprintf("user:%s:notifications", userID)
+}
+
+func (svc *NotificationService) SubscribeToUserNotifications(ctx *gin.Context) (*redis.PubSub, error) {
+	backgroundContext := context.Background()
+
+	userID, err := svc.getCurrentUserID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get user ID: %w", err)
+	}
+
+	channelName := svc.getUserNotificationsChannelName(userID)
+
+	return svc.redisClient.Subscribe(backgroundContext, channelName), nil
 }

@@ -54,6 +54,12 @@ func (route *NotificationRoute) Setup() {
 			route.authMid.RequiresScope("notify", "notify:notification", "notify:notification:read"),
 			route.controller.GetCount,
 		)
+		group.GET(
+			"/realtime",
+			route.authMid.RequiresRole("user"),
+			route.authMid.RequiresScope("notify", "notify:notification", "notify:notification:read"),
+			route.controller.Realtime,
+		)
 		group.POST(
 			"/:id/mark-as-read",
 			route.authMid.RequiresRole("user"),

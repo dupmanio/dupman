@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,6 +19,10 @@ type NotificationOnResponse struct {
 	ID        uuid.UUID `json:"id" binding:"required"`
 	CreatedAt time.Time `json:"createdAt" binding:"required"`
 	Seen      bool      `json:"seen" binding:"required"`
+}
+
+func (obj NotificationOnResponse) MarshalBinary() ([]byte, error) {
+	return json.Marshal(obj)
 }
 
 type NotificationsOnResponse []NotificationOnResponse

@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"syscall"
 	"time"
 
 	"github.com/dupmanio/dupman/packages/notify/config"
@@ -17,7 +19,8 @@ import (
 )
 
 type Server struct {
-	Engine *gin.Engine
+	Engine    *gin.Engine
+	Interrupt chan os.Signal
 }
 
 func New(logger *zap.Logger, config *config.Config) (*Server, error) {
@@ -39,7 +42,8 @@ func New(logger *zap.Logger, config *config.Config) (*Server, error) {
 	engine.Use(ginzap.RecoveryWithZap(logger, true))
 
 	return &Server{
-		Engine: engine,
+		Engine:    engine,
+		Interrupt: make(chan os.Signal, 1),
 	}, nil
 }
 
@@ -65,6 +69,7 @@ func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Con
 		OnStop: func(ctx context.Context) error {
 			logger.Info("Shutting down HTTP Server")
 
+			server.Interrupt <- syscall.SIGTERM
 			if err := httpServer.Shutdown(ctx); err != nil {
 				return fmt.Errorf("failed to shutdown server: %w", err)
 			}

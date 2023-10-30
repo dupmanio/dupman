@@ -20,6 +20,20 @@ linters-settings:
   dupl:
     threshold: 165
 
+  wrapcheck:
+    ignoreSigs:
+      # Default Sigs.
+      - .Errorf(
+      - errors.New(
+      - errors.Unwrap(
+      - .Wrap(
+      - .Wrapf(
+      - .WithMessage(
+      - .WithMessagef(
+      - .WithStack(
+      # Custom Sigs.
+      - .Marshal(
+
 linters:
   enable-all: true
   disable:
@@ -41,7 +55,7 @@ linters:
     - nosnakecase
     - structcheck
 
-#    # Disabled because of generics.
+    # Disabled because of generics.
     - rowserrcheck
     - sqlclosecheck
     - wastedassign

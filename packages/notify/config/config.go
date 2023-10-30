@@ -20,6 +20,14 @@ type DatabaseConfig struct {
 	Port     string `mapstructure:"DB_PORT"`
 }
 
+type RedisConfig struct {
+	Host     string `mapstructure:"REDIS_HOST"`
+	User     string `mapstructure:"REDIS_USER"`
+	Password string `mapstructure:"REDIS_PASSWORD"`
+	Database string `mapstructure:"REDIS_DB"`
+	Port     string `mapstructure:"REDIS_PORT"`
+}
+
 type CORSConfig struct {
 	AllowOrigins  []string `mapstructure:"CORS_ALLOW_ORIGINS" default:"[*]"`
 	AllowMethods  []string `mapstructure:"CORS_ALLOW_METHODS" default:"[*]"`
@@ -35,6 +43,7 @@ type Config struct {
 	Env      string         `mapstructure:"ENV" default:"prod"`
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
+	Redis    RedisConfig    `mapstructure:",squash"`
 	CORS     CORSConfig     `mapstructure:",squash"`
 	OAuth    OAuthConfig    `mapstructure:",squash"`
 }
