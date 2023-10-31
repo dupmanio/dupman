@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "notify",
+    srcs = ["service.go"],
+    importpath = "github.com/dupmanio/dupman/packages/sdk/service/notify",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/domain/dto",
+        "//packages/sdk/dupman/session",
+        "//packages/sdk/internal/client",
+        "//packages/sdk/internal/errors",
+        "@com_github_go_resty_resty_v2//:resty",
+    ],
+)
