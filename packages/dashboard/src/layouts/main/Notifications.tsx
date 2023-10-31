@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
+import { useSnackbar } from "notistack";
 
 import {
   Box,
@@ -19,6 +20,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import NotificationItem from "@/components/NotificationItem";
 import { NotifyRepository } from "@/lib/repositories/notify";
 import { NotificationOnResponse } from "@/types/dtos/notification";
+import { useRealtimeNotifications } from "@/lib/http/client/notify-realtime";
 
 const PAGE_SIZE = 5;
 
@@ -36,6 +38,7 @@ function Notifications() {
   const open = Boolean(anchorEl);
 
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
 
   useSWR(["/notification/count"], NotifyRepository.getCount, {
     onSuccess(data) {
@@ -69,6 +72,24 @@ function Notifications() {
       },
     },
   );
+
+  useRealtimeNotifications((notification) => {
+    setNotifications((prevNotifications) => [
+      notification,
+      ...prevNotifications,
+    ]);
+    setTotalNotificationsCount(
+      (prevTotalNotificationsCount) => prevTotalNotificationsCount + 1,
+    );
+    setUnreadNotificationsCount(
+      (prevUnreadNotificationsCount) => prevUnreadNotificationsCount + 1,
+    );
+
+    // TODO: handle action.
+    enqueueSnackbar(notification.message, {
+      variant: "success",
+    });
+  });
 
   const isLoadingMore =
     isLoading || (size > 0 && data && typeof data[size - 1] === "undefined");
