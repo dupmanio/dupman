@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//packages/domain/dto",
         "//packages/notifier/deliverer/email",
+        "//packages/notifier/deliverer/notify",
         "@org_uber_go_fx//:fx",
     ],
 )

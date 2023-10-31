@@ -31,14 +31,9 @@ type Email struct {
 	From string `mapstructure:"EMAIL_FROM"`
 }
 
-type Deliverer struct {
-	Retries int `mapstructure:"DELIVERER_RETRIES" default:"3"`
-}
-
 type DupmanAPIService struct {
-	ClientID     string   `mapstructure:"DUPMAN_API_SERVICE_CLIENT_ID"`
-	ClientSecret string   `mapstructure:"DUPMAN_API_SERVICE_CLIENT_SECRET"`
-	Scopes       []string `mapstructure:"DUPMAN_API_SERVICE_SCOPES" default:"[user:get_contact_info]"`
+	ClientID     string `mapstructure:"DUPMAN_API_SERVICE_CLIENT_ID"`
+	ClientSecret string `mapstructure:"DUPMAN_API_SERVICE_CLIENT_SECRET"`
 }
 
 type Config struct {
@@ -46,7 +41,6 @@ type Config struct {
 	RabbitMQ         RabbitMQ         `mapstructure:",squash"`
 	Worker           Worker           `mapstructure:",squash"`
 	Mailer           Mailer           `mapstructure:",squash"`
-	Deliverer        Deliverer        `mapstructure:",squash"`
 	Email            Email            `mapstructure:",squash"`
 	DupmanAPIService DupmanAPIService `mapstructure:",squash"`
 }

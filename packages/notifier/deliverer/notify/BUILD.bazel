@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "notify",
+    srcs = [
+        "deliverer.go",
+        "notification_settings.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/notifier/deliverer/notify",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/service",
+        "//packages/domain/dto",
+        "//packages/domain/errors",
+        "//packages/notifier/config",
+        "//packages/sdk/dupman/credentials",
+    ],
+)

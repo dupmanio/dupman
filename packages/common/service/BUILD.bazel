@@ -27,6 +27,7 @@ go_library(
         "//packages/sdk/dupman",
         "//packages/sdk/dupman/credentials",
         "//packages/sdk/dupman/session",
+        "//packages/sdk/service/notify",
         "//packages/sdk/service/system",
         "//packages/sdk/service/user",
         "//packages/sdk/service/website",

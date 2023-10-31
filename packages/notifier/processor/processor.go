@@ -10,6 +10,7 @@ import (
 	"github.com/dupmanio/dupman/packages/notifier/config"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer/email"
+	"github.com/dupmanio/dupman/packages/notifier/deliverer/notify"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -31,11 +32,12 @@ func NewProcessor(
 	broker *broker.RabbitMQ,
 	dupmanAPIService *service.DupmanAPIService,
 	emailDeliverer *email.Deliverer,
+	notifyDeliverer *notify.Deliverer,
 ) (*Processor, error) {
 	cred, err := credentials.NewClientCredentials(
 		config.DupmanAPIService.ClientID,
 		config.DupmanAPIService.ClientSecret,
-		config.DupmanAPIService.Scopes,
+		[]string{"user:get_contact_info"},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create dupman credentials provider: %w", err)
@@ -49,6 +51,7 @@ func NewProcessor(
 		dupmanAPIService:  dupmanAPIService,
 		deliverers: []deliverer.Deliverer{
 			emailDeliverer,
+			notifyDeliverer,
 		},
 	}, nil
 }
