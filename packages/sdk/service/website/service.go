@@ -7,13 +7,15 @@ import (
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/internal/client"
 	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
+	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 )
 
 // Website provides the API operation methods for working with /website routes.
 type Website struct {
-	session *session.Session
+	client *resty.Client
 }
 
 // New creates a new instance of the Website client with a session.
@@ -26,7 +28,9 @@ type Website struct {
 //	// Create a Website client from just a session.
 //	svc := website.New(sess)
 func New(sess *session.Session) *Website {
-	return &Website{session: sess}
+	return &Website{
+		client: client.NewAPIClient(sess),
+	}
 }
 
 // Create creates new website.
@@ -41,7 +45,7 @@ func New(sess *session.Session) *Website {
 func (svc *Website) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnCreateResponse, error) {
 	var response *dto.HTTPResponse[*dto.WebsiteOnCreateResponse]
 
-	resp, err := svc.session.Client.R().
+	resp, err := svc.client.R().
 		SetResult(&response).
 		SetBody(payload).
 		Post("/website")
@@ -69,7 +73,7 @@ func (svc *Website) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnCreateRe
 func (svc *Website) GetAll(page int) (*dto.WebsitesOnResponse, *pagination.Pagination, error) {
 	var response *dto.HTTPResponse[*dto.WebsitesOnResponse]
 
-	resp, err := svc.session.Client.R().
+	resp, err := svc.client.R().
 		SetResult(&response).
 		SetQueryParam("limit", "50").
 		SetQueryParam("page", fmt.Sprintf("%d", page)).
@@ -97,7 +101,7 @@ func (svc *Website) GetAll(page int) (*dto.WebsitesOnResponse, *pagination.Pagin
 func (svc *Website) Get(id uuid.UUID) (*dto.WebsiteOnResponse, error) {
 	var response *dto.HTTPResponse[*dto.WebsiteOnResponse]
 
-	resp, err := svc.session.Client.R().
+	resp, err := svc.client.R().
 		SetResult(&response).
 		SetPathParam("id", id.String()).
 		Get("/website/{id}")

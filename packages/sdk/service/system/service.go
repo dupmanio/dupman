@@ -7,13 +7,15 @@ import (
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/internal/client"
 	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
+	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 )
 
 // System provides the API operation methods for working with /system routes.
 type System struct {
-	session *session.Session
+	client *resty.Client
 }
 
 // New creates a new instance of the System client with a session.
@@ -26,7 +28,9 @@ type System struct {
 //	// Create a System client from just a session.
 //	svc := system.New(sess)
 func New(sess *session.Session) *System {
-	return &System{session: sess}
+	return &System{
+		client: client.NewAPIClient(sess),
+	}
 }
 
 // GetWebsites gets all websites.
@@ -51,7 +55,7 @@ func (svc *System) GetWebsites(
 ) (*dto.WebsitesOnSystemResponse, *pagination.Pagination, error) {
 	var response *dto.HTTPResponse[*dto.WebsitesOnSystemResponse]
 
-	resp, err := svc.session.Client.R().
+	resp, err := svc.client.R().
 		SetHeader("X-Public-Key", publicKey).
 		SetResult(&response).
 		SetQueryParam("limit", "50").
@@ -93,7 +97,7 @@ func (svc *System) UpdateWebsiteStatus(
 		payload.Updates = *updates
 	}
 
-	resp, err := svc.session.Client.R().
+	resp, err := svc.client.R().
 		SetResult(&response).
 		SetBody(payload).
 		SetPathParam("websiteId", websiteID.String()).

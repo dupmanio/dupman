@@ -11,5 +11,4 @@ type Config struct {
 	Debug       bool
 	Timeout     time.Duration
 	RetryCount  int
-	URL         string
 }

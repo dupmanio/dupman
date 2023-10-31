@@ -6,13 +6,15 @@ import (
 
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/internal/client"
 	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
+	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 )
 
 // User provides the API operation methods for working with /user routes.
 type User struct {
-	session *session.Session
+	client *resty.Client
 }
 
 // New creates a new instance of the User client with a session.
@@ -25,7 +27,9 @@ type User struct {
 //	// Create a User client from just a session.
 //	svc := user.New(sess)
 func New(sess *session.Session) *User {
-	return &User{session: sess}
+	return &User{
+		client: client.NewAPIClient(sess),
+	}
 }
 
 // Create creates new user.
@@ -40,7 +44,7 @@ func New(sess *session.Session) *User {
 func (svc *User) Create(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
 	var response *dto.HTTPResponse[*dto.UserAccount]
 
-	resp, err := svc.session.Client.R().
+	resp, err := svc.client.R().
 		SetResult(&response).
 		SetBody(payload).
 		Post("/user")
@@ -67,7 +71,7 @@ func (svc *User) Create(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
 func (svc *User) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
 	var response *dto.HTTPResponse[*dto.UserAccount]
 
-	resp, err := svc.session.Client.R().
+	resp, err := svc.client.R().
 		SetResult(&response).
 		SetBody(payload).
 		Patch("/user")
@@ -94,7 +98,7 @@ func (svc *User) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
 func (svc *User) GetContactInfo(id uuid.UUID) (*dto.ContactInfo, error) {
 	var response *dto.HTTPResponse[*dto.ContactInfo]
 
-	resp, err := svc.session.Client.R().
+	resp, err := svc.client.R().
 		SetResult(&response).
 		SetPathParam("id", id.String()).
 		Get("/user/contact-info/{id}")

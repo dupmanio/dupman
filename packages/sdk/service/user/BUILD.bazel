@@ -8,7 +8,9 @@ go_library(
     deps = [
         "//packages/domain/dto",
         "//packages/sdk/dupman/session",
+        "//packages/sdk/internal/client",
         "//packages/sdk/internal/errors",
+        "@com_github_go_resty_resty_v2//:resty",
         "@com_github_google_uuid//:uuid",
     ],
 )

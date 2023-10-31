@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "client",
+    srcs = [
+        "api.go",
+        "client.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/sdk/internal/client",
+    visibility = ["//packages/sdk:__subpackages__"],
+    deps = [
+        "//packages/sdk/dupman",
+        "//packages/sdk/dupman/session",
+        "//packages/sdk/internal/errors",
+        "@com_github_go_resty_resty_v2//:resty",
+    ],
+)
