@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/dupmanio/dupman/packages/api/broker"
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
@@ -20,13 +21,19 @@ import (
 type SystemController struct {
 	httpSvc    *commonServices.HTTPService
 	websiteSvc *service.WebsiteService
+	broker     *broker.RabbitMQ
 }
 
 func NewSystemController(
 	httpSvc *commonServices.HTTPService,
 	websiteSvc *service.WebsiteService,
+	broker *broker.RabbitMQ,
 ) (*SystemController, error) {
-	return &SystemController{httpSvc: httpSvc, websiteSvc: websiteSvc}, nil
+	return &SystemController{
+		httpSvc:    httpSvc,
+		websiteSvc: websiteSvc,
+		broker:     broker,
+	}, nil
 }
 
 func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
@@ -96,6 +103,20 @@ func (ctrl *SystemController) UpdateWebsiteStatus(ctx *gin.Context) {
 
 	status, err := ctrl.websiteSvc.UpdateStatus(websiteID, &statusEntity)
 	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	website, err := ctrl.websiteSvc.GetSingle(websiteID)
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	// @todo: refactor to create notifications only for new updates and statuses.
+	if err = ctrl.broker.PublishWebsiteStatus(website.UserID, statusEntity.State, updateEntities); err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 
 		return

@@ -61,7 +61,7 @@ func (svc *WebsiteService) GetAllForCurrentUser(
 	return websites, nil
 }
 
-func (svc *WebsiteService) GetSingle(
+func (svc *WebsiteService) GetSingleForCurrentUser(
 	ctx *gin.Context,
 	websiteID uuid.UUID,
 ) (*model.Website, error) {
@@ -74,6 +74,17 @@ func (svc *WebsiteService) GetSingle(
 
 	if website.UserID != currentUser.ID {
 		return nil, errors.ErrAccessIsForbidden
+	}
+
+	return website, nil
+}
+
+func (svc *WebsiteService) GetSingle(
+	websiteID uuid.UUID,
+) (*model.Website, error) {
+	website := svc.websiteRepo.FindByID(websiteID.String())
+	if website == nil {
+		return nil, errors.ErrWebsiteNotFound
 	}
 
 	return website, nil

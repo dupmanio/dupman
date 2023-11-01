@@ -83,7 +83,7 @@ func (ctrl *WebsiteController) GetSingle(ctx *gin.Context) {
 		return
 	}
 
-	website, err := ctrl.websiteSvc.GetSingle(ctx, websiteID)
+	website, err := ctrl.websiteSvc.GetSingleForCurrentUser(ctx, websiteID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrWebsiteNotFound) || errors.Is(err, domainErrors.ErrAccessIsForbidden) {

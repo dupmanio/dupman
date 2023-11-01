@@ -15,4 +15,5 @@ var (
 	ErrTokenIsExpired              = errors.New("token is expired")
 	ErrUnsupportedNotificationType = errors.New("unsupported notification type")
 	ErrInvalidUserID               = errors.New("user id is invalid or missing")
+	ErrUnableToPublishMessage      = errors.New("unable to publish message")
 )

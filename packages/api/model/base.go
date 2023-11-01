@@ -14,7 +14,7 @@ type Base struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-func (entity *Base) BeforeCreate(tx *gorm.DB) error {
+func (entity *Base) BeforeCreate(_ *gorm.DB) error {
 	if entity.ID == uuid.Nil {
 		entity.ID = uuid.New()
 	}

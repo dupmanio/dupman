@@ -31,12 +31,26 @@ type OAuthConfig struct {
 	Issuer string `mapstructure:"OAUTH_ISSUER"`
 }
 
+type RabbitMQ struct {
+	Host     string `mapstructure:"RMQ_HOST" default:"127.0.0.1"`
+	Port     string `mapstructure:"RMQ_PORT" default:"5672"`
+	User     string `mapstructure:"RMQ_USER"`
+	Password string `mapstructure:"RMQ_PASSWORD"`
+}
+
+type Notify struct {
+	ExchangeName string `mapstructure:"NOTIFY_EXCHANGE_NAME"`
+	RoutingKey   string `mapstructure:"NOTIFY_ROUTING_KEY"`
+}
+
 type Config struct {
 	Env      string         `mapstructure:"ENV" default:"prod"`
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
 	CORS     CORSConfig     `mapstructure:",squash"`
 	OAuth    OAuthConfig    `mapstructure:",squash"`
+	RabbitMQ RabbitMQ       `mapstructure:",squash"`
+	Notify   Notify         `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {
