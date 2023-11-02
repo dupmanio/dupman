@@ -30,7 +30,7 @@ function useRealtimeNotifications(
         },
       },
     );
-  }, [publicRuntimeConfig, session, onNotification]);
+  }, []);
 }
 
 export { useRealtimeNotifications };
