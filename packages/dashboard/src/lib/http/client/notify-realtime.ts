@@ -13,7 +13,7 @@ function useRealtimeNotifications(
 
   useEffect(() => {
     fetchEventSource(
-      `${publicRuntimeConfig.NOTIFY_URL}/notification/realtime`,
+      `${publicRuntimeConfig.DUPMAN_API}/notify/notification/realtime`,
       {
         method: "GET",
         headers: {

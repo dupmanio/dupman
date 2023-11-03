@@ -2,7 +2,7 @@ import { AxiosInstance } from "axios";
 import { v4 as uuid } from "uuid";
 
 import { HTTPResponse } from "@/types/dtos/http";
-import { NotifyClient } from "@/lib/http/client/notify";
+import { DupmanAPIClient } from "@/lib/http/client/dupman-api";
 import { NotificationOnResponse } from "@/types/dtos/notification";
 
 interface INotifyRepository {
@@ -16,33 +16,39 @@ interface INotifyRepository {
   deleteAll: () => Promise<HTTPResponse<null>>;
 }
 
+const servicePrefix = "/notify";
+
 function UseRepositoryFactory(http: AxiosInstance): INotifyRepository {
   return {
     getCount: async () => {
-      const response = await http.get("/notification/count");
+      const response = await http.get(`${servicePrefix}/notification/count`);
       return response.data;
     },
     getAll: async (page, limit) => {
-      const response = await http.get("/notification/", {
+      const response = await http.get(`${servicePrefix}/notification/`, {
         params: { page, limit },
       });
       return response.data;
     },
     markAsRead: async (id: typeof uuid) => {
-      const response = await http.post(`/notification/${id}/mark-as-read`);
+      const response = await http.post(
+        `${servicePrefix}/notification/${id}/mark-as-read`,
+      );
       return response.data;
     },
     markAllAsRead: async () => {
-      const response = await http.post("/notification/mark-all-as-read");
+      const response = await http.post(
+        `${servicePrefix}/notification/mark-all-as-read`,
+      );
       return response.data;
     },
     deleteAll: async () => {
-      const response = await http.delete("/notification/");
+      const response = await http.delete(`${servicePrefix}/notification/`);
       return response.data;
     },
   };
 }
 
-const NotifyRepository = UseRepositoryFactory(NotifyClient);
+const NotifyRepository = UseRepositoryFactory(DupmanAPIClient);
 
 export { UseRepositoryFactory, NotifyRepository };
