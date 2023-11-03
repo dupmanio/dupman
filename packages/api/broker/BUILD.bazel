@@ -9,7 +9,6 @@ go_library(
         "//packages/api/config",
         "//packages/api/model",
         "//packages/domain/dto",
-        "//packages/domain/errors",
         "@com_github_google_uuid//:uuid",
         "@com_github_rabbitmq_amqp091_go//:amqp091-go",
         "@org_uber_go_zap//:zap",

@@ -12,13 +12,6 @@ type ServerConfig struct {
 	TrustedProxies []string `mapstructure:"TRUSTED_PROXIES"`
 }
 
-type CORSConfig struct {
-	AllowOrigins  []string `mapstructure:"CORS_ALLOW_ORIGINS" default:"[*]"`
-	AllowMethods  []string `mapstructure:"CORS_ALLOW_METHODS" default:"[*]"`
-	AllowHeaders  []string `mapstructure:"CORS_ALLOW_HEADERS" default:"[*]"`
-	ExposeHeaders []string `mapstructure:"CORS_EXPOSE_HEADERS" default:"[*]"`
-}
-
 type OAuthConfig struct {
 	Issuer string `mapstructure:"OAUTH_ISSUER"`
 }
@@ -32,7 +25,6 @@ type ChromeConfig struct {
 type Config struct {
 	Env    string       `mapstructure:"ENV" default:"prod"`
 	Server ServerConfig `mapstructure:",squash"`
-	CORS   CORSConfig   `mapstructure:",squash"`
 	OAuth  OAuthConfig  `mapstructure:",squash"`
 	Chrome ChromeConfig `mapstructure:",squash"`
 }

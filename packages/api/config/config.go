@@ -20,13 +20,6 @@ type DatabaseConfig struct {
 	Port     string `mapstructure:"DB_PORT"`
 }
 
-type CORSConfig struct {
-	AllowOrigins  []string `mapstructure:"CORS_ALLOW_ORIGINS" default:"[*]"`
-	AllowMethods  []string `mapstructure:"CORS_ALLOW_METHODS" default:"[*]"`
-	AllowHeaders  []string `mapstructure:"CORS_ALLOW_HEADERS" default:"[*]"`
-	ExposeHeaders []string `mapstructure:"CORS_EXPOSE_HEADERS" default:"[*]"`
-}
-
 type OAuthConfig struct {
 	Issuer string `mapstructure:"OAUTH_ISSUER"`
 }
@@ -47,7 +40,6 @@ type Config struct {
 	Env      string         `mapstructure:"ENV" default:"prod"`
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
-	CORS     CORSConfig     `mapstructure:",squash"`
 	OAuth    OAuthConfig    `mapstructure:",squash"`
 	RabbitMQ RabbitMQ       `mapstructure:",squash"`
 	Notify   Notify         `mapstructure:",squash"`

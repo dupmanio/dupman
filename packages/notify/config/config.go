@@ -28,13 +28,6 @@ type RedisConfig struct {
 	Port     string `mapstructure:"REDIS_PORT"`
 }
 
-type CORSConfig struct {
-	AllowOrigins  []string `mapstructure:"CORS_ALLOW_ORIGINS" default:"[*]"`
-	AllowMethods  []string `mapstructure:"CORS_ALLOW_METHODS" default:"[*]"`
-	AllowHeaders  []string `mapstructure:"CORS_ALLOW_HEADERS" default:"[*]"`
-	ExposeHeaders []string `mapstructure:"CORS_EXPOSE_HEADERS" default:"[*]"`
-}
-
 type OAuthConfig struct {
 	Issuer string `mapstructure:"OAUTH_ISSUER"`
 }
@@ -44,7 +37,6 @@ type Config struct {
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
 	Redis    RedisConfig    `mapstructure:",squash"`
-	CORS     CORSConfig     `mapstructure:",squash"`
 	OAuth    OAuthConfig    `mapstructure:",squash"`
 }
 

@@ -8,12 +8,9 @@ import (
 func Create() fx.Option {
 	return fx.Options(
 		fx.Provide(NewAuthMiddleware),
-		fx.Provide(NewCORSMiddleware),
 		fx.Invoke(
-			func(logger *zap.Logger, CORSMiddleware *CORSMiddleware) {
+			func(logger *zap.Logger) {
 				logger.Debug("Setting up middlewares")
-
-				CORSMiddleware.Setup()
 			},
 		),
 	)

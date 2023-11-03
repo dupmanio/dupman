@@ -4,7 +4,6 @@ go_library(
     name = "middleware",
     srcs = [
         "auth.go",
-        "cors.go",
         "midleware.go",
     ],
     importpath = "github.com/dupmanio/dupman/packages/preview-api/middleware",
@@ -14,8 +13,6 @@ go_library(
         "//packages/common/service",
         "//packages/domain/errors",
         "//packages/preview-api/config",
-        "//packages/preview-api/server",
-        "@com_github_gin_contrib_cors//:cors",
         "@com_github_gin_gonic_gin//:gin",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",
