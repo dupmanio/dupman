@@ -10,6 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.14.0
 	github.com/go-resty/resty/v2 v2.7.0
+	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.5
 	github.com/mcuadros/go-defaults v1.2.0

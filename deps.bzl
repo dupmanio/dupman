@@ -196,12 +196,6 @@ def go_dependencies():
         sum = "h1:w5qFW6JKBz9Y393Y4q372O9A7cUSequkh1Q7OhCmWKU=",
         version = "v1.4.2",
     )
-    go_repository(
-        name = "com_github_gin_contrib_cors",
-        importpath = "github.com/gin-contrib/cors",
-        sum = "h1:oJ6gwtUl3lqV0WEIwM/LxPF1QZ5qe2lGWdY2+bz7y0g=",
-        version = "v1.4.0",
-    )
 
     go_repository(
         name = "com_github_gin_contrib_sse",
@@ -325,6 +319,13 @@ def go_dependencies():
         sum = "h1:oI5xCqsCo564l8iNU+DwB5epxmsaqB+rhGL0m5jtYqE=",
         version = "v0.0.0-20210331224755-41bb18bfe9da",
     )
+    go_repository(
+        name = "com_github_golang_jwt_jwt_v5",
+        importpath = "github.com/golang-jwt/jwt/v5",
+        sum = "h1:1n1XNM9hk7O9mnQoNBGolZvzebBQ7p93ULHRc28XJUE=",
+        version = "v5.0.0",
+    )
+
     go_repository(
         name = "com_github_golang_mock",
         importpath = "github.com/golang/mock",

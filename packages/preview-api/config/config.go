@@ -12,10 +12,6 @@ type ServerConfig struct {
 	TrustedProxies []string `mapstructure:"TRUSTED_PROXIES"`
 }
 
-type OAuthConfig struct {
-	Issuer string `mapstructure:"OAUTH_ISSUER"`
-}
-
 type ChromeConfig struct {
 	ResolutionX int `mapstructure:"CHROME_RESOLUTION_X" default:"1920"`
 	ResolutionY int `mapstructure:"CHROME_RESOLUTION_Y" default:"1080"`
@@ -25,7 +21,6 @@ type ChromeConfig struct {
 type Config struct {
 	Env    string       `mapstructure:"ENV" default:"prod"`
 	Server ServerConfig `mapstructure:",squash"`
-	OAuth  OAuthConfig  `mapstructure:",squash"`
 	Chrome ChromeConfig `mapstructure:",squash"`
 }
 

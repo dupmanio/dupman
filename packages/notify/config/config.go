@@ -28,16 +28,11 @@ type RedisConfig struct {
 	Port     string `mapstructure:"REDIS_PORT"`
 }
 
-type OAuthConfig struct {
-	Issuer string `mapstructure:"OAUTH_ISSUER"`
-}
-
 type Config struct {
 	Env      string         `mapstructure:"ENV" default:"prod"`
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
 	Redis    RedisConfig    `mapstructure:",squash"`
-	OAuth    OAuthConfig    `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {

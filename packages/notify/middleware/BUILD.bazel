@@ -12,7 +12,6 @@ go_library(
         "//packages/auth",
         "//packages/common/service",
         "//packages/domain/errors",
-        "//packages/notify/config",
         "@com_github_gin_gonic_gin//:gin",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",

@@ -1,10 +1,8 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/dupmanio/dupman/packages/api/config"
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
@@ -24,18 +22,12 @@ type AuthMiddleware struct {
 }
 
 func NewAuthMiddleware(
-	config *config.Config,
 	httpSvc *commonServices.HTTPService,
 	userRepo *repository.UserRepository,
 	userSvc *service.UserService,
 ) (*AuthMiddleware, error) {
-	handler, err := auth.NewHandler(auth.HandlerOptions{OauthIssuer: config.OAuth.Issuer})
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize auth handler: %w", err)
-	}
-
 	return &AuthMiddleware{
-		authHandler: handler,
+		authHandler: auth.NewHandler(),
 		httpSvc:     httpSvc,
 		userRepo:    userRepo,
 		userSvc:     userSvc,
@@ -59,10 +51,10 @@ func (mid *AuthMiddleware) RequiresAuth() gin.HandlerFunc {
 			return
 		}
 
-		user := mid.userRepo.FindByID(claims.Sub)
+		user := mid.userRepo.FindByID(claims.Subject)
 		if user == nil {
 			user = &model.User{}
-			user.ID, _ = uuid.Parse(claims.Sub)
+			user.ID, _ = uuid.Parse(claims.Subject)
 		}
 
 		user.Roles = claims.RealmAccess.Roles

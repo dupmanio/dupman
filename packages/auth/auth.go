@@ -1,82 +1,42 @@
 package auth
 
 import (
-	"context"
 	"fmt"
+	"github.com/golang-jwt/jwt/v5"
 	"strings"
 
-	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/dupmanio/dupman/packages/auth/constant"
-	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 )
 
 type Claims struct {
-	Sub         string
+	jwt.RegisteredClaims
+
 	Scope       string
 	RealmAccess struct {
 		Roles []string
 	} `json:"realm_access"`
 }
 
-type HandlerOptions struct {
-	OauthIssuer string
-}
+type Handler struct{}
 
-type Handler struct {
-	oauthProvider *oidc.Provider
-}
-
-func NewHandler(options HandlerOptions) (*Handler, error) {
-	ctx := context.Background()
-
-	provider, err := oidc.NewProvider(ctx, options.OauthIssuer)
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize OIDC Provider: %w", err)
-	}
-
-	return &Handler{
-		oauthProvider: provider,
-	}, nil
+func NewHandler() *Handler {
+	return &Handler{}
 }
 
 func (hand *Handler) ExtractAuthClaims(authHeaderValue string) (Claims, error) {
-	var claims Claims
+	claims := Claims{}
 
 	accessToken := strings.TrimPrefix(authHeaderValue, "Bearer ")
-	if accessToken == "" {
-		return claims, errors.ErrAuthorizationRequired
-	}
-
-	token, err := hand.extractIDToken(accessToken)
-	if err != nil {
-		return claims, fmt.Errorf("invalid token: %w", err)
-	}
-
-	if err = token.Claims(&claims); err != nil {
+	if _, _, err := jwt.NewParser().ParseUnverified(accessToken, &claims); err != nil {
 		return claims, fmt.Errorf("unable to unmarshal claims : %w", err)
 	}
 
 	return claims, nil
 }
 
-func (hand *Handler) extractIDToken(rawToken string) (*oidc.IDToken, error) {
-	ctx := context.Background()
-	verifierOptions := &oidc.Config{
-		SkipClientIDCheck: true,
-	}
-	verifier := hand.oauthProvider.Verifier(verifierOptions)
-
-	token, err := verifier.Verify(ctx, rawToken)
-	if err != nil {
-		return nil, fmt.Errorf("unable to verify token: %w", err)
-	}
-
-	return token, nil
-}
-
 func (hand *Handler) StoreAuthData(ctx *gin.Context, claims Claims) {
-	ctx.Set(constant.UserIDKey, claims.Sub)
+	ctx.Set(constant.UserIDKey, claims.Subject)
 	ctx.Set(constant.TokenScopesKey, strings.Split(claims.Scope, " "))
 	ctx.Set(constant.TokenRolesKey, claims.RealmAccess.Roles)
 }

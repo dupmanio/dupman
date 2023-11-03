@@ -9,7 +9,6 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/api/middleware",
     visibility = ["//visibility:public"],
     deps = [
-        "//packages/api/config",
         "//packages/api/constant",
         "//packages/api/model",
         "//packages/api/repository",

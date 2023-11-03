@@ -1,13 +1,11 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/dupmanio/dupman/packages/auth"
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/errors"
-	"github.com/dupmanio/dupman/packages/preview-api/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,16 +15,10 @@ type AuthMiddleware struct {
 }
 
 func NewAuthMiddleware(
-	config *config.Config,
 	httpSvc *commonServices.HTTPService,
 ) (*AuthMiddleware, error) {
-	handler, err := auth.NewHandler(auth.HandlerOptions{OauthIssuer: config.OAuth.Issuer})
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize auth handler: %w", err)
-	}
-
 	return &AuthMiddleware{
-		authHandler: handler,
+		authHandler: auth.NewHandler(),
 		httpSvc:     httpSvc,
 	}, nil
 }

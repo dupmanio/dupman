@@ -20,10 +20,6 @@ type DatabaseConfig struct {
 	Port     string `mapstructure:"DB_PORT"`
 }
 
-type OAuthConfig struct {
-	Issuer string `mapstructure:"OAUTH_ISSUER"`
-}
-
 type RabbitMQ struct {
 	Host     string `mapstructure:"RMQ_HOST" default:"127.0.0.1"`
 	Port     string `mapstructure:"RMQ_PORT" default:"5672"`
@@ -40,7 +36,6 @@ type Config struct {
 	Env      string         `mapstructure:"ENV" default:"prod"`
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
-	OAuth    OAuthConfig    `mapstructure:",squash"`
 	RabbitMQ RabbitMQ       `mapstructure:",squash"`
 	Notify   Notify         `mapstructure:",squash"`
 }
