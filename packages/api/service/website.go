@@ -79,6 +79,18 @@ func (svc *WebsiteService) GetSingleForCurrentUser(
 	return website, nil
 }
 
+func (svc *WebsiteService) DeleteForCurrentUser(
+	ctx *gin.Context,
+	websiteID uuid.UUID,
+) error {
+	currentUser := svc.userSvc.CurrentUser(ctx)
+	if err := svc.websiteRepo.DeleteByIDAndUserID(websiteID, currentUser.ID); err != nil {
+		return fmt.Errorf("unable to delete websites: %w", err)
+	}
+
+	return nil
+}
+
 func (svc *WebsiteService) GetSingle(
 	websiteID uuid.UUID,
 ) (*model.Website, error) {

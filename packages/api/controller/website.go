@@ -100,3 +100,34 @@ func (ctrl *WebsiteController) GetSingle(ctx *gin.Context) {
 
 	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
 }
+
+func (ctrl *WebsiteController) Delete(ctx *gin.Context) {
+	websiteID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid website ID: %s", err))
+
+		return
+	}
+
+	_, err = ctrl.websiteSvc.GetSingleForCurrentUser(ctx, websiteID)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrWebsiteNotFound) || errors.Is(err, domainErrors.ErrAccessIsForbidden) {
+			statusCode = http.StatusNotFound
+			err = domainErrors.ErrWebsiteNotFound
+		}
+
+		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+
+		return
+	}
+
+	err = ctrl.websiteSvc.DeleteForCurrentUser(ctx, websiteID)
+	if err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, nil)
+}

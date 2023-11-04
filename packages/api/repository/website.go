@@ -9,6 +9,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/database"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/common/pagination"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -105,6 +106,26 @@ func (repo *WebsiteRepository) UpdateStatus(website *model.Website) error {
 		Error
 	if err != nil {
 		return fmt.Errorf("unable to update Website: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *WebsiteRepository) DeleteByIDAndUserID(id, userID uuid.UUID) error {
+	err := repo.db.
+		Debug().
+		Unscoped().
+		Select("Updates", "Status").
+		Where("id = ?", id).
+		Where("user_id = ?", userID).
+		Delete(&model.Website{
+			Base: model.Base{
+				ID: id,
+			},
+		}).
+		Error
+	if err != nil {
+		return fmt.Errorf("unable to delete Website: %w", err)
 	}
 
 	return nil

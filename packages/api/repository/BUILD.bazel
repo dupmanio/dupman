@@ -17,6 +17,7 @@ go_library(
         "//packages/api/database",
         "//packages/api/model",
         "//packages/common/pagination",
+        "@com_github_google_uuid//:uuid",
         "@io_gorm_gorm//:gorm",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",
