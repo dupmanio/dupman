@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/database"
@@ -79,4 +80,32 @@ func (repo *WebsiteRepository) FindByID(id string) *model.Website {
 	}
 
 	return &website
+}
+
+func (repo *WebsiteRepository) ClearUpdates(website *model.Website) error {
+	err := repo.db.
+		Unscoped().
+		Model(&website).
+		Association("Updates").
+		Unscoped().
+		Clear()
+	if err != nil {
+		return fmt.Errorf("unable to clear Updates Association: %w", err)
+	}
+
+	return nil
+}
+
+func (repo *WebsiteRepository) UpdateStatus(website *model.Website) error {
+	err := repo.db.
+		Session(&gorm.Session{FullSaveAssociations: true}).
+		Select("Updates", "Status").
+		Omit("UpdatedAt").
+		Updates(&website).
+		Error
+	if err != nil {
+		return fmt.Errorf("unable to update Website: %w", err)
+	}
+
+	return nil
 }

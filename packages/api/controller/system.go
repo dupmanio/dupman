@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dupmanio/dupman/packages/api/broker"
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
@@ -21,18 +20,15 @@ import (
 type SystemController struct {
 	httpSvc    *commonServices.HTTPService
 	websiteSvc *service.WebsiteService
-	broker     *broker.RabbitMQ
 }
 
 func NewSystemController(
 	httpSvc *commonServices.HTTPService,
 	websiteSvc *service.WebsiteService,
-	broker *broker.RabbitMQ,
 ) (*SystemController, error) {
 	return &SystemController{
 		httpSvc:    httpSvc,
 		websiteSvc: websiteSvc,
-		broker:     broker,
 	}, nil
 }
 
@@ -85,44 +81,27 @@ func (ctrl *SystemController) UpdateWebsiteStatus(ctx *gin.Context) {
 	_ = copier.Copy(&statusEntity, &payload.Status)
 	_ = copier.Copy(&updateEntities, &payload.Updates)
 
-	if statusEntity.State == "NEEDS_UPDATE" && updateEntities != nil && len(updateEntities) != 0 {
-		updates, err := ctrl.websiteSvc.CreateUpdates(websiteID, updateEntities)
-		if err != nil {
-			statusCode := http.StatusInternalServerError
-			if errors.Is(err, domainErrors.ErrWebsiteNotFound) {
-				statusCode = http.StatusNotFound
-			}
-
-			ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
-
-			return
-		}
-
-		_ = copier.Copy(&response.Updates, &updates)
-	}
-
-	status, err := ctrl.websiteSvc.UpdateStatus(websiteID, &statusEntity)
-	if err != nil {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
-
-		return
-	}
-
 	website, err := ctrl.websiteSvc.GetSingle(websiteID)
 	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrWebsiteNotFound) {
+			statusCode = http.StatusNotFound
+		}
+
+		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+
+		return
+	}
+
+	website, err = ctrl.websiteSvc.UpdateStatus(website, statusEntity, updateEntities)
+	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 
 		return
 	}
 
-	// @todo: refactor to create notifications only for new updates and statuses.
-	if err = ctrl.broker.PublishWebsiteStatus(website.UserID, statusEntity.State, updateEntities); err != nil {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
-
-		return
-	}
-
-	_ = copier.Copy(&response.Status, &status)
+	_ = copier.Copy(&response.Status, &website.Status)
+	_ = copier.Copy(&response.Updates, &website.Updates)
 
 	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
 }

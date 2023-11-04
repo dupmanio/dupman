@@ -1,12 +1,9 @@
 package repository
 
 import (
-	"errors"
-
 	"github.com/dupmanio/dupman/packages/api/database"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type StatusRepository struct {
@@ -39,23 +36,4 @@ END $$;
 	if err := repo.db.AutoMigrate(&model.Status{}); err != nil {
 		repo.logger.Error(err.Error())
 	}
-}
-
-func (repo *StatusRepository) Create(status *model.Status) error {
-	return repo.db.Create(status).Error
-}
-
-func (repo *StatusRepository) Update(status *model.Status) error {
-	return repo.db.Save(status).Error
-}
-
-func (repo *StatusRepository) FindByWebsiteID(id string) *model.Status {
-	var status model.Status
-
-	err := repo.db.First(&status, "website_id = ?", id).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil
-	}
-
-	return &status
 }

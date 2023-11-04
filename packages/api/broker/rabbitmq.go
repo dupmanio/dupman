@@ -2,14 +2,11 @@ package broker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net"
 	"time"
 
 	"github.com/dupmanio/dupman/packages/api/config"
-	"github.com/dupmanio/dupman/packages/api/model"
-	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -52,16 +49,11 @@ func NewRabbitMQ(config *config.Config, logger *zap.Logger) (*RabbitMQ, error) {
 	}, nil
 }
 
-func (brk *RabbitMQ) PublishWebsiteStatus(userID uuid.UUID, statusState string, updates []model.Update) error {
+func (brk *RabbitMQ) PublishToNotify(notification []byte) error {
 	const timeout = 5 * time.Second
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
-
-	notification, err := brk.composeWebsiteStatusNotification(userID, statusState, updates)
-	if err != nil {
-		return fmt.Errorf("unable to composse Notification: %w", err)
-	}
 
 	// @todo: Implement ack checking and retry functionality.
 	// pubAck, pubNack := brk.channel.NotifyConfirm(make(chan uint64, 1), make(chan uint64, 1))
@@ -73,7 +65,8 @@ func (brk *RabbitMQ) PublishWebsiteStatus(userID uuid.UUID, statusState string, 
 	// case <-time.After(5 * time.Second):
 	//	 return domainErrors.ErrUnableToPublishMessage
 	// }
-	err = brk.channel.PublishWithContext(ctx,
+	// @todo: add some logging.
+	err := brk.channel.PublishWithContext(ctx,
 		brk.config.Notify.ExchangeName,
 		brk.config.Notify.RoutingKey,
 		false,
@@ -91,33 +84,6 @@ func (brk *RabbitMQ) PublishWebsiteStatus(userID uuid.UUID, statusState string, 
 	}
 
 	return nil
-}
-
-func (brk *RabbitMQ) composeWebsiteStatusNotification(
-	userID uuid.UUID,
-	statusState string,
-	updates []model.Update,
-) ([]byte, error) {
-	updatesMapping := map[string]string{}
-	for _, update := range updates {
-		updatesMapping[update.Name] = update.RecommendedVersion
-	}
-
-	message := dto.NotificationMessage{
-		UserID: userID,
-		Type:   "hello",
-		Meta: map[string]any{
-			"status":  statusState,
-			"updates": updatesMapping,
-		},
-	}
-
-	jsonMessage, err := json.Marshal(message)
-	if err != nil {
-		return nil, err
-	}
-
-	return jsonMessage, nil
 }
 
 func (brk *RabbitMQ) Shutdown() error {

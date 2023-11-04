@@ -93,7 +93,7 @@ func (svc *System) UpdateWebsiteStatus(
 		}
 	)
 
-	if status.State == "NEEDS_UPDATE" {
+	if status.State == dto.StatusStateNeedsUpdate {
 		payload.Updates = *updates
 	}
 

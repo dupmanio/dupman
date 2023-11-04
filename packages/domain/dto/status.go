@@ -6,6 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	StatusStateUpToDated      = "UP_TO_DATED"
+	StatusStateNeedsUpdate    = "NEEDS_UPDATE"
+	StatusStateScanningFailed = "SCANNING_FAILED"
+)
+
 type Status struct {
 	State string `json:"state" binding:"required"`
 	Info  string `json:"info"`

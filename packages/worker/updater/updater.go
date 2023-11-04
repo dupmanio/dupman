@@ -115,7 +115,7 @@ func (upd *Updater) processWebsite(website dto.WebsiteOnSystemResponse) (*dto.St
 	)
 
 	status := dto.Status{
-		State: "UP_TO_DATED",
+		State: dto.StatusStateUpToDated,
 	}
 
 	token, err := upd.encryptor.Decrypt(website.Token)
@@ -127,7 +127,7 @@ func (upd *Updater) processWebsite(website dto.WebsiteOnSystemResponse) (*dto.St
 			zap.Error(err),
 		)
 
-		status.State = "SCANNING_FAILED"
+		status.State = dto.StatusStateScanningFailed
 		status.Info = err.Error()
 	}
 
@@ -140,12 +140,12 @@ func (upd *Updater) processWebsite(website dto.WebsiteOnSystemResponse) (*dto.St
 			zap.Error(err),
 		)
 
-		status.State = "SCANNING_FAILED"
+		status.State = dto.StatusStateScanningFailed
 		status.Info = err.Error()
 	}
 
 	if len(updates) != 0 {
-		status.State = "NEEDS_UPDATE"
+		status.State = dto.StatusStateNeedsUpdate
 	}
 
 	websiteStatus, err := upd.updateWebsiteStatus(website.ID, status, updates)

@@ -28,11 +28,3 @@ func (repo *UpdateRepository) Setup() {
 		repo.logger.Error(err.Error())
 	}
 }
-
-func (repo *UpdateRepository) DeleteByWebsiteID(websiteID string) error {
-	return repo.db.Unscoped().Where("website_id = ?", websiteID).Delete(&model.Update{}).Error
-}
-
-func (repo *UpdateRepository) Create(website *model.Update) error {
-	return repo.db.Create(website).Error
-}

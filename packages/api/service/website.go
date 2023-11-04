@@ -1,12 +1,15 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 
+	"github.com/dupmanio/dupman/packages/api/broker"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	sqltype "github.com/dupmanio/dupman/packages/api/sql/type"
 	"github.com/dupmanio/dupman/packages/common/pagination"
+	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,23 +19,20 @@ type WebsiteService struct {
 	websiteRepo *repository.WebsiteRepository
 	userSvc     *UserService
 	userRepo    *repository.UserRepository
-	updateRepo  *repository.UpdateRepository
-	statusRepo  *repository.StatusRepository
+	broker      *broker.RabbitMQ
 }
 
 func NewWebsiteService(
 	websiteRepo *repository.WebsiteRepository,
 	userSvc *UserService,
 	userRepo *repository.UserRepository,
-	updateRepo *repository.UpdateRepository,
-	statusRepo *repository.StatusRepository,
+	broker *broker.RabbitMQ,
 ) *WebsiteService {
 	return &WebsiteService{
 		websiteRepo: websiteRepo,
 		userSvc:     userSvc,
 		userRepo:    userRepo,
-		updateRepo:  updateRepo,
-		statusRepo:  statusRepo,
+		broker:      broker,
 	}
 }
 
@@ -117,47 +117,105 @@ func (svc *WebsiteService) GetAllWithToken(
 	return websites, nil
 }
 
-func (svc *WebsiteService) CreateUpdates(websiteID uuid.UUID, updates []model.Update) ([]model.Update, error) {
-	if website := svc.websiteRepo.FindByID(websiteID.String()); website == nil {
-		return nil, errors.ErrWebsiteNotFound
-	}
-
-	// @todo: refactor: do not delete and rewrite updates.
-	if err := svc.updateRepo.DeleteByWebsiteID(websiteID.String()); err != nil {
+func (svc *WebsiteService) UpdateStatus(
+	website *model.Website,
+	newStatus model.Status,
+	updates []model.Update,
+) (*model.Website, error) {
+	if err := svc.websiteRepo.ClearUpdates(website); err != nil {
 		return nil, fmt.Errorf("unable to delete Website Updates: %w", err)
 	}
 
-	for i := range updates {
-		updates[i].WebsiteID = websiteID
+	oldStatus := website.Status
+	website.Status = newStatus
+	website.Status.ID = oldStatus.ID
+	website.Status.CreatedAt = oldStatus.CreatedAt
 
-		if err := svc.updateRepo.Create(&updates[i]); err != nil {
-			return nil, fmt.Errorf("unable to create Website Update: %w", err)
-		}
+	if newStatus.State == dto.StatusStateNeedsUpdate && updates != nil && len(updates) != 0 {
+		website.Updates = updates
 	}
 
-	return updates, nil
+	if err := svc.websiteRepo.UpdateStatus(website); err != nil {
+		return nil, fmt.Errorf("unable to update Website status: %w", err)
+	}
+
+	if err := svc.sendStatusChangeNotification(website, oldStatus, newStatus, updates); err != nil {
+		return nil, fmt.Errorf("unable to send Status Change notification: %w", err)
+	}
+
+	return website, nil
 }
 
-func (svc *WebsiteService) UpdateStatus(websiteID uuid.UUID, status *model.Status) (*model.Status, error) {
-	if website := svc.websiteRepo.FindByID(websiteID.String()); website == nil {
-		return nil, errors.ErrWebsiteNotFound
-	}
+func (svc *WebsiteService) sendStatusChangeNotification(
+	website *model.Website,
+	oldStatus model.Status,
+	newStatus model.Status,
+	updates []model.Update,
+) error {
+	var (
+		err                error
+		notificationToSend []byte
+	)
 
-	if statusEntity := svc.statusRepo.FindByWebsiteID(websiteID.String()); statusEntity != nil {
-		statusEntity.State = status.State
-		statusEntity.Info = status.Info
-
-		if err := svc.statusRepo.Update(statusEntity); err != nil {
-			return nil, fmt.Errorf("unable to update website status: %w", err)
+	if newStatus.State == dto.StatusStateNeedsUpdate && oldStatus.State != dto.StatusStateNeedsUpdate {
+		notificationToSend, err = svc.composeNeedsUpdateNotification(website.UserID, updates)
+		if err != nil {
+			return fmt.Errorf("unable to composse Notification: %w", err)
 		}
-
-		return statusEntity, nil
 	}
 
-	status.WebsiteID = websiteID
-	if err := svc.statusRepo.Create(status); err != nil {
-		return nil, fmt.Errorf("unable to create website status: %w", err)
+	if newStatus.State == dto.StatusStateScanningFailed && oldStatus.State != dto.StatusStateScanningFailed {
+		notificationToSend, err = svc.composeScanningFailedNotification(website.UserID)
+		if err != nil {
+			return fmt.Errorf("unable to composse Notification: %w", err)
+		}
 	}
 
-	return status, nil
+	if notificationToSend != nil {
+		err = svc.broker.PublishToNotify(notificationToSend)
+		if err != nil {
+			return fmt.Errorf("unable to publish notification: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (svc *WebsiteService) composeNeedsUpdateNotification(
+	userID uuid.UUID,
+	updates []model.Update,
+) ([]byte, error) {
+	updatesMapping := map[string]string{}
+	for _, update := range updates {
+		updatesMapping[update.Name] = update.RecommendedVersion
+	}
+
+	return svc.composeNotification(userID, "WebsiteNeedsUpdates", map[string]any{
+		"updates": updatesMapping,
+	})
+}
+
+func (svc *WebsiteService) composeScanningFailedNotification(
+	userID uuid.UUID,
+) ([]byte, error) {
+	return svc.composeNotification(userID, "WebsiteScanningFailed", nil)
+}
+
+func (svc *WebsiteService) composeNotification(
+	userID uuid.UUID,
+	notificationType string,
+	notificationMeta map[string]any,
+) ([]byte, error) {
+	message := dto.NotificationMessage{
+		UserID: userID,
+		Type:   notificationType,
+		Meta:   notificationMeta,
+	}
+
+	jsonMessage, err := json.Marshal(message)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonMessage, nil
 }
