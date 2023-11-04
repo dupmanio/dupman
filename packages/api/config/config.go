@@ -27,9 +27,9 @@ type RabbitMQ struct {
 	Password string `mapstructure:"RMQ_PASSWORD"`
 }
 
-type Notify struct {
-	ExchangeName string `mapstructure:"NOTIFY_EXCHANGE_NAME"`
-	RoutingKey   string `mapstructure:"NOTIFY_ROUTING_KEY"`
+type Notifier struct {
+	ExchangeName string `mapstructure:"NOTIFIER_EXCHANGE_NAME"`
+	RoutingKey   string `mapstructure:"NOTIFIER_ROUTING_KEY"`
 }
 
 type Config struct {
@@ -37,7 +37,7 @@ type Config struct {
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
 	RabbitMQ RabbitMQ       `mapstructure:",squash"`
-	Notify   Notify         `mapstructure:",squash"`
+	Notifier Notifier       `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {

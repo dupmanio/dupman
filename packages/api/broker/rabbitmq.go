@@ -49,7 +49,7 @@ func NewRabbitMQ(config *config.Config, logger *zap.Logger) (*RabbitMQ, error) {
 	}, nil
 }
 
-func (brk *RabbitMQ) PublishToNotify(notification []byte) error {
+func (brk *RabbitMQ) PublishToNotifier(notification []byte) error {
 	const timeout = 5 * time.Second
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -67,8 +67,8 @@ func (brk *RabbitMQ) PublishToNotify(notification []byte) error {
 	// }
 	// @todo: add some logging.
 	err := brk.channel.PublishWithContext(ctx,
-		brk.config.Notify.ExchangeName,
-		brk.config.Notify.RoutingKey,
+		brk.config.Notifier.ExchangeName,
+		brk.config.Notifier.RoutingKey,
 		false,
 		false,
 		amqp.Publishing{

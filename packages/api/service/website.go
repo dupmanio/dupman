@@ -206,7 +206,7 @@ func (svc *WebsiteService) sendStatusChangeNotification(
 	}
 
 	if notificationToSend != nil {
-		err = svc.broker.PublishToNotify(notificationToSend)
+		err = svc.broker.PublishToNotifier(notificationToSend)
 		if err != nil {
 			return fmt.Errorf("unable to publish notification: %w", err)
 		}
