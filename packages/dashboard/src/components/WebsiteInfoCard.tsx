@@ -13,6 +13,7 @@ import { useTheme } from "@mui/material/styles";
 import { formatISO } from "@/lib/util/time";
 import { useStatusSettings } from "@/lib/util/website-status";
 import { Website } from "@/types/entities/website";
+import { StatusState } from "@/types/dtos/status";
 
 export interface WebsiteInfoCardProps {
   data: Website;
@@ -94,19 +95,20 @@ function WebsiteInfoCard({ data }: WebsiteInfoCardProps) {
                   label={statusSettings?.title}
                   color={statusSettings?.color}
                 />
-                {statusSettings?.additionalText && (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 1,
-                      p: 1,
-                      backgroundColor: theme.palette.background.default,
-                      borderRadius: 1,
-                    }}
-                  >
-                    {statusSettings?.additionalText}
-                  </Typography>
-                )}
+                {statusSettings?.additionalText &&
+                  data.status.state !== StatusState.UpToDated && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 1,
+                        p: 1,
+                        backgroundColor: theme.palette.background.default,
+                        borderRadius: 1,
+                      }}
+                    >
+                      {statusSettings?.additionalText}
+                    </Typography>
+                  )}
               </>
             }
             primaryTypographyProps={listItemTypography.primary}

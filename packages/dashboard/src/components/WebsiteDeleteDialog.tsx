@@ -13,15 +13,16 @@ import {
 } from "@mui/material";
 
 import { WebsiteRepository } from "@/lib/repositories/website";
+import { Website } from "@/types/entities/website";
 
 export interface WebsiteDeleteDialogProps {
-  websiteID: string;
+  website: Website | null;
   open: boolean;
   onClose: () => void;
 }
 
 function WebsiteDeleteDialog({
-  websiteID,
+  website,
   open,
   onClose,
 }: WebsiteDeleteDialogProps) {
@@ -31,7 +32,7 @@ function WebsiteDeleteDialog({
 
   const handleDelete = () => {
     setIsDeleting(true);
-    WebsiteRepository.delete(websiteID)
+    WebsiteRepository.delete(website?.id ?? "")
       .then(() => {
         enqueueSnackbar("Website has been deleted successfully!", {
           variant: "success",

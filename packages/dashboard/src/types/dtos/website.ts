@@ -3,4 +3,10 @@ type WebsiteOnCreate = {
   token: string;
 };
 
-export type { WebsiteOnCreate };
+type WebsiteOnUpdate = {
+  id: string;
+  url: string;
+  token: string;
+};
+
+export type { WebsiteOnCreate, WebsiteOnUpdate };

@@ -23,6 +23,7 @@ import WebsiteDeleteDialog from "@/components/WebsiteDeleteDialog";
 import WebsiteStatusCell from "@/components/WebsiteStatusCell";
 import { WebsiteRepository } from "@/lib/repositories/website";
 import { formatISO } from "@/lib/util/time";
+import { Website } from "@/types/entities/website";
 
 function Websites() {
   const router = useRouter();
@@ -32,8 +33,9 @@ function Websites() {
     pageSize: 10,
     page: 0,
   });
+  const [formDialogOpen, setFormDialogOpen] = useState<boolean>(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-  const [currentWebsiteID, setCurrentWebsiteID] = useState<string>("");
+  const [currentWebsite, setCurrentWebsite] = useState<Website | null>(null);
 
   const { mutate } = useSWRConfig();
 
@@ -51,8 +53,6 @@ function Websites() {
   }, [data, setRowCount]);
 
   function DataGridToolbar() {
-    const [formDialogOpen, setFormDialogOpen] = useState<boolean>(false);
-
     const handleFormDialogClose = () => {
       setFormDialogOpen(false);
       void mutate(["/website", paginationModel.page, paginationModel.pageSize]);
@@ -64,13 +64,17 @@ function Websites() {
           <Button
             color="primary"
             startIcon={<AddIcon />}
-            onClick={() => setFormDialogOpen(true)}
+            onClick={() => {
+              setCurrentWebsite(null);
+              setFormDialogOpen(true);
+            }}
           >
             Add new
           </Button>
         </GridToolbarContainer>
 
         <WebsiteFormDialog
+          website={currentWebsite}
           open={formDialogOpen}
           onClose={handleFormDialogClose}
         />
@@ -126,7 +130,13 @@ function Websites() {
             </IconButton>
           </Tooltip>
           <Tooltip title="Edit">
-            <IconButton color="info">
+            <IconButton
+              color="info"
+              onClick={() => {
+                setCurrentWebsite(params.row);
+                setFormDialogOpen(true);
+              }}
+            >
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -134,7 +144,7 @@ function Websites() {
             <IconButton
               color="error"
               onClick={() => {
-                setCurrentWebsiteID(params.row.id);
+                setCurrentWebsite(params.row);
                 setDeleteDialogOpen(true);
               }}
             >
@@ -149,7 +159,7 @@ function Websites() {
   return (
     <>
       <WebsiteDeleteDialog
-        websiteID={currentWebsiteID}
+        website={currentWebsite}
         open={deleteDialogOpen}
         onClose={() => {
           setDeleteDialogOpen(false);

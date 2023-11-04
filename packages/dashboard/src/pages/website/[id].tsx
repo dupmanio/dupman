@@ -25,8 +25,10 @@ function WebsitePage() {
     ["/website/:id", router.query.id],
     ([_, id]) => WebsiteRepository.getSingle(id as string),
     {
-      onError() {
-        router.replace("/404");
+      onError(error) {
+        if (error.response.status !== 401) {
+          router.replace("/404");
+        }
       },
     },
   );

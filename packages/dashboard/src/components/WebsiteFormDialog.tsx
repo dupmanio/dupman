@@ -15,37 +15,57 @@ import {
 } from "@mui/material";
 
 import { WebsiteRepository } from "@/lib/repositories/website";
+import { Website } from "@/types/entities/website";
 
 export interface WebsiteFormDialogProps {
+  website: Website | null;
   open: boolean;
   onClose: () => void;
 }
 
-function WebsiteFormDialog({ open, onClose }: WebsiteFormDialogProps) {
-  const validationSchema = Yup.object().shape({
+function WebsiteFormDialog({ website, open, onClose }: WebsiteFormDialogProps) {
+  const validationFields = {
     url: Yup.string().required().url(),
-    token: Yup.string().required(),
-  });
+    token: Yup.string(),
+  };
+
+  if (website === null) {
+    validationFields.token = validationFields.token.required();
+  }
+
+  const validationSchema = Yup.object().shape(validationFields);
 
   const { enqueueSnackbar } = useSnackbar();
   const formik = useFormik({
     initialValues: {
-      url: "",
+      url: website?.url ?? "",
       token: "",
     },
     validationSchema: validationSchema,
     onSubmit: ({ url, token }, { setSubmitting }) => {
-      WebsiteRepository.create({ url, token })
+      const request =
+        website === null
+          ? WebsiteRepository.create({ url, token })
+          : WebsiteRepository.update({ id: website.id, url, token });
+
+      request
         .then(() => {
-          enqueueSnackbar("Website has been created successfully!", {
-            variant: "success",
-          });
+          enqueueSnackbar(
+            `Website has been ${
+              website === null ? "created" : "updated"
+            } successfully!`,
+            {
+              variant: "success",
+            },
+          );
 
           onClose();
         })
         .catch((reason) => {
           enqueueSnackbar(
-            `Unable to create website: ${reason.response.data.error}`,
+            `Unable to ${website === null ? "create" : "update"} website: ${
+              reason.response.data.error
+            }`,
             {
               variant: "error",
             },
@@ -64,9 +84,15 @@ function WebsiteFormDialog({ open, onClose }: WebsiteFormDialogProps) {
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Add new Website</DialogTitle>
+      <DialogTitle>
+        {website === null ? "Add new Website" : "Edit Website"}
+      </DialogTitle>
       <DialogContent>
-        <DialogContentText>Add new Website for monitoring.</DialogContentText>
+        <DialogContentText>
+          {website === null
+            ? "Add new Website for monitoring."
+            : "Modify existing Website."}
+        </DialogContentText>
         <TextField
           autoFocus
           required
@@ -102,12 +128,16 @@ function WebsiteFormDialog({ open, onClose }: WebsiteFormDialogProps) {
           onClick={formik.submitForm}
           loading={formik.isSubmitting}
         >
-          Add
+          {website === null ? "Add" : "Edit"}
         </LoadingButton>
         <Button onClick={handleClose}>Cancel</Button>
       </DialogActions>
     </Dialog>
   );
 }
+
+WebsiteFormDialog.defaultProps = {
+  website: null,
+};
 
 export default WebsiteFormDialog;
