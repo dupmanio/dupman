@@ -158,14 +158,14 @@ func (svc *WebsiteService) sendStatusChangeNotification(
 	)
 
 	if newStatus.State == dto.StatusStateNeedsUpdate && oldStatus.State != dto.StatusStateNeedsUpdate {
-		notificationToSend, err = svc.composeNeedsUpdateNotification(website.UserID, updates)
+		notificationToSend, err = svc.composeNeedsUpdateNotification(website, updates)
 		if err != nil {
 			return fmt.Errorf("unable to composse Notification: %w", err)
 		}
 	}
 
 	if newStatus.State == dto.StatusStateScanningFailed && oldStatus.State != dto.StatusStateScanningFailed {
-		notificationToSend, err = svc.composeScanningFailedNotification(website.UserID)
+		notificationToSend, err = svc.composeScanningFailedNotification(website, newStatus)
 		if err != nil {
 			return fmt.Errorf("unable to composse Notification: %w", err)
 		}
@@ -182,7 +182,7 @@ func (svc *WebsiteService) sendStatusChangeNotification(
 }
 
 func (svc *WebsiteService) composeNeedsUpdateNotification(
-	userID uuid.UUID,
+	website *model.Website,
 	updates []model.Update,
 ) ([]byte, error) {
 	updatesMapping := map[string]string{}
@@ -190,15 +190,22 @@ func (svc *WebsiteService) composeNeedsUpdateNotification(
 		updatesMapping[update.Name] = update.RecommendedVersion
 	}
 
-	return svc.composeNotification(userID, "WebsiteNeedsUpdates", map[string]any{
-		"updates": updatesMapping,
+	return svc.composeNotification(website.UserID, "WebsiteNeedsUpdates", map[string]any{
+		"WebsiteID":  website.ID,
+		"WebsiteURL": website.URL,
+		"Updates":    updatesMapping,
 	})
 }
 
 func (svc *WebsiteService) composeScanningFailedNotification(
-	userID uuid.UUID,
+	website *model.Website,
+	status model.Status,
 ) ([]byte, error) {
-	return svc.composeNotification(userID, "WebsiteScanningFailed", nil)
+	return svc.composeNotification(website.UserID, "WebsiteScanningFailed", map[string]any{
+		"WebsiteID":  website.ID,
+		"WebsiteURL": website.URL,
+		"StatusInfo": status.Info,
+	})
 }
 
 func (svc *WebsiteService) composeNotification(
