@@ -1,0 +1,10 @@
+<p>Hello {{ .UserContactInfo.Username }},</p>
+<p></p>
+
+<p>Your drupal website <a target="_blank" href="{{ .NotificationMessage.Meta.WebsiteURL }}">{{ .NotificationMessage.Meta.WebsiteURL }}</a> is under risk!</p>
+<p>The following modules needs to be updated:</p>
+<ul>
+    {{ range $module, $version := .NotificationMessage.Meta.Updates }}
+    <li><strong>{{ $module }}</strong>: {{ $version }}</li>
+    {{ end }}
+</ul>

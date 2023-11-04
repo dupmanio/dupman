@@ -10,8 +10,11 @@ func getNotificationSettingsMapping() NotificationSettingsMapping {
 	// @todo: implement better mechanism to configure notifications.
 	// @todo: implement feature to allow placeholders in texts.
 	return NotificationSettingsMapping{
-		"hello": {
-			Subject: "Hello, World!",
+		"WebsiteNeedsUpdates": {
+			Subject: "Your Drupal Website is under risk!",
+		},
+		"WebsiteScanningFailed": {
+			Subject: "Your Drupal Website might be down!",
 		},
 	}
 }
