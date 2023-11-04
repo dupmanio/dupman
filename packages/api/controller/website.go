@@ -101,6 +101,42 @@ func (ctrl *WebsiteController) GetSingle(ctx *gin.Context) {
 	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
 }
 
+func (ctrl *WebsiteController) Update(ctx *gin.Context) {
+	var (
+		payload  *dto.WebsiteOnUpdate
+		response dto.WebsiteOnCreateResponse
+	)
+
+	if err := ctx.ShouldBind(&payload); err != nil {
+		ctrl.httpSvc.HTTPValidationError(ctx, err)
+
+		return
+	}
+
+	website, err := ctrl.websiteSvc.GetSingleForCurrentUser(ctx, payload.ID)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrWebsiteNotFound) || errors.Is(err, domainErrors.ErrAccessIsForbidden) {
+			statusCode = http.StatusNotFound
+			err = domainErrors.ErrWebsiteNotFound
+		}
+
+		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+
+		return
+	}
+
+	if website, err = ctrl.websiteSvc.Update(website, payload, ctx); err != nil {
+		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+
+		return
+	}
+
+	_ = copier.Copy(&response, &website)
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
+}
+
 func (ctrl *WebsiteController) Delete(ctx *gin.Context) {
 	websiteID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {

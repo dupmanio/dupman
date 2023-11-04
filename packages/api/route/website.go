@@ -52,6 +52,11 @@ func (route *WebsiteRoute) Setup() {
 			route.authMiddleware.RequiresScope("website", "website:read"),
 			route.controller.GetSingle,
 		)
+		group.PATCH(
+			"/",
+			route.authMiddleware.RequiresScope("website", "website:update"),
+			route.controller.Update,
+		)
 		group.DELETE(
 			"/:id",
 			route.authMiddleware.RequiresScope("website", "website:delete"),

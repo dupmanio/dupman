@@ -111,9 +111,19 @@ func (repo *WebsiteRepository) UpdateStatus(website *model.Website) error {
 	return nil
 }
 
+func (repo *WebsiteRepository) Update(website *model.Website, fieldsToUpdate []string, encryptionKKey string) error {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, constant.EncryptionKeyKey, encryptionKKey)
+
+	return repo.db.
+		Select("UpdatedAt", fieldsToUpdate).
+		WithContext(ctx).
+		Save(website).
+		Error
+}
+
 func (repo *WebsiteRepository) DeleteByIDAndUserID(id, userID uuid.UUID) error {
 	err := repo.db.
-		Debug().
 		Unscoped().
 		Select("Updates", "Status").
 		Where("id = ?", id).

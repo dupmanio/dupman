@@ -129,6 +129,28 @@ func (svc *WebsiteService) GetAllWithToken(
 	return websites, nil
 }
 
+func (svc *WebsiteService) Update(
+	website *model.Website,
+	updates *dto.WebsiteOnUpdate,
+	ctx *gin.Context,
+) (*model.Website, error) {
+	currentUser := svc.userSvc.CurrentUser(ctx)
+	fieldsToUpdate := []string{"URL"}
+	website.URL = updates.URL
+
+	if updates.Token != "" {
+		website.Token = sqltype.WebsiteToken(updates.Token)
+
+		fieldsToUpdate = append(fieldsToUpdate, "Token")
+	}
+
+	if err := svc.websiteRepo.Update(website, fieldsToUpdate, currentUser.KeyPair.PublicKey); err != nil {
+		return nil, fmt.Errorf("unable to update website: %w", err)
+	}
+
+	return website, nil
+}
+
 func (svc *WebsiteService) UpdateStatus(
 	website *model.Website,
 	newStatus model.Status,
