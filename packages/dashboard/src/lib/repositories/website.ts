@@ -9,6 +9,7 @@ interface IWebsiteRepository {
   getSingle: (id: string) => Promise<HTTPResponse<Website>>;
   getAll: (page: number, limit: number) => Promise<HTTPResponse<Website[]>>;
   create: (payload: WebsiteOnCreate) => Promise<HTTPResponse<Website>>;
+  delete: (id: string) => Promise<HTTPResponse<null>>;
 }
 
 const servicePrefix = "/api";
@@ -31,6 +32,10 @@ function UseRepositoryFactory(http: AxiosInstance): IWebsiteRepository {
       const response = await http.get(`${servicePrefix}/website/`, {
         params: { page, limit },
       });
+      return response.data;
+    },
+    delete: async (id) => {
+      const response = await http.delete(`${servicePrefix}/website/${id}`);
       return response.data;
     },
   };

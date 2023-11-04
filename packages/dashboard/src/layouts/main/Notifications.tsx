@@ -87,7 +87,7 @@ function Notifications() {
 
     // TODO: handle action.
     enqueueSnackbar(notification.message, {
-      variant: "success",
+      variant: "info",
     });
   });
 

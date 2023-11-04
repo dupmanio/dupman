@@ -19,6 +19,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import PageLoader from "@/components/PageLoader";
 import WebsiteFormDialog from "@/components/WebsiteFormDialog";
+import WebsiteDeleteDialog from "@/components/WebsiteDeleteDialog";
 import WebsiteStatusCell from "@/components/WebsiteStatusCell";
 import { WebsiteRepository } from "@/lib/repositories/website";
 import { formatISO } from "@/lib/util/time";
@@ -31,6 +32,10 @@ function Websites() {
     pageSize: 10,
     page: 0,
   });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [currentWebsiteID, setCurrentWebsiteID] = useState<string>("");
+
+  const { mutate } = useSWRConfig();
 
   const { data, isLoading } = useSWR(
     ["/website", paginationModel.page, paginationModel.pageSize],
@@ -46,12 +51,10 @@ function Websites() {
   }, [data, setRowCount]);
 
   function DataGridToolbar() {
-    const [open, setOpen] = useState<boolean>(false);
+    const [formDialogOpen, setFormDialogOpen] = useState<boolean>(false);
 
-    const { mutate } = useSWRConfig();
-
-    const handleClose = () => {
-      setOpen(false);
+    const handleFormDialogClose = () => {
+      setFormDialogOpen(false);
       void mutate(["/website", paginationModel.page, paginationModel.pageSize]);
     };
 
@@ -61,13 +64,16 @@ function Websites() {
           <Button
             color="primary"
             startIcon={<AddIcon />}
-            onClick={() => setOpen(true)}
+            onClick={() => setFormDialogOpen(true)}
           >
             Add new
           </Button>
         </GridToolbarContainer>
 
-        <WebsiteFormDialog open={open} onClose={handleClose} />
+        <WebsiteFormDialog
+          open={formDialogOpen}
+          onClose={handleFormDialogClose}
+        />
       </>
     );
   }
@@ -125,7 +131,13 @@ function Websites() {
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton color="error">
+            <IconButton
+              color="error"
+              onClick={() => {
+                setCurrentWebsiteID(params.row.id);
+                setDeleteDialogOpen(true);
+              }}
+            >
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -136,6 +148,19 @@ function Websites() {
 
   return (
     <>
+      <WebsiteDeleteDialog
+        websiteID={currentWebsiteID}
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          void mutate([
+            "/website",
+            paginationModel.page,
+            paginationModel.pageSize,
+          ]);
+        }}
+      />
+
       {isLoading && <PageLoader size={40} />}
 
       {!isLoading && data && (
