@@ -7,17 +7,15 @@ import (
 )
 
 type DupmanConfig struct {
-	ClientID     string   `mapstructure:"DUPMAN_CLIENT_ID"`
-	ClientSecret string   `mapstructure:"DUPMAN_CLIENT_SECRET"`
-	Scopes       []string `mapstructure:"DUPMAN_SCOPES"`
+	ClientID     string `mapstructure:"DUPMAN_CLIENT_ID"`
+	ClientSecret string `mapstructure:"DUPMAN_CLIENT_SECRET"`
 }
 
 type RabbitMQ struct {
-	Host      string `mapstructure:"RMQ_HOST" default:"127.0.0.1"`
-	Port      string `mapstructure:"RMQ_PORT" default:"5672"`
-	User      string `mapstructure:"RMQ_USER"`
-	Password  string `mapstructure:"RMQ_PASSWORD"`
-	QueueName string `mapstructure:"RMQ_QUEUE_NAME"`
+	Host     string `mapstructure:"RMQ_HOST" default:"127.0.0.1"`
+	Port     string `mapstructure:"RMQ_PORT" default:"5672"`
+	User     string `mapstructure:"RMQ_USER"`
+	Password string `mapstructure:"RMQ_PASSWORD"`
 }
 
 type Scanner struct {

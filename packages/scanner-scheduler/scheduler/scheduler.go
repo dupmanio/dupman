@@ -24,7 +24,7 @@ type Scheduler struct {
 }
 
 func New(conf *config.Config, logger *zap.Logger, broker *broker.RabbitMQ) (*Scheduler, error) {
-	cred, err := credentials.NewClientCredentials(conf.Dupman.ClientID, conf.Dupman.ClientSecret, conf.Dupman.Scopes)
+	cred, err := credentials.NewClientCredentials(conf.Dupman.ClientID, conf.Dupman.ClientSecret, []string{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to initiate credentials provider: %w", err)
 	}
