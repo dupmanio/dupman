@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "processor",
+    srcs = ["processor.go"],
+    importpath = "github.com/dupmanio/dupman/packages/scanner/processor",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/service",
+        "//packages/domain/dto",
+        "//packages/scanner/broker",
+        "//packages/scanner/config",
+        "//packages/scanner/fetcher",
+        "//packages/scanner/model",
+        "//packages/sdk/dupman/credentials",
+        "@com_github_google_uuid//:uuid",
+        "@com_github_jinzhu_copier//:copier",
+        "@com_github_rabbitmq_amqp091_go//:amqp091-go",
+        "@org_uber_go_zap//:zap",
+    ],
+)

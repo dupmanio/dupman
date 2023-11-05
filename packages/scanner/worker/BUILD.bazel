@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "worker",
+    srcs = ["worker.go"],
+    importpath = "github.com/dupmanio/dupman/packages/scanner/worker",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/scanner/processor",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_zap//:zap",
+    ],
+)

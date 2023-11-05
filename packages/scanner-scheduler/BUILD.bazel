@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "scanner-scheduler_lib",
+    srcs = ["main.go"],
+    data = [
+        ".env",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/scanner-scheduler",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//packages/scanner-scheduler/broker",
+        "//packages/scanner-scheduler/config",
+        "//packages/scanner-scheduler/scheduler",
+        "@org_uber_go_zap//:zap",
+    ],
+)
+
+go_binary(
+    name = "scanner-scheduler",
+    embed = [":scanner-scheduler_lib"],
+    visibility = ["//visibility:public"],
+)

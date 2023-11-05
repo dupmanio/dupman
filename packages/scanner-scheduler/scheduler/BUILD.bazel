@@ -1,0 +1,37 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "updater",
+    srcs = ["updater.go"],
+    importpath = "github.com/dupmanio/dupman/packages/scanner-scheduler/updater",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/domain/dto",
+        "//packages/encryptor",
+        "//packages/scanner-scheduler/broker",
+        "//packages/scanner-scheduler/config",
+        "//packages/sdk/dupman",
+        "//packages/sdk/dupman/credentials",
+        "//packages/sdk/dupman/session",
+        "//packages/sdk/service/system",
+        "@org_uber_go_zap//:zap",
+    ],
+)
+
+go_library(
+    name = "scheduler",
+    srcs = ["scheduler.go"],
+    importpath = "github.com/dupmanio/dupman/packages/scanner-scheduler/scheduler",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/domain/dto",
+        "//packages/encryptor",
+        "//packages/scanner-scheduler/broker",
+        "//packages/scanner-scheduler/config",
+        "//packages/sdk/dupman",
+        "//packages/sdk/dupman/credentials",
+        "//packages/sdk/dupman/session",
+        "//packages/sdk/service/system",
+        "@org_uber_go_zap//:zap",
+    ],
+)

@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/dupmanio/dupman/packages/domain/errors"
-	"github.com/dupmanio/dupman/packages/worker/model"
+	"github.com/dupmanio/dupman/packages/scanner/model"
 	"github.com/go-resty/resty/v2"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 const (
@@ -17,19 +19,25 @@ const (
 
 type Fetcher struct {
 	client *resty.Client
+	logger *zap.Logger
 }
 
-func New() *Fetcher {
+func New(logger *zap.Logger) *Fetcher {
 	httpClient := resty.New().
 		SetTimeout(timeout).
 		SetRetryCount(retryCount).
-		SetHeader("User-Agent", "dupman-worker (https://github.com/dupmanio/dupman/tree/main/packages/worker)")
+		SetHeader("User-Agent", "dupman-scanner (https://github.com/dupmanio/dupman/tree/main/packages/scanner)")
 
-	return &Fetcher{client: httpClient}
+	return &Fetcher{client: httpClient, logger: logger}
 }
 
-func (fetcher *Fetcher) Fetch(url, token string) ([]model.Update, error) {
+func (fetcher *Fetcher) Fetch(url string, id uuid.UUID, token string) ([]model.Update, error) {
 	var response *model.Status
+
+	fetcher.logger.Info(
+		"Fetching website updates",
+		zap.String("websiteID", id.String()),
+	)
 
 	resp, err := fetcher.client.R().
 		SetResult(&response).

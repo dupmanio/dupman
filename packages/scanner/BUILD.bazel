@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "scanner_lib",
+    srcs = ["main.go"],
+    data = [
+        ".env",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/scanner",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//packages/scanner/broker",
+        "//packages/scanner/config",
+        "//packages/scanner/fetcher",
+        "//packages/scanner/processor",
+        "//packages/scanner/service",
+        "//packages/scanner/worker",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_fx//fxevent",
+        "@org_uber_go_zap//:zap",
+    ],
+)
+
+go_binary(
+    name = "scanner",
+    embed = [":scanner_lib"],
+    visibility = ["//visibility:public"],
+)

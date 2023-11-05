@@ -2,11 +2,11 @@ package auth
 
 import (
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
 	"strings"
 
 	"github.com/dupmanio/dupman/packages/auth/constant"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Claims struct {

@@ -253,10 +253,5 @@ func (svc *WebsiteService) composeNotification(
 		Meta:   notificationMeta,
 	}
 
-	jsonMessage, err := json.Marshal(message)
-	if err != nil {
-		return nil, err
-	}
-
-	return jsonMessage, nil
+	return json.Marshal(message)
 }

@@ -6,13 +6,13 @@ import (
 
 	"github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
-	"github.com/dupmanio/dupman/packages/notifier/broker"
-	"github.com/dupmanio/dupman/packages/notifier/config"
-	"github.com/dupmanio/dupman/packages/notifier/deliverer"
-	"github.com/dupmanio/dupman/packages/notifier/deliverer/email"
-	"github.com/dupmanio/dupman/packages/notifier/deliverer/notify"
+	"github.com/dupmanio/dupman/packages/scanner/broker"
+	"github.com/dupmanio/dupman/packages/scanner/config"
+	"github.com/dupmanio/dupman/packages/scanner/fetcher"
+	"github.com/dupmanio/dupman/packages/scanner/model"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	"github.com/google/uuid"
+	"github.com/jinzhu/copier"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
 )
@@ -21,23 +21,22 @@ type Processor struct {
 	logger            *zap.Logger
 	config            *config.Config
 	broker            *broker.RabbitMQ
+	fetcher           *fetcher.Fetcher
 	dupmanCredentials credentials.Provider
 	dupmanAPIService  *service.DupmanAPIService
-	deliverers        []deliverer.Deliverer
 }
 
 func NewProcessor(
 	logger *zap.Logger,
 	config *config.Config,
 	broker *broker.RabbitMQ,
+	fetcher *fetcher.Fetcher,
 	dupmanAPIService *service.DupmanAPIService,
-	emailDeliverer *email.Deliverer,
-	notifyDeliverer *notify.Deliverer,
 ) (*Processor, error) {
 	cred, err := credentials.NewClientCredentials(
-		config.DupmanAPIService.ClientID,
-		config.DupmanAPIService.ClientSecret,
-		[]string{"user:get_contact_info"},
+		config.DupmanConfig.ClientID,
+		config.DupmanConfig.ClientSecret,
+		[]string{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create dupman credentials provider: %w", err)
@@ -47,12 +46,9 @@ func NewProcessor(
 		logger:            logger,
 		config:            config,
 		broker:            broker,
+		fetcher:           fetcher,
 		dupmanCredentials: cred,
 		dupmanAPIService:  dupmanAPIService,
-		deliverers: []deliverer.Deliverer{
-			emailDeliverer,
-			notifyDeliverer,
-		},
 	}, nil
 }
 
@@ -81,7 +77,7 @@ func (proc *Processor) processMessage(delivery amqp.Delivery) {
 		zap.String("routingKey", delivery.RoutingKey),
 	)
 
-	err := proc.processDelivery(delivery)
+	err := proc.processScanning(delivery)
 	if err != nil {
 		proc.logger.Error(
 			"Unable to Process message",
@@ -109,69 +105,65 @@ func (proc *Processor) processMessage(delivery amqp.Delivery) {
 	}
 }
 
-func (proc *Processor) processDelivery(delivery amqp.Delivery) error {
-	var message dto.NotificationMessage
+func (proc *Processor) processScanning(delivery amqp.Delivery) error {
+	var message dto.ScanWebsiteMessage
 
 	if err := json.Unmarshal(delivery.Body, &message); err != nil {
 		return fmt.Errorf("unable to unmarshal message: %w", err)
 	}
 
-	contactInfo, err := proc.getUserContactInfo(message.UserID)
-	if err != nil {
-		return fmt.Errorf("unable to get user contact info: %w", err)
+	status := dto.Status{
+		State: dto.StatusStateUpToDated,
 	}
 
-	for _, delivererInstance := range proc.deliverers {
-		go proc.attemptNotificationDelivery(delivererInstance, contactInfo, delivery.MessageId, message)
+	updates, err := proc.fetcher.Fetch(message.WebsiteURL, message.WebsiteID, message.WebsiteToken)
+	if err != nil {
+		proc.logger.Error(
+			"Unable to fetch Website Updates",
+			zap.String("websiteID", message.WebsiteID.String()),
+			zap.Error(err),
+		)
+
+		status.State = dto.StatusStateScanningFailed
+		status.Info = err.Error()
+	}
+
+	if len(updates) != 0 {
+		status.State = dto.StatusStateNeedsUpdate
+	}
+
+	if err = proc.updateWebsiteStatus(message.WebsiteID, status, updates); err != nil {
+		return fmt.Errorf("unable to create Website Updates: %w", err)
 	}
 
 	return nil
 }
 
-func (proc *Processor) getUserContactInfo(userID uuid.UUID) (*dto.ContactInfo, error) {
+func (proc *Processor) updateWebsiteStatus(websiteID uuid.UUID, status dto.Status, updatesRaw []model.Update) error {
+	var updates dto.Updates
+
+	_ = copier.Copy(&updates, &updatesRaw)
+
+	proc.logger.Info(
+		"Updating website status",
+		zap.String("websiteID", websiteID.String()),
+	)
+
 	if err := proc.dupmanAPIService.CreateSession(proc.dupmanCredentials); err != nil {
-		return nil, fmt.Errorf("unable to create dupman session: %w", err)
+		return fmt.Errorf("unable to create dupman session: %w", err)
+	}
+
+	_, err := proc.dupmanAPIService.SystemSvc.UpdateWebsiteStatus(websiteID, &status, &updates)
+	if err != nil {
+		return fmt.Errorf("unable to create Website Updates: %w", err)
 	}
 
 	proc.logger.Info(
-		"Fetching user contact info",
-		zap.String("userID", userID.String()),
+		"Website status have been updated",
+		zap.String("websiteID", websiteID.String()),
 	)
 
-	info, err := proc.dupmanAPIService.UserSvc.GetContactInfo(userID)
-	if err != nil {
-		proc.logger.Error(
-			"Unable to fetch user contact info",
-			zap.String("userID", userID.String()),
-			zap.Error(err),
-		)
-
-		return nil, fmt.Errorf("unable to fetch user contact info: %w", err)
-	}
-
-	return info, nil
-}
-
-func (proc *Processor) attemptNotificationDelivery(
-	delivererInstance deliverer.Deliverer,
-	contactInfo *dto.ContactInfo,
-	messageID string,
-	message dto.NotificationMessage,
-) {
-	logFields := []zap.Field{
-		zap.String("messageID", messageID),
-		zap.String("userID", message.UserID.String()),
-		zap.String("messageType", message.Type),
-		zap.String("deliverer", delivererInstance.Name()),
-	}
-
-	proc.logger.Info("Starting delivering notification", logFields...)
-
-	if err := delivererInstance.Deliver(message, contactInfo); err == nil {
-		proc.logger.Info("Notification has been delivered", logFields...)
-	} else {
-		proc.logger.Error("Unable to deliver notification", append(logFields, zap.Error(err))...)
-	}
+	return nil
 }
 
 func (proc *Processor) isLastDeliveryAttempt(delivery amqp.Delivery) bool {

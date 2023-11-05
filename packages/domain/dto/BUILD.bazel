@@ -7,6 +7,7 @@ go_library(
         "notification.go",
         "notifier.go",
         "preview.go",
+        "scanner.go",
         "status.go",
         "system.go",
         "update.go",
