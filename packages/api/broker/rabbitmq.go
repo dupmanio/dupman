@@ -12,6 +12,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const timeout = 5 * time.Second
+
 type RabbitMQ struct {
 	config     *config.Config
 	logger     *zap.Logger
@@ -50,8 +52,6 @@ func NewRabbitMQ(config *config.Config, logger *zap.Logger) (*RabbitMQ, error) {
 }
 
 func (brk *RabbitMQ) PublishToNotifier(notification []byte) error {
-	const timeout = 5 * time.Second
-
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -78,6 +78,30 @@ func (brk *RabbitMQ) PublishToNotifier(notification []byte) error {
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "application/json",
 			Body:         notification,
+		})
+	if err != nil {
+		return fmt.Errorf("failed to publish Notification: %w", err)
+	}
+
+	return nil
+}
+
+func (brk *RabbitMQ) PublishToScanner(message []byte) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	err := brk.channel.PublishWithContext(ctx,
+		brk.config.Scanner.ExchangeName,
+		brk.config.Scanner.RoutingKey,
+		false,
+		false,
+		amqp.Publishing{
+			MessageId:    uuid.New().String(),
+			UserId:       brk.config.RabbitMQ.User,
+			AppId:        "api",
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "application/json",
+			Body:         message,
 		})
 	if err != nil {
 		return fmt.Errorf("failed to publish Notification: %w", err)

@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"go.uber.org/zap"
 
 	"github.com/dupmanio/dupman/packages/api/broker"
 	"github.com/dupmanio/dupman/packages/api/model"
@@ -20,6 +21,7 @@ type WebsiteService struct {
 	userSvc     *UserService
 	userRepo    *repository.UserRepository
 	broker      *broker.RabbitMQ
+	logger      *zap.Logger
 }
 
 func NewWebsiteService(
@@ -27,12 +29,14 @@ func NewWebsiteService(
 	userSvc *UserService,
 	userRepo *repository.UserRepository,
 	broker *broker.RabbitMQ,
+	logger *zap.Logger,
 ) *WebsiteService {
 	return &WebsiteService{
 		websiteRepo: websiteRepo,
 		userSvc:     userSvc,
 		userRepo:    userRepo,
 		broker:      broker,
+		logger:      logger,
 	}
 }
 
@@ -42,6 +46,16 @@ func (svc *WebsiteService) Create(entity *model.Website, ctx *gin.Context) (*mod
 
 	if err := svc.websiteRepo.Create(entity, currentUser.KeyPair.PublicKey); err != nil {
 		return nil, fmt.Errorf("unable to create website: %w", err)
+	}
+
+	if msg, err := svc.composeScanMessage(entity); err == nil {
+		if err = svc.broker.PublishToScanner(msg); err != nil {
+			svc.logger.Error(
+				"Unable to publish message to Scanner",
+				zap.String("websiteID", entity.ID.String()),
+				zap.Error(err),
+			)
+		}
 	}
 
 	return entity, nil
@@ -251,6 +265,16 @@ func (svc *WebsiteService) composeNotification(
 		UserID: userID,
 		Type:   notificationType,
 		Meta:   notificationMeta,
+	}
+
+	return json.Marshal(message)
+}
+
+func (svc *WebsiteService) composeScanMessage(website *model.Website) ([]byte, error) {
+	message := dto.ScanWebsiteMessage{
+		WebsiteID:    website.ID,
+		WebsiteURL:   website.URL,
+		WebsiteToken: string(website.Token),
 	}
 
 	return json.Marshal(message)

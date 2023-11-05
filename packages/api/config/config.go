@@ -32,12 +32,18 @@ type Notifier struct {
 	RoutingKey   string `mapstructure:"NOTIFIER_ROUTING_KEY"`
 }
 
+type Scanner struct {
+	ExchangeName string `mapstructure:"SCANNER_EXCHANGE_NAME"`
+	RoutingKey   string `mapstructure:"SCANNER_ROUTING_KEY"`
+}
+
 type Config struct {
 	Env      string         `mapstructure:"ENV" default:"prod"`
 	Server   ServerConfig   `mapstructure:",squash"`
 	Database DatabaseConfig `mapstructure:",squash"`
 	RabbitMQ RabbitMQ       `mapstructure:",squash"`
 	Notifier Notifier       `mapstructure:",squash"`
+	Scanner  Scanner        `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {
