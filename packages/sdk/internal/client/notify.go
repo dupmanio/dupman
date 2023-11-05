@@ -8,5 +8,5 @@ import (
 func NewNotifyClient(sess *session.Session) *resty.Client {
 	// @todo: set url by ENV.
 	return getBaseClient(sess.Config, sess.Token.AccessToken).
-		SetBaseURL("http://127.0.0.1:8020")
+		SetBaseURL("http://gateway.dupman.localhost/notify")
 }

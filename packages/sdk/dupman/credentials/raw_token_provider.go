@@ -28,7 +28,7 @@ type RawTokenProvider struct {
 func NewRawTokenCredentials(rawToken string) (*RawTokenProvider, error) {
 	ctx := context.Background()
 	// @todo: update url!
-	provider, err := oidc.NewProvider(ctx, "http://127.0.0.1:8080/realms/dupman")
+	provider, err := oidc.NewProvider(ctx, "http://id.dupman.localhost/realms/dupman")
 	if err != nil {
 		return nil, fmt.Errorf("unable to create OIDC provider: %w", err)
 	}
