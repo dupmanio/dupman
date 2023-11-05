@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/dupmanio/dupman/packages/scanner-scheduler/broker"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/config"
+	"github.com/dupmanio/dupman/packages/scanner-scheduler/messenger"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/scheduler"
 	"go.uber.org/zap"
 )
@@ -20,12 +20,13 @@ func process() error {
 		return fmt.Errorf("unable to create config: %w", err)
 	}
 
-	brk, err := broker.NewRabbitMQ(conf, logger)
+	mess, err := messenger.NewMessengerService(logger, conf)
 	if err != nil {
-		return fmt.Errorf("unable to create RabbitMQ Broker: %w", err)
+		return fmt.Errorf("unable to create Messenger Service: %w", err)
 	}
+	defer mess.Close()
 
-	schedulerInst, err := scheduler.New(conf, logger, brk)
+	schedulerInst, err := scheduler.New(conf, logger, mess)
 	if err != nil {
 		return fmt.Errorf("unable to create instance of updater: %w", err)
 	}

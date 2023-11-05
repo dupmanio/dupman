@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/dupmanio/dupman/packages/common/service"
+	commonService "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
-	"github.com/dupmanio/dupman/packages/scanner/broker"
 	"github.com/dupmanio/dupman/packages/scanner/config"
 	"github.com/dupmanio/dupman/packages/scanner/fetcher"
 	"github.com/dupmanio/dupman/packages/scanner/model"
+	"github.com/dupmanio/dupman/packages/scanner/service"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -20,18 +20,18 @@ import (
 type Processor struct {
 	logger            *zap.Logger
 	config            *config.Config
-	broker            *broker.RabbitMQ
+	messengerSvc      *service.MessengerService
 	fetcher           *fetcher.Fetcher
 	dupmanCredentials credentials.Provider
-	dupmanAPIService  *service.DupmanAPIService
+	dupmanAPIService  *commonService.DupmanAPIService
 }
 
 func NewProcessor(
 	logger *zap.Logger,
 	config *config.Config,
-	broker *broker.RabbitMQ,
+	messengerSvc *service.MessengerService,
 	fetcher *fetcher.Fetcher,
-	dupmanAPIService *service.DupmanAPIService,
+	dupmanAPIService *commonService.DupmanAPIService,
 ) (*Processor, error) {
 	cred, err := credentials.NewClientCredentials(
 		config.DupmanConfig.ClientID,
@@ -45,7 +45,7 @@ func NewProcessor(
 	return &Processor{
 		logger:            logger,
 		config:            config,
-		broker:            broker,
+		messengerSvc:      messengerSvc,
 		fetcher:           fetcher,
 		dupmanCredentials: cred,
 		dupmanAPIService:  dupmanAPIService,
@@ -53,7 +53,7 @@ func NewProcessor(
 }
 
 func (proc *Processor) Process() error {
-	messages, err := proc.broker.Consume()
+	messages, err := proc.messengerSvc.Consume()
 	if err != nil {
 		return fmt.Errorf("unable to consume messages: %w", err)
 	}
@@ -77,8 +77,10 @@ func (proc *Processor) processMessage(delivery amqp.Delivery) {
 		zap.String("routingKey", delivery.RoutingKey),
 	)
 
-	err := proc.processScanning(delivery)
-	if err != nil {
+	successfullyProcessed := true
+	if err := proc.processScanning(delivery); err != nil {
+		successfullyProcessed = false
+
 		proc.logger.Error(
 			"Unable to Process message",
 			zap.String("messageID", delivery.MessageId),
@@ -86,23 +88,7 @@ func (proc *Processor) processMessage(delivery amqp.Delivery) {
 		)
 	}
 
-	if err == nil || (err != nil && proc.isLastDeliveryAttempt(delivery)) {
-		if err = delivery.Ack(false); err != nil {
-			proc.logger.Error(
-				"Unable to Ack message",
-				zap.String("messageID", delivery.MessageId),
-				zap.Error(err),
-			)
-		}
-	} else {
-		if err = delivery.Nack(false, false); err != nil {
-			proc.logger.Error(
-				"Unable to Nack message",
-				zap.String("messageID", delivery.MessageId),
-				zap.Error(err),
-			)
-		}
-	}
+	proc.messengerSvc.AcknowledgeMessage(successfullyProcessed, delivery)
 }
 
 func (proc *Processor) processScanning(delivery amqp.Delivery) error {
@@ -162,28 +148,6 @@ func (proc *Processor) updateWebsiteStatus(websiteID uuid.UUID, status dto.Statu
 		"Website status have been updated",
 		zap.String("websiteID", websiteID.String()),
 	)
-
-	return nil
-}
-
-func (proc *Processor) isLastDeliveryAttempt(delivery amqp.Delivery) bool {
-	xDeath, ok := delivery.Headers["x-death"].([]interface{})
-	if !ok {
-		return false
-	}
-
-	count, ok := xDeath[0].(amqp.Table)["count"].(int64)
-	if !ok {
-		return false
-	}
-
-	return int(count) >= proc.config.Worker.RetryAttempts
-}
-
-func (proc *Processor) Shutdown() error {
-	if err := proc.broker.Shutdown(); err != nil {
-		return fmt.Errorf("unable to shutdown broker: %w", err)
-	}
 
 	return nil
 }

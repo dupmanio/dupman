@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/dupmanio/dupman/packages/scanner/broker"
 	"github.com/dupmanio/dupman/packages/scanner/config"
 	"github.com/dupmanio/dupman/packages/scanner/fetcher"
 	"github.com/dupmanio/dupman/packages/scanner/processor"
@@ -20,7 +19,6 @@ func main() {
 		fx.Provide(
 			config.New,
 			zap.NewDevelopment,
-			broker.NewRabbitMQ,
 			fetcher.New,
 			processor.NewProcessor,
 		),

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/dupmanio/dupman/packages/api/broker"
 	"github.com/dupmanio/dupman/packages/api/config"
 	"github.com/dupmanio/dupman/packages/api/controller"
 	"github.com/dupmanio/dupman/packages/api/database"
@@ -25,7 +24,6 @@ func main() {
 			server.New,
 			database.New,
 			zap.NewDevelopment,
-			broker.NewRabbitMQ,
 		),
 		controller.Create(),
 		middleware.Create(),

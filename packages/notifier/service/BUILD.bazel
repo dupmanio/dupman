@@ -2,11 +2,18 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "service",
-    srcs = ["service.go"],
+    srcs = [
+        "messenger.go",
+        "service.go",
+    ],
     importpath = "github.com/dupmanio/dupman/packages/notifier/service",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/common/broker",
         "//packages/common/service",
+        "//packages/notifier/config",
+        "@com_github_rabbitmq_amqp091_go//:amqp091-go",
         "@org_uber_go_fx//:fx",
+        "@org_uber_go_zap//:zap",
     ],
 )

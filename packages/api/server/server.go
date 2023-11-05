@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/dupmanio/dupman/packages/api/broker"
 	"github.com/dupmanio/dupman/packages/api/config"
+	"github.com/dupmanio/dupman/packages/api/service"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -44,7 +44,13 @@ func New(logger *zap.Logger, config *config.Config) (*Server, error) {
 	}, nil
 }
 
-func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, broker *broker.RabbitMQ) error {
+func Run(
+	server *Server,
+	lc fx.Lifecycle,
+	logger *zap.Logger,
+	config *config.Config,
+	messengerSvc *service.MessengerService,
+) error {
 	httpServer := http.Server{
 		Addr:              net.JoinHostPort(config.Server.ListenAddr, config.Server.Port),
 		Handler:           server.Engine,
@@ -70,8 +76,8 @@ func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Con
 				return fmt.Errorf("failed to shutdown server: %w", err)
 			}
 
-			if err := broker.Shutdown(); err != nil {
-				return fmt.Errorf("failed to shutdown broker: %w", err)
+			if err := messengerSvc.Close(); err != nil {
+				return fmt.Errorf("failed to close messenger: %w", err)
 			}
 
 			return nil

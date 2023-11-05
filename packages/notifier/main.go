@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/dupmanio/dupman/packages/notifier/broker"
 	"github.com/dupmanio/dupman/packages/notifier/config"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer"
 	"github.com/dupmanio/dupman/packages/notifier/processor"
@@ -20,7 +19,6 @@ func main() {
 		fx.Provide(
 			config.New,
 			zap.NewDevelopment,
-			broker.NewRabbitMQ,
 			processor.NewProcessor,
 		),
 		deliverer.Create(),

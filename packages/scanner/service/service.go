@@ -8,5 +8,6 @@ import (
 func Create() fx.Option {
 	return fx.Options(
 		fx.Provide(commonServices.NewDupmanAPIService),
+		fx.Provide(NewMessengerService),
 	)
 }

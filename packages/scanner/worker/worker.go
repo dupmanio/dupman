@@ -5,11 +5,17 @@ import (
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/scanner/processor"
+	"github.com/dupmanio/dupman/packages/scanner/service"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-func Run(lc fx.Lifecycle, logger *zap.Logger, processor *processor.Processor) error {
+func Run(
+	lc fx.Lifecycle,
+	logger *zap.Logger,
+	processor *processor.Processor,
+	messengerSvc *service.MessengerService,
+) error {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Info("Starting Worker")
@@ -27,8 +33,8 @@ func Run(lc fx.Lifecycle, logger *zap.Logger, processor *processor.Processor) er
 		OnStop: func(ctx context.Context) error {
 			logger.Info("Shutting down Worker")
 
-			if err := processor.Shutdown(); err != nil {
-				return fmt.Errorf("unable to shutdown worker: %w", err)
+			if err := messengerSvc.Close(); err != nil {
+				return fmt.Errorf("failed to close messenger: %w", err)
 			}
 
 			return nil

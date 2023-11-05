@@ -1,14 +1,13 @@
 package scheduler
 
 import (
-	"encoding/json"
 	"fmt"
 	"sync"
 
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/encryptor"
-	"github.com/dupmanio/dupman/packages/scanner-scheduler/broker"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/config"
+	"github.com/dupmanio/dupman/packages/scanner-scheduler/messenger"
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
@@ -20,10 +19,10 @@ type Scheduler struct {
 	logger        *zap.Logger
 	systemService *system.System
 	encryptor     encryptor.Encryptor
-	broker        *broker.RabbitMQ
+	messengerSvc  *messenger.Service
 }
 
-func New(conf *config.Config, logger *zap.Logger, broker *broker.RabbitMQ) (*Scheduler, error) {
+func New(conf *config.Config, logger *zap.Logger, messengerSvc *messenger.Service) (*Scheduler, error) {
 	cred, err := credentials.NewClientCredentials(conf.Dupman.ClientID, conf.Dupman.ClientSecret, []string{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to initiate credentials provider: %w", err)
@@ -43,7 +42,7 @@ func New(conf *config.Config, logger *zap.Logger, broker *broker.RabbitMQ) (*Sch
 		logger:        logger,
 		encryptor:     rsaEncryptor,
 		systemService: system.New(sess),
-		broker:        broker,
+		messengerSvc:  messengerSvc,
 	}, nil
 }
 
@@ -114,25 +113,10 @@ func (scheduler *Scheduler) scheduleWebsiteScanning(website dto.WebsiteOnSystemR
 		return fmt.Errorf("unable to decrypt Website token: %w", err)
 	}
 
-	msg, err := scheduler.composeMessage(website, token)
-	if err != nil {
-		return fmt.Errorf("unable to compose message: %w", err)
-	}
-
-	err = scheduler.broker.PublishToScanner(msg)
+	err = scheduler.messengerSvc.SendScanWebsiteMessage(website, token)
 	if err != nil {
 		return fmt.Errorf("unable to publish message: %w", err)
 	}
 
 	return nil
-}
-
-func (scheduler *Scheduler) composeMessage(website dto.WebsiteOnSystemResponse, token string) ([]byte, error) {
-	message := dto.ScanWebsiteMessage{
-		WebsiteID:    website.ID,
-		WebsiteURL:   website.URL,
-		WebsiteToken: token,
-	}
-
-	return json.Marshal(message)
 }

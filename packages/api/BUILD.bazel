@@ -9,7 +9,6 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/api",
     visibility = ["//visibility:private"],
     deps = [
-        "//packages/api/broker",
         "//packages/api/config",
         "//packages/api/controller",
         "//packages/api/database",

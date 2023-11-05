@@ -26,8 +26,8 @@ go_library(
     deps = [
         "//packages/domain/dto",
         "//packages/encryptor",
-        "//packages/scanner-scheduler/broker",
         "//packages/scanner-scheduler/config",
+        "//packages/scanner-scheduler/messenger",
         "//packages/sdk/dupman",
         "//packages/sdk/dupman/credentials",
         "//packages/sdk/dupman/session",

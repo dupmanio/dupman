@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "messenger",
+    srcs = ["messenger.go"],
+    importpath = "github.com/dupmanio/dupman/packages/scanner-scheduler/messenger",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/broker",
+        "//packages/domain/dto",
+        "//packages/scanner-scheduler/config",
+        "@org_uber_go_zap//:zap",
+    ],
+)

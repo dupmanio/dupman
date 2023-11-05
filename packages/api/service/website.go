@@ -1,11 +1,8 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
-	"go.uber.org/zap"
 
-	"github.com/dupmanio/dupman/packages/api/broker"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	sqltype "github.com/dupmanio/dupman/packages/api/sql/type"
@@ -14,29 +11,30 @@ import (
 	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type WebsiteService struct {
-	websiteRepo *repository.WebsiteRepository
-	userSvc     *UserService
-	userRepo    *repository.UserRepository
-	broker      *broker.RabbitMQ
-	logger      *zap.Logger
+	websiteRepo  *repository.WebsiteRepository
+	userSvc      *UserService
+	userRepo     *repository.UserRepository
+	messengerSvc *MessengerService
+	logger       *zap.Logger
 }
 
 func NewWebsiteService(
 	websiteRepo *repository.WebsiteRepository,
 	userSvc *UserService,
 	userRepo *repository.UserRepository,
-	broker *broker.RabbitMQ,
+	messengerSvc *MessengerService,
 	logger *zap.Logger,
 ) *WebsiteService {
 	return &WebsiteService{
-		websiteRepo: websiteRepo,
-		userSvc:     userSvc,
-		userRepo:    userRepo,
-		broker:      broker,
-		logger:      logger,
+		websiteRepo:  websiteRepo,
+		userSvc:      userSvc,
+		userRepo:     userRepo,
+		messengerSvc: messengerSvc,
+		logger:       logger,
 	}
 }
 
@@ -48,14 +46,12 @@ func (svc *WebsiteService) Create(entity *model.Website, ctx *gin.Context) (*mod
 		return nil, fmt.Errorf("unable to create website: %w", err)
 	}
 
-	if msg, err := svc.composeScanMessage(entity); err == nil {
-		if err = svc.broker.PublishToScanner(msg); err != nil {
-			svc.logger.Error(
-				"Unable to publish message to Scanner",
-				zap.String("websiteID", entity.ID.String()),
-				zap.Error(err),
-			)
-		}
+	if err := svc.messengerSvc.SendScanWebsiteMessage(entity); err != nil {
+		svc.logger.Error(
+			"Unable to publish message to Scanner",
+			zap.String("websiteID", entity.ID.String()),
+			zap.Error(err),
+		)
 	}
 
 	return entity, nil
@@ -187,95 +183,13 @@ func (svc *WebsiteService) UpdateStatus(
 		return nil, fmt.Errorf("unable to update Website status: %w", err)
 	}
 
-	if err := svc.sendStatusChangeNotification(website, oldStatus, newStatus, updates); err != nil {
-		return nil, fmt.Errorf("unable to send Status Change notification: %w", err)
+	if err := svc.messengerSvc.SendStatusChangeNotificationMessage(website, oldStatus, newStatus, updates); err != nil {
+		svc.logger.Error(
+			"Unable to send Status Change notification",
+			zap.String("websiteID", website.ID.String()),
+			zap.Error(err),
+		)
 	}
 
 	return website, nil
-}
-
-func (svc *WebsiteService) sendStatusChangeNotification(
-	website *model.Website,
-	oldStatus model.Status,
-	newStatus model.Status,
-	updates []model.Update,
-) error {
-	var (
-		err                error
-		notificationToSend []byte
-	)
-
-	if newStatus.State == dto.StatusStateNeedsUpdate && oldStatus.State != dto.StatusStateNeedsUpdate {
-		notificationToSend, err = svc.composeNeedsUpdateNotification(website, updates)
-		if err != nil {
-			return fmt.Errorf("unable to composse Notification: %w", err)
-		}
-	}
-
-	if newStatus.State == dto.StatusStateScanningFailed && oldStatus.State != dto.StatusStateScanningFailed {
-		notificationToSend, err = svc.composeScanningFailedNotification(website, newStatus)
-		if err != nil {
-			return fmt.Errorf("unable to composse Notification: %w", err)
-		}
-	}
-
-	if notificationToSend != nil {
-		err = svc.broker.PublishToNotifier(notificationToSend)
-		if err != nil {
-			return fmt.Errorf("unable to publish notification: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (svc *WebsiteService) composeNeedsUpdateNotification(
-	website *model.Website,
-	updates []model.Update,
-) ([]byte, error) {
-	updatesMapping := map[string]string{}
-	for _, update := range updates {
-		updatesMapping[update.Name] = update.RecommendedVersion
-	}
-
-	return svc.composeNotification(website.UserID, "WebsiteNeedsUpdates", map[string]any{
-		"WebsiteID":  website.ID,
-		"WebsiteURL": website.URL,
-		"Updates":    updatesMapping,
-	})
-}
-
-func (svc *WebsiteService) composeScanningFailedNotification(
-	website *model.Website,
-	status model.Status,
-) ([]byte, error) {
-	return svc.composeNotification(website.UserID, "WebsiteScanningFailed", map[string]any{
-		"WebsiteID":  website.ID,
-		"WebsiteURL": website.URL,
-		"StatusInfo": status.Info,
-	})
-}
-
-func (svc *WebsiteService) composeNotification(
-	userID uuid.UUID,
-	notificationType string,
-	notificationMeta map[string]any,
-) ([]byte, error) {
-	message := dto.NotificationMessage{
-		UserID: userID,
-		Type:   notificationType,
-		Meta:   notificationMeta,
-	}
-
-	return json.Marshal(message)
-}
-
-func (svc *WebsiteService) composeScanMessage(website *model.Website) ([]byte, error) {
-	message := dto.ScanWebsiteMessage{
-		WebsiteID:    website.ID,
-		WebsiteURL:   website.URL,
-		WebsiteToken: string(website.Token),
-	}
-
-	return json.Marshal(message)
 }

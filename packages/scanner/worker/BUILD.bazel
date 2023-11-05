@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/scanner/processor",
+        "//packages/scanner/service",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",
     ],

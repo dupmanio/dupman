@@ -8,11 +8,11 @@ go_library(
     deps = [
         "//packages/common/service",
         "//packages/domain/dto",
-        "//packages/notifier/broker",
         "//packages/notifier/config",
         "//packages/notifier/deliverer",
         "//packages/notifier/deliverer/email",
         "//packages/notifier/deliverer/notify",
+        "//packages/notifier/service",
         "//packages/sdk/dupman/credentials",
         "@com_github_google_uuid//:uuid",
         "@com_github_rabbitmq_amqp091_go//:amqp091-go",
