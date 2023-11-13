@@ -51,7 +51,7 @@ func (mid *AuthMiddleware) RequiresAuth() gin.HandlerFunc {
 			return
 		}
 
-		user := mid.userRepo.FindByID(claims.Subject)
+		user := mid.userRepo.FindByID(ctx.Request.Context(), claims.Subject)
 		if user == nil {
 			user = &model.User{}
 			user.ID, _ = uuid.Parse(claims.Subject)

@@ -44,7 +44,7 @@ func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
 
 	pager := pagination.Paginate(ctx)
 
-	websites, err := ctrl.websiteSvc.GetAllWithToken(pager, publicKey)
+	websites, err := ctrl.websiteSvc.GetAllWithToken(ctx, pager, publicKey)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 
@@ -81,7 +81,7 @@ func (ctrl *SystemController) UpdateWebsiteStatus(ctx *gin.Context) {
 	_ = copier.Copy(&statusEntity, &payload.Status)
 	_ = copier.Copy(&updateEntities, &payload.Updates)
 
-	website, err := ctrl.websiteSvc.GetSingle(websiteID)
+	website, err := ctrl.websiteSvc.GetSingle(ctx, websiteID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrWebsiteNotFound) {
@@ -93,7 +93,7 @@ func (ctrl *SystemController) UpdateWebsiteStatus(ctx *gin.Context) {
 		return
 	}
 
-	website, err = ctrl.websiteSvc.UpdateStatus(website, statusEntity, updateEntities)
+	website, err = ctrl.websiteSvc.UpdateStatus(ctx, website, statusEntity, updateEntities)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 

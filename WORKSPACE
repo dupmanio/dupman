@@ -2,6 +2,10 @@ workspace(name = "com_github_dupmanio_dupman")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
+RULES_PROTOBUF_EXTERNAL_TAG = "3.25.0"
+
+RULES_PROTOBUF_EXTERNAL_SHA = "540200ef1bb101cf3f86f257f7947035313e4e485eea1f7eed9bc99dd0e2cb68"
+
 RULES_GO_EXTERNAL_TAG = "v0.39.1"
 
 RULES_GO_EXTERNAL_SHA = "6dc2da7ab4cf5d7bfc7c949776b1b7c733f05e56edc4bcd9022bb249d2e2a996"
@@ -13,6 +17,15 @@ RULES_GAZELLE_EXTERNAL_SHA = "29218f8e0cebe583643cbf93cae6f971be8a2484cdcfa1e450
 RULES_JVM_EXTERNAL_TAG = "5.3"
 
 RULES_JVM_EXTERNAL_SHA = "d31e369b854322ca5098ea12c69d7175ded971435e55c18dd9dd5f29cc5249ac"
+
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = RULES_PROTOBUF_EXTERNAL_SHA,
+    strip_prefix = "protobuf-%s" % RULES_PROTOBUF_EXTERNAL_TAG,
+    urls = [
+        "https://github.com/protocolbuffers/protobuf/archive/v%s.tar.gz" % RULES_PROTOBUF_EXTERNAL_TAG,
+    ],
+)
 
 http_archive(
     name = "io_bazel_rules_go",
@@ -38,6 +51,12 @@ http_archive(
     strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
     url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/%s/rules_jvm_external-%s.tar.gz" % (RULES_JVM_EXTERNAL_TAG, RULES_JVM_EXTERNAL_TAG),
 )
+
+# Setup Protobuf
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
 
 # Setup GO
 

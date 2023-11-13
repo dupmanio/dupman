@@ -40,7 +40,7 @@ func (ctrl *UserController) Create(ctx *gin.Context) {
 
 	_ = copier.Copy(&entity, &payload)
 
-	user, err := ctrl.userSvc.Create(entity)
+	user, err := ctrl.userSvc.Create(ctx, entity)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrUserAlreadyExists) {
@@ -73,7 +73,7 @@ func (ctrl *UserController) Update(ctx *gin.Context) {
 
 	_ = copier.Copy(&entity, &payload)
 
-	user, err := ctrl.userSvc.Update(entity)
+	user, err := ctrl.userSvc.Update(ctx, entity)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrUserDoesNotExist) {
@@ -100,7 +100,7 @@ func (ctrl *UserController) GetContactInfo(ctx *gin.Context) {
 		return
 	}
 
-	user, err := ctrl.userSvc.GetSingle(userID)
+	user, err := ctrl.userSvc.GetSingle(ctx, userID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrUserDoesNotExist) {

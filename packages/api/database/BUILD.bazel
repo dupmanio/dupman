@@ -9,5 +9,6 @@ go_library(
         "//packages/api/config",
         "@io_gorm_driver_postgres//:postgres",
         "@io_gorm_gorm//:gorm",
+        "@io_gorm_plugin_opentelemetry//tracing",
     ],
 )

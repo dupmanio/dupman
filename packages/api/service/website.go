@@ -42,7 +42,7 @@ func (svc *WebsiteService) Create(entity *model.Website, ctx *gin.Context) (*mod
 	currentUser := svc.userSvc.CurrentUser(ctx)
 	entity.UserID = currentUser.ID
 
-	if err := svc.websiteRepo.Create(entity, currentUser.KeyPair.PublicKey); err != nil {
+	if err := svc.websiteRepo.Create(ctx.Request.Context(), entity, currentUser.KeyPair.PublicKey); err != nil {
 		return nil, fmt.Errorf("unable to create website: %w", err)
 	}
 
@@ -63,7 +63,7 @@ func (svc *WebsiteService) GetAllForCurrentUser(
 ) ([]model.Website, error) {
 	currentUser := svc.userSvc.CurrentUser(ctx)
 
-	websites, err := svc.websiteRepo.FindByUserID(currentUser.ID.String(), pagination)
+	websites, err := svc.websiteRepo.FindByUserID(ctx.Request.Context(), currentUser.ID.String(), pagination)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get websites: %w", err)
 	}
@@ -77,7 +77,7 @@ func (svc *WebsiteService) GetSingleForCurrentUser(
 ) (*model.Website, error) {
 	currentUser := svc.userSvc.CurrentUser(ctx)
 
-	website := svc.websiteRepo.FindByID(websiteID.String())
+	website := svc.websiteRepo.FindByID(ctx.Request.Context(), websiteID.String())
 	if website == nil {
 		return nil, errors.ErrWebsiteNotFound
 	}
@@ -94,7 +94,7 @@ func (svc *WebsiteService) DeleteForCurrentUser(
 	websiteID uuid.UUID,
 ) error {
 	currentUser := svc.userSvc.CurrentUser(ctx)
-	if err := svc.websiteRepo.DeleteByIDAndUserID(websiteID, currentUser.ID); err != nil {
+	if err := svc.websiteRepo.DeleteByIDAndUserID(ctx.Request.Context(), websiteID, currentUser.ID); err != nil {
 		return fmt.Errorf("unable to delete websites: %w", err)
 	}
 
@@ -102,9 +102,10 @@ func (svc *WebsiteService) DeleteForCurrentUser(
 }
 
 func (svc *WebsiteService) GetSingle(
+	ctx *gin.Context,
 	websiteID uuid.UUID,
 ) (*model.Website, error) {
-	website := svc.websiteRepo.FindByID(websiteID.String())
+	website := svc.websiteRepo.FindByID(ctx.Request.Context(), websiteID.String())
 	if website == nil {
 		return nil, errors.ErrWebsiteNotFound
 	}
@@ -113,17 +114,18 @@ func (svc *WebsiteService) GetSingle(
 }
 
 func (svc *WebsiteService) GetAllWithToken(
+	ctx *gin.Context,
 	pagination *pagination.Pagination,
 	publicKey string,
 ) ([]model.Website, error) {
-	websites, err := svc.websiteRepo.FindAll(pagination)
+	websites, err := svc.websiteRepo.FindAll(ctx.Request.Context(), pagination)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get websites: %w", err)
 	}
 
 	for i := 0; i < len(websites); i++ {
 		// @todo: Implement user key caching.
-		user := svc.userRepo.FindByID(websites[i].UserID.String())
+		user := svc.userRepo.FindByID(ctx.Request.Context(), websites[i].UserID.String())
 
 		if rawToken, err := websites[i].Token.Decrypt(user.KeyPair.PrivateKey); err == nil {
 			websites[i].Token = sqltype.WebsiteToken(rawToken)
@@ -154,7 +156,12 @@ func (svc *WebsiteService) Update(
 		fieldsToUpdate = append(fieldsToUpdate, "Token")
 	}
 
-	if err := svc.websiteRepo.Update(website, fieldsToUpdate, currentUser.KeyPair.PublicKey); err != nil {
+	if err := svc.websiteRepo.Update(
+		ctx.Request.Context(),
+		website,
+		fieldsToUpdate,
+		currentUser.KeyPair.PublicKey,
+	); err != nil {
 		return nil, fmt.Errorf("unable to update website: %w", err)
 	}
 
@@ -162,11 +169,12 @@ func (svc *WebsiteService) Update(
 }
 
 func (svc *WebsiteService) UpdateStatus(
+	ctx *gin.Context,
 	website *model.Website,
 	newStatus model.Status,
 	updates []model.Update,
 ) (*model.Website, error) {
-	if err := svc.websiteRepo.ClearUpdates(website); err != nil {
+	if err := svc.websiteRepo.ClearUpdates(ctx.Request.Context(), website); err != nil {
 		return nil, fmt.Errorf("unable to delete Website Updates: %w", err)
 	}
 
@@ -179,7 +187,7 @@ func (svc *WebsiteService) UpdateStatus(
 		website.Updates = updates
 	}
 
-	if err := svc.websiteRepo.UpdateStatus(website); err != nil {
+	if err := svc.websiteRepo.UpdateStatus(ctx.Request.Context(), website); err != nil {
 		return nil, fmt.Errorf("unable to update Website status: %w", err)
 	}
 

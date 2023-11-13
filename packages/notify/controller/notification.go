@@ -50,7 +50,7 @@ func (ctrl *NotificationController) Create(ctx *gin.Context) {
 
 	_ = copier.Copy(&entity, &payload)
 
-	notification, err := ctrl.notificationSvc.Create(entity)
+	notification, err := ctrl.notificationSvc.Create(ctx, entity)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 

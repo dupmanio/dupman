@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"context"
+
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/dupmanio/dupman/packages/notify/database"
 	"github.com/dupmanio/dupman/packages/notify/model"
@@ -31,17 +33,22 @@ func (repo *NotificationRepository) Setup() {
 	}
 }
 
-func (repo *NotificationRepository) Create(notification *model.Notification) error {
-	return repo.db.Create(notification).Error
+func (repo *NotificationRepository) Create(ctx context.Context, notification *model.Notification) error {
+	return repo.db.
+		WithContext(ctx).
+		Create(notification).
+		Error
 }
 
 func (repo *NotificationRepository) FindByUserID(
+	ctx context.Context,
 	userID uuid.UUID,
 	pager *pagination.Pagination,
 ) ([]model.Notification, error) {
 	var notifications []model.Notification
 
 	tx := repo.db.
+		WithContext(ctx).
 		Where("user_id", userID).
 		Order("created_at DESC")
 
@@ -51,10 +58,11 @@ func (repo *NotificationRepository) FindByUserID(
 		Error
 }
 
-func (repo *NotificationRepository) GetCountByUserID(userID uuid.UUID) (int64, error) {
+func (repo *NotificationRepository) GetCountByUserID(ctx context.Context, userID uuid.UUID) (int64, error) {
 	var count int64
 
 	return count, repo.db.
+		WithContext(ctx).
 		Model(&model.Notification{}).
 		Where("user_id", userID).
 		Where("seen", false).
@@ -62,15 +70,17 @@ func (repo *NotificationRepository) GetCountByUserID(userID uuid.UUID) (int64, e
 		Error
 }
 
-func (repo *NotificationRepository) DeleteByUserID(userID uuid.UUID) error {
+func (repo *NotificationRepository) DeleteByUserID(ctx context.Context, userID uuid.UUID) error {
 	return repo.db.
+		WithContext(ctx).
 		Where("user_id", userID).
 		Delete(&model.Notification{}).
 		Error
 }
 
-func (repo *NotificationRepository) MarkAsReadByIDAndUserID(id uuid.UUID, userID uuid.UUID) error {
+func (repo *NotificationRepository) MarkAsReadByIDAndUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
 	return repo.db.
+		WithContext(ctx).
 		Model(&model.Notification{}).
 		Where("id", id).
 		Where("user_id", userID).
@@ -78,8 +88,9 @@ func (repo *NotificationRepository) MarkAsReadByIDAndUserID(id uuid.UUID, userID
 		Error
 }
 
-func (repo *NotificationRepository) MarkAsReadByUserID(userID uuid.UUID) error {
+func (repo *NotificationRepository) MarkAsReadByUserID(ctx context.Context, userID uuid.UUID) error {
 	return repo.db.
+		WithContext(ctx).
 		Model(&model.Notification{}).
 		Where("user_id", userID).
 		Updates(map[string]interface{}{"Seen": true}).

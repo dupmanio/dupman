@@ -7,6 +7,7 @@ import (
 	"github.com/dupmanio/dupman/packages/notify/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
 type Database struct {
@@ -26,6 +27,14 @@ func New(config *config.Config) (*Database, error) {
 	db, err := gorm.Open(postgres.Open(url))
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
+	}
+
+	if config.Telemetry.Enabled {
+		if err = db.Use(tracing.NewPlugin()); err != nil {
+			if err != nil {
+				return nil, fmt.Errorf("unable to setup tracing plugin: %w", err)
+			}
+		}
 	}
 
 	return &Database{

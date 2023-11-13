@@ -37,13 +37,20 @@ type Scanner struct {
 	RoutingKey   string `mapstructure:"SCANNER_ROUTING_KEY"`
 }
 
+type TelemetryConfig struct {
+	Enabled      bool   `mapstructure:"TELEMETRY_ENABLED" default:"false"`
+	CollectorURL string `mapstructure:"TELEMETRY_COLLECTOR_URL"`
+}
+
 type Config struct {
-	Env      string         `mapstructure:"ENV" default:"prod"`
-	Server   ServerConfig   `mapstructure:",squash"`
-	Database DatabaseConfig `mapstructure:",squash"`
-	RabbitMQ RabbitMQ       `mapstructure:",squash"`
-	Notifier Notifier       `mapstructure:",squash"`
-	Scanner  Scanner        `mapstructure:",squash"`
+	Env       string          `mapstructure:"ENV" default:"prod"`
+	AppName   string          `mapstructure:"APP_NAME" default:"api"`
+	Server    ServerConfig    `mapstructure:",squash"`
+	Database  DatabaseConfig  `mapstructure:",squash"`
+	RabbitMQ  RabbitMQ        `mapstructure:",squash"`
+	Notifier  Notifier        `mapstructure:",squash"`
+	Scanner   Scanner         `mapstructure:",squash"`
+	Telemetry TelemetryConfig `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {

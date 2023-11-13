@@ -11,8 +11,10 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/config"
 	"github.com/dupmanio/dupman/packages/api/service"
+	"github.com/dupmanio/dupman/packages/common/otel"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -39,6 +41,10 @@ func New(logger *zap.Logger, config *config.Config) (*Server, error) {
 	engine.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	engine.Use(ginzap.RecoveryWithZap(logger, true))
 
+	if config.Telemetry.Enabled {
+		engine.Use(otelgin.Middleware(config.AppName))
+	}
+
 	return &Server{
 		Engine: engine,
 	}, nil
@@ -57,9 +63,20 @@ func Run(
 		ReadHeaderTimeout: 0,
 	}
 
+	var ot *otel.OTel
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
+			var err error
+
 			logger.Info("Starting HTTP Server", zap.String("address", httpServer.Addr))
+
+			if config.Telemetry.Enabled {
+				ot, err = otel.NewOTel(ctx, config.AppName, "1.0.0", config.Telemetry.CollectorURL)
+				if err != nil {
+					return fmt.Errorf("failed to initialize Telemetry service: %w", err)
+				}
+			}
 
 			go func() {
 				if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -78,6 +95,12 @@ func Run(
 
 			if err := messengerSvc.Close(); err != nil {
 				return fmt.Errorf("failed to close messenger: %w", err)
+			}
+
+			if config.Telemetry.Enabled {
+				if err := ot.Shutdown(ctx); err != nil {
+					return fmt.Errorf("failed to shutdown telemetry service: %w", err)
+				}
 			}
 
 			return nil

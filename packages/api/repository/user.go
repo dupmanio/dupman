@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
 	"github.com/dupmanio/dupman/packages/api/database"
@@ -32,18 +33,28 @@ func (repo *UserRepository) Setup() {
 	}
 }
 
-func (repo *UserRepository) Create(user *model.User) error {
-	return repo.db.Create(user).Error
+func (repo *UserRepository) Create(ctx context.Context, user *model.User) error {
+	return repo.db.
+		WithContext(ctx).
+		Create(user).
+		Error
 }
 
-func (repo *UserRepository) Update(user *model.User) error {
-	return repo.db.Save(user).Error
+func (repo *UserRepository) Update(ctx context.Context, user *model.User) error {
+	return repo.db.
+		WithContext(ctx).
+		Save(user).
+		Error
 }
 
-func (repo *UserRepository) FindByID(id string) *model.User {
+func (repo *UserRepository) FindByID(ctx context.Context, id string) *model.User {
 	var user model.User
 
-	err := repo.db.Joins("KeyPair").First(&user, "users.id = ?", id).Error
+	err := repo.db.
+		WithContext(ctx).
+		Joins("KeyPair").
+		First(&user, "users.id = ?", id).
+		Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil
 	}

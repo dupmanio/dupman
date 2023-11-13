@@ -18,10 +18,17 @@ type ChromeConfig struct {
 	Timeout     int `mapstructure:"CHROME_TIMEOUT" default:"10"`
 }
 
+type TelemetryConfig struct {
+	Enabled      bool   `mapstructure:"TELEMETRY_ENABLED" default:"false"`
+	CollectorURL string `mapstructure:"TELEMETRY_COLLECTOR_URL"`
+}
+
 type Config struct {
-	Env    string       `mapstructure:"ENV" default:"prod"`
-	Server ServerConfig `mapstructure:",squash"`
-	Chrome ChromeConfig `mapstructure:",squash"`
+	Env       string          `mapstructure:"ENV" default:"prod"`
+	AppName   string          `mapstructure:"APP_NAME" default:"preview-api"`
+	Server    ServerConfig    `mapstructure:",squash"`
+	Chrome    ChromeConfig    `mapstructure:",squash"`
+	Telemetry TelemetryConfig `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {

@@ -43,8 +43,8 @@ func NewNotificationService(
 	}, nil
 }
 
-func (svc *NotificationService) Create(entity *model.Notification) (*model.Notification, error) {
-	if err := svc.notificationRepo.Create(entity); err != nil {
+func (svc *NotificationService) Create(ctx *gin.Context, entity *model.Notification) (*model.Notification, error) {
+	if err := svc.notificationRepo.Create(ctx.Request.Context(), entity); err != nil {
 		return nil, fmt.Errorf("unable to create notification: %w", err)
 	}
 
@@ -60,7 +60,7 @@ func (svc *NotificationService) GetAllForCurrentUser(
 		return nil, fmt.Errorf("unable to get user ID: %w", err)
 	}
 
-	notifications, err := svc.notificationRepo.FindByUserID(userID, pagination)
+	notifications, err := svc.notificationRepo.FindByUserID(ctx.Request.Context(), userID, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get notifications: %w", err)
 	}
@@ -74,7 +74,7 @@ func (svc *NotificationService) GetCountForCurrentUser(ctx *gin.Context) (int64,
 		return 0, fmt.Errorf("unable to get user ID: %w", err)
 	}
 
-	count, err := svc.notificationRepo.GetCountByUserID(userID)
+	count, err := svc.notificationRepo.GetCountByUserID(ctx.Request.Context(), userID)
 	if err != nil {
 		return 0, fmt.Errorf("unable to get notifications count: %w", err)
 	}
@@ -90,7 +90,7 @@ func (svc *NotificationService) DeleteAllForCurrentUser(
 		return fmt.Errorf("unable to get user ID: %w", err)
 	}
 
-	if err := svc.notificationRepo.DeleteByUserID(userID); err != nil {
+	if err := svc.notificationRepo.DeleteByUserID(ctx.Request.Context(), userID); err != nil {
 		return fmt.Errorf("unable to delete notifications: %w", err)
 	}
 
@@ -106,7 +106,7 @@ func (svc *NotificationService) MarkAsRead(
 		return fmt.Errorf("unable to get user ID: %w", err)
 	}
 
-	if err := svc.notificationRepo.MarkAsReadByIDAndUserID(id, userID); err != nil {
+	if err := svc.notificationRepo.MarkAsReadByIDAndUserID(ctx.Request.Context(), id, userID); err != nil {
 		return fmt.Errorf("unable to mark notifications as read: %w", err)
 	}
 
@@ -121,7 +121,7 @@ func (svc *NotificationService) MarkAllAsReadForCurrentUser(
 		return fmt.Errorf("unable to get user ID: %w", err)
 	}
 
-	if err := svc.notificationRepo.MarkAsReadByUserID(userID); err != nil {
+	if err := svc.notificationRepo.MarkAsReadByUserID(ctx.Request.Context(), userID); err != nil {
 		return fmt.Errorf("unable to mark notifications as read: %w", err)
 	}
 

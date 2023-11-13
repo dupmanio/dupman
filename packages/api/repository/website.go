@@ -37,28 +37,36 @@ func (repo *WebsiteRepository) Setup() {
 	}
 }
 
-func (repo *WebsiteRepository) Create(website *model.Website, encryptionKKey string) error {
-	ctx := context.Background()
+func (repo *WebsiteRepository) Create(ctx context.Context, website *model.Website, encryptionKKey string) error {
 	ctx = context.WithValue(ctx, constant.EncryptionKeyKey, encryptionKKey)
 
-	return repo.db.WithContext(ctx).Create(website).Error
+	return repo.db.
+		WithContext(ctx).
+		Create(website).
+		Error
 }
 
-func (repo *WebsiteRepository) FindAll(pager *pagination.Pagination) ([]model.Website, error) {
+func (repo *WebsiteRepository) FindAll(ctx context.Context, pager *pagination.Pagination) ([]model.Website, error) {
 	var websites []model.Website
 
 	tx := repo.db.DB
 
 	return websites, tx.
+		WithContext(ctx).
 		Scopes(pagination.WithPagination(tx, &websites, pager)).
 		Find(&websites).
 		Error
 }
 
-func (repo *WebsiteRepository) FindByUserID(userID string, pager *pagination.Pagination) ([]model.Website, error) {
+func (repo *WebsiteRepository) FindByUserID(
+	ctx context.Context,
+	userID string,
+	pager *pagination.Pagination,
+) ([]model.Website, error) {
 	var websites []model.Website
 
 	tx := repo.db.
+		WithContext(ctx).
 		Preload("Status").
 		Where("websites.user_id", userID)
 
@@ -68,10 +76,11 @@ func (repo *WebsiteRepository) FindByUserID(userID string, pager *pagination.Pag
 		Error
 }
 
-func (repo *WebsiteRepository) FindByID(id string) *model.Website {
+func (repo *WebsiteRepository) FindByID(ctx context.Context, id string) *model.Website {
 	var website model.Website
 
 	err := repo.db.
+		WithContext(ctx).
 		Preload("Status").
 		Preload("Updates").
 		First(&website, "id = ?", id).
@@ -83,8 +92,9 @@ func (repo *WebsiteRepository) FindByID(id string) *model.Website {
 	return &website
 }
 
-func (repo *WebsiteRepository) ClearUpdates(website *model.Website) error {
+func (repo *WebsiteRepository) ClearUpdates(ctx context.Context, website *model.Website) error {
 	err := repo.db.
+		WithContext(ctx).
 		Unscoped().
 		Model(&website).
 		Association("Updates").
@@ -97,8 +107,9 @@ func (repo *WebsiteRepository) ClearUpdates(website *model.Website) error {
 	return nil
 }
 
-func (repo *WebsiteRepository) UpdateStatus(website *model.Website) error {
+func (repo *WebsiteRepository) UpdateStatus(ctx context.Context, website *model.Website) error {
 	err := repo.db.
+		WithContext(ctx).
 		Session(&gorm.Session{FullSaveAssociations: true}).
 		Select("Updates", "Status").
 		Omit("UpdatedAt").
@@ -111,19 +122,24 @@ func (repo *WebsiteRepository) UpdateStatus(website *model.Website) error {
 	return nil
 }
 
-func (repo *WebsiteRepository) Update(website *model.Website, fieldsToUpdate []string, encryptionKKey string) error {
-	ctx := context.Background()
+func (repo *WebsiteRepository) Update(
+	ctx context.Context,
+	website *model.Website,
+	fieldsToUpdate []string,
+	encryptionKKey string,
+) error {
 	ctx = context.WithValue(ctx, constant.EncryptionKeyKey, encryptionKKey)
 
 	return repo.db.
-		Select("UpdatedAt", fieldsToUpdate).
 		WithContext(ctx).
+		Select("UpdatedAt", fieldsToUpdate).
 		Save(website).
 		Error
 }
 
-func (repo *WebsiteRepository) DeleteByIDAndUserID(id, userID uuid.UUID) error {
+func (repo *WebsiteRepository) DeleteByIDAndUserID(ctx context.Context, id, userID uuid.UUID) error {
 	err := repo.db.
+		WithContext(ctx).
 		Unscoped().
 		Select("Updates", "Status").
 		Where("id = ?", id).
