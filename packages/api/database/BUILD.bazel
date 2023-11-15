@@ -7,8 +7,10 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/api/config",
+        "//packages/common/logger/wrapper",
         "@io_gorm_driver_postgres//:postgres",
         "@io_gorm_gorm//:gorm",
         "@io_gorm_plugin_opentelemetry//tracing",
+        "@org_uber_go_zap//:zap",
     ],
 )

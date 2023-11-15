@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "wrapper",
+    srcs = ["gorm.go"],
+    importpath = "github.com/dupmanio/dupman/packages/common/logger/wrapper",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@io_gorm_gorm//logger",
+        "@io_gorm_gorm//utils",
+        "@org_uber_go_zap//:zap",
+    ],
+)

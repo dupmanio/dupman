@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net"
 
+	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/notify/config"
+	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/opentelemetry/tracing"
@@ -14,7 +16,7 @@ type Database struct {
 	*gorm.DB
 }
 
-func New(config *config.Config) (*Database, error) {
+func New(config *config.Config, logger *zap.Logger) (*Database, error) {
 	url := fmt.Sprintf(
 		"postgres://%s:%s@%s/%s",
 		config.Database.User,
@@ -22,9 +24,11 @@ func New(config *config.Config) (*Database, error) {
 		net.JoinHostPort(config.Database.Host, config.Database.Port),
 		config.Database.Database,
 	)
+	gormConfig := gorm.Config{
+		Logger: logWrapper.NewGormWrapper(logger),
+	}
 
-	// @todo: implement logging.
-	db, err := gorm.Open(postgres.Open(url))
+	db, err := gorm.Open(postgres.Open(url), &gormConfig)
 	if err != nil {
 		return nil, fmt.Errorf("unable to connect to database: %w", err)
 	}
