@@ -18,6 +18,7 @@ go_library(
         "//packages/api/server",
         "//packages/api/service",
         "//packages/common/logger",
+        "//packages/common/logger/wrapper",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",
         "@org_uber_go_zap//:zap",

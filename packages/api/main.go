@@ -12,6 +12,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/server"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/common/logger"
+	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
@@ -20,7 +21,7 @@ import (
 func main() {
 	app := fx.New(
 		fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
-			return &fxevent.ZapLogger{Logger: logger}
+			return logWrapper.NewFxWrapper(logger)
 		}),
 		fx.Provide(
 			config.New,

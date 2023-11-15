@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//packages/common/logger",
+        "//packages/common/logger/wrapper",
         "//packages/notify/config",
         "//packages/notify/controller",
         "//packages/notify/database",

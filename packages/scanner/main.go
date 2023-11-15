@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/common/logger"
+	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/scanner/config"
 	"github.com/dupmanio/dupman/packages/scanner/fetcher"
 	"github.com/dupmanio/dupman/packages/scanner/processor"
@@ -17,7 +18,7 @@ import (
 func main() {
 	app := fx.New(
 		fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
-			return &fxevent.ZapLogger{Logger: logger}
+			return logWrapper.NewFxWrapper(logger)
 		}),
 		fx.Provide(
 			config.New,

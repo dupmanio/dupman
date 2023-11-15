@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//packages/common/logger",
+        "//packages/common/logger/wrapper",
         "//packages/scanner/config",
         "//packages/scanner/fetcher",
         "//packages/scanner/processor",
