@@ -2,12 +2,19 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "wrapper",
-    srcs = ["gorm.go"],
+    srcs = [
+        "gin.go",
+        "gorm.go",
+    ],
     importpath = "github.com/dupmanio/dupman/packages/common/logger/wrapper",
     visibility = ["//visibility:public"],
     deps = [
+        "@com_github_gin_contrib_zap//:zap",
+        "@com_github_gin_gonic_gin//:gin",
         "@io_gorm_gorm//logger",
         "@io_gorm_gorm//utils",
+        "@io_opentelemetry_go_otel_trace//:trace",
         "@org_uber_go_zap//:zap",
+        "@org_uber_go_zap//zapcore",
     ],
 )

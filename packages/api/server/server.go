@@ -7,12 +7,11 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"time"
 
 	"github.com/dupmanio/dupman/packages/api/config"
 	"github.com/dupmanio/dupman/packages/api/service"
+	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/common/otel"
-	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/fx"
@@ -24,6 +23,10 @@ type Server struct {
 }
 
 func New(logger *zap.Logger, config *config.Config) (*Server, error) {
+	ginLogWrapper := logWrapper.NewGinWrapper(logger)
+
+	gin.DefaultWriter = ginLogWrapper
+
 	if config.Env == "prod" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -38,8 +41,8 @@ func New(logger *zap.Logger, config *config.Config) (*Server, error) {
 		return nil, fmt.Errorf("unable to set trusted proxies: %w", err)
 	}
 
-	engine.Use(ginzap.Ginzap(logger, time.RFC3339, true))
-	engine.Use(ginzap.RecoveryWithZap(logger, true))
+	engine.Use(ginLogWrapper.GetGinzapMiddleware())
+	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
 
 	if config.Telemetry.Enabled {
 		engine.Use(otelgin.Middleware(config.AppName))
