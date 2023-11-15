@@ -60,7 +60,7 @@ func (ctrl *PreviewController) Preview(ctx *gin.Context) {
 		return
 	}
 
-	screen, err := ctrl.chromeSvc.Screenshot(websiteInstance.URL)
+	screen, err := ctrl.chromeSvc.Screenshot(websiteInstance.URL, websiteInstance.ID)
 	if err != nil {
 		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
 

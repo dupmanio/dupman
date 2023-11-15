@@ -3,30 +3,30 @@ package main
 import (
 	"fmt"
 
+	"github.com/dupmanio/dupman/packages/common/logger"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/config"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/messenger"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/scheduler"
-	"go.uber.org/zap"
 )
 
 func process() error {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		return fmt.Errorf("unable to create logger: %w", err)
-	}
-
 	conf, err := config.New()
 	if err != nil {
 		return fmt.Errorf("unable to create config: %w", err)
 	}
 
-	mess, err := messenger.NewMessengerService(logger, conf)
+	loggerInst, err := logger.New(conf.Env, conf.AppName, "1.0.0", conf.LogPath)
+	if err != nil {
+		return fmt.Errorf("unable to create logger: %w", err)
+	}
+
+	mess, err := messenger.NewMessengerService(loggerInst, conf)
 	if err != nil {
 		return fmt.Errorf("unable to create Messenger Service: %w", err)
 	}
 	defer mess.Close()
 
-	schedulerInst, err := scheduler.New(conf, logger, mess)
+	schedulerInst, err := scheduler.New(conf, loggerInst, mess)
 	if err != nil {
 		return fmt.Errorf("unable to create instance of updater: %w", err)
 	}

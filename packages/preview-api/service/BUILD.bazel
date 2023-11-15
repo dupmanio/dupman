@@ -13,6 +13,7 @@ go_library(
         "//packages/preview-api/config",
         "@com_github_chromedp_cdproto//inspector",
         "@com_github_chromedp_chromedp//:chromedp",
+        "@com_github_google_uuid//:uuid",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",
     ],

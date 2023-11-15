@@ -38,6 +38,8 @@ type DupmanAPIService struct {
 
 type Config struct {
 	Env              string           `mapstructure:"ENV" default:"prod"`
+	AppName          string           `mapstructure:"APP_NAME" default:"notifier"`
+	LogPath          string           `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
 	RabbitMQ         RabbitMQ         `mapstructure:",squash"`
 	Worker           Worker           `mapstructure:",squash"`
 	Mailer           Mailer           `mapstructure:",squash"`

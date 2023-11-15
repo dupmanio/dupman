@@ -23,7 +23,8 @@ type Processor struct {
 	messengerSvc      *service.MessengerService
 	dupmanCredentials credentials.Provider
 	dupmanAPIService  *commonService.DupmanAPIService
-	deliverers        []deliverer.Deliverer
+	// @todo: Rewrite using fx value groups.
+	deliverers []deliverer.Deliverer
 }
 
 func NewProcessor(

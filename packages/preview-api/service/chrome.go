@@ -8,6 +8,7 @@ import (
 	"github.com/chromedp/cdproto/inspector"
 	"github.com/chromedp/chromedp"
 	"github.com/dupmanio/dupman/packages/preview-api/config"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -32,7 +33,7 @@ func NewChromeService(conf *config.Config, logger *zap.Logger) *ChromeService {
 	return svc
 }
 
-func (svc *ChromeService) Screenshot(url string) ([]byte, error) {
+func (svc *ChromeService) Screenshot(url string, id uuid.UUID) ([]byte, error) {
 	var screenshotBuffer []byte
 
 	allocatorCtx, allocatorCancel := chromedp.NewExecAllocator(context.Background(), svc.options...)
@@ -66,7 +67,7 @@ func (svc *ChromeService) Screenshot(url string) ([]byte, error) {
 	if err := chromedp.Run(tabCtx, svc.makeScreenshot(url, &screenshotBuffer)); err != nil {
 		svc.logger.Error(
 			"unable to screenshot Website",
-			zap.String("websiteID", "{id}"),
+			zap.String("websiteID", id.String()),
 			zap.Error(err),
 		)
 

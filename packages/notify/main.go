@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/dupmanio/dupman/packages/common/logger"
 	"github.com/dupmanio/dupman/packages/notify/config"
 	"github.com/dupmanio/dupman/packages/notify/controller"
 	"github.com/dupmanio/dupman/packages/notify/database"
@@ -23,7 +26,15 @@ func main() {
 			config.New,
 			server.New,
 			database.New,
-			zap.NewDevelopment,
+			// Crete logger.
+			func(conf *config.Config) (*zap.Logger, error) {
+				loggerInst, err := logger.New(conf.Env, conf.AppName, "1.0.0", conf.LogPath)
+				if err != nil {
+					return nil, fmt.Errorf("unable to create logger: %w", err)
+				}
+
+				return loggerInst, nil
+			},
 		),
 		controller.Create(),
 		middleware.Create(),

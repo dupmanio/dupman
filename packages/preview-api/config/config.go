@@ -26,6 +26,7 @@ type TelemetryConfig struct {
 type Config struct {
 	Env       string          `mapstructure:"ENV" default:"prod"`
 	AppName   string          `mapstructure:"APP_NAME" default:"preview-api"`
+	LogPath   string          `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
 	Server    ServerConfig    `mapstructure:",squash"`
 	Chrome    ChromeConfig    `mapstructure:",squash"`
 	Telemetry TelemetryConfig `mapstructure:",squash"`

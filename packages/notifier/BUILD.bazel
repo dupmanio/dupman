@@ -9,6 +9,7 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/notifier",
     visibility = ["//visibility:private"],
     deps = [
+        "//packages/common/logger",
         "//packages/notifier/config",
         "//packages/notifier/deliverer",
         "//packages/notifier/processor",

@@ -45,6 +45,7 @@ type TelemetryConfig struct {
 type Config struct {
 	Env       string          `mapstructure:"ENV" default:"prod"`
 	AppName   string          `mapstructure:"APP_NAME" default:"api"`
+	LogPath   string          `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
 	Server    ServerConfig    `mapstructure:",squash"`
 	Database  DatabaseConfig  `mapstructure:",squash"`
 	RabbitMQ  RabbitMQ        `mapstructure:",squash"`

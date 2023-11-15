@@ -25,6 +25,8 @@ type Scanner struct {
 
 type Config struct {
 	Env      string       `mapstructure:"ENV" default:"prod"`
+	AppName  string       `mapstructure:"APP_NAME" default:"scanner-scheduler"`
+	LogPath  string       `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
 	Dupman   DupmanConfig `mapstructure:",squash"`
 	RabbitMQ RabbitMQ     `mapstructure:",squash"`
 	Scanner  Scanner      `mapstructure:",squash"`

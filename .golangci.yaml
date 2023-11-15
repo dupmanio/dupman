@@ -34,6 +34,10 @@ linters-settings:
       # Custom Sigs.
       - .Marshal(
 
+  gomnd:
+    ignored-numbers:
+      - '0o644'
+
 linters:
   enable-all: true
   disable:
