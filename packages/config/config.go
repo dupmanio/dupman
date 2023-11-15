@@ -7,8 +7,30 @@ import (
 	"github.com/spf13/viper"
 )
 
-func Load(path string, conf interface{}) error {
-	viper.AddConfigPath(path)
+type TelemetryConfig struct {
+	Enabled      bool   `mapstructure:"TELEMETRY_ENABLED" default:"false"`
+	CollectorURL string `mapstructure:"TELEMETRY_COLLECTOR_URL"`
+}
+
+type BaseConfig struct {
+	Env       string          `mapstructure:"ENV" default:"prod"`
+	AppName   string          `mapstructure:"APP_NAME"`
+	LogPath   string          `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
+	Telemetry TelemetryConfig `mapstructure:",squash"`
+}
+
+type Config interface {
+	SetAppName(string)
+}
+
+func (conf *BaseConfig) SetAppName(appName string) {
+	conf.AppName = appName
+}
+
+func Load(appName string, conf Config) error {
+	conf.SetAppName(appName)
+
+	viper.AddConfigPath(fmt.Sprintf("packages/%s", appName))
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 

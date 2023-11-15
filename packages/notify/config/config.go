@@ -28,24 +28,17 @@ type RedisConfig struct {
 	Port     string `mapstructure:"REDIS_PORT"`
 }
 
-type TelemetryConfig struct {
-	Enabled      bool   `mapstructure:"TELEMETRY_ENABLED" default:"false"`
-	CollectorURL string `mapstructure:"TELEMETRY_COLLECTOR_URL"`
-}
-
 type Config struct {
-	Env       string          `mapstructure:"ENV" default:"prod"`
-	AppName   string          `mapstructure:"APP_NAME" default:"notify"`
-	LogPath   string          `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
-	Server    ServerConfig    `mapstructure:",squash"`
-	Database  DatabaseConfig  `mapstructure:",squash"`
-	Redis     RedisConfig     `mapstructure:",squash"`
-	Telemetry TelemetryConfig `mapstructure:",squash"`
+	config.BaseConfig `mapstructure:",squash"`
+
+	Server   ServerConfig   `mapstructure:",squash"`
+	Database DatabaseConfig `mapstructure:",squash"`
+	Redis    RedisConfig    `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {
 	conf := new(Config)
-	if err := config.Load("packages/notify", conf); err != nil {
+	if err := config.Load("notify", conf); err != nil {
 		return nil, fmt.Errorf("unable to load config: %w", err)
 	}
 

@@ -37,9 +37,8 @@ type DupmanAPIService struct {
 }
 
 type Config struct {
-	Env              string           `mapstructure:"ENV" default:"prod"`
-	AppName          string           `mapstructure:"APP_NAME" default:"notifier"`
-	LogPath          string           `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
+	config.BaseConfig `mapstructure:",squash"`
+
 	RabbitMQ         RabbitMQ         `mapstructure:",squash"`
 	Worker           Worker           `mapstructure:",squash"`
 	Mailer           Mailer           `mapstructure:",squash"`
@@ -49,7 +48,7 @@ type Config struct {
 
 func New() (*Config, error) {
 	conf := new(Config)
-	if err := config.Load("packages/notifier", conf); err != nil {
+	if err := config.Load("notifier", conf); err != nil {
 		return nil, fmt.Errorf("unable to load config: %w", err)
 	}
 

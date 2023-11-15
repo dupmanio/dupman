@@ -18,23 +18,16 @@ type ChromeConfig struct {
 	Timeout     int `mapstructure:"CHROME_TIMEOUT" default:"10"`
 }
 
-type TelemetryConfig struct {
-	Enabled      bool   `mapstructure:"TELEMETRY_ENABLED" default:"false"`
-	CollectorURL string `mapstructure:"TELEMETRY_COLLECTOR_URL"`
-}
-
 type Config struct {
-	Env       string          `mapstructure:"ENV" default:"prod"`
-	AppName   string          `mapstructure:"APP_NAME" default:"preview-api"`
-	LogPath   string          `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
-	Server    ServerConfig    `mapstructure:",squash"`
-	Chrome    ChromeConfig    `mapstructure:",squash"`
-	Telemetry TelemetryConfig `mapstructure:",squash"`
+	config.BaseConfig `mapstructure:",squash"`
+
+	Server ServerConfig `mapstructure:",squash"`
+	Chrome ChromeConfig `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {
 	conf := new(Config)
-	if err := config.Load("packages/preview-api", conf); err != nil {
+	if err := config.Load("preview-api", conf); err != nil {
 		return nil, fmt.Errorf("unable to load config: %w", err)
 	}
 
