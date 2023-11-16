@@ -41,12 +41,12 @@ func New(logger *zap.Logger, config *config.Config) (*Server, error) {
 		return nil, fmt.Errorf("unable to set trusted proxies: %w", err)
 	}
 
-	engine.Use(ginLogWrapper.GetGinzapMiddleware())
-	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
-
 	if config.Telemetry.Enabled {
 		engine.Use(otelgin.Middleware(config.AppName))
 	}
+
+	engine.Use(ginLogWrapper.GetGinzapMiddleware())
+	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
 
 	return &Server{
 		Engine: engine,

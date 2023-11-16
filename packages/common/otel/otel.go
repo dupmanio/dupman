@@ -83,6 +83,7 @@ func (ot *OTel) setupGRPCConnection(ctx context.Context) error {
 func (ot *OTel) setupResource() error {
 	var err error
 
+	// @todo: add environment.
 	ot.resource, err = resource.Merge(
 		resource.Default(),
 		resource.NewWithAttributes(

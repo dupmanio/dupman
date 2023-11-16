@@ -57,7 +57,6 @@ func (wrap *GinWrapper) logGinDebug(message string) {
 }
 
 func (wrap *GinWrapper) GetGinzapMiddleware() gin.HandlerFunc {
-	// @todo: fix TraceID.
 	return ginzap.GinzapWithConfig(
 		wrap.logger,
 		&ginzap.Config{
