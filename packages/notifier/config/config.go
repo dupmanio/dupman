@@ -3,7 +3,7 @@ package config
 import (
 	"fmt"
 
-	"github.com/dupmanio/dupman/packages/config"
+	"github.com/dupmanio/dupman/packages/common/config"
 )
 
 type Mailer struct {
