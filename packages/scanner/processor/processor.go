@@ -34,8 +34,8 @@ func NewProcessor(
 	dupmanAPIService *commonService.DupmanAPIService,
 ) (*Processor, error) {
 	cred, err := credentials.NewClientCredentials(
-		config.DupmanConfig.ClientID,
-		config.DupmanConfig.ClientSecret,
+		config.Dupman.ClientID,
+		config.Dupman.ClientSecret,
 		[]string{},
 	)
 	if err != nil {

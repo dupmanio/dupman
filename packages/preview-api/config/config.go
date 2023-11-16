@@ -6,12 +6,6 @@ import (
 	"github.com/dupmanio/dupman/packages/config"
 )
 
-type ServerConfig struct {
-	ListenAddr     string   `mapstructure:"SERVER_ADDR" default:"0.0.0.0"`
-	Port           string   `mapstructure:"SERVER_PORT" default:"8080"`
-	TrustedProxies []string `mapstructure:"TRUSTED_PROXIES"`
-}
-
 type ChromeConfig struct {
 	ResolutionX int `mapstructure:"CHROME_RESOLUTION_X" default:"1920"`
 	ResolutionY int `mapstructure:"CHROME_RESOLUTION_Y" default:"1080"`
@@ -21,7 +15,9 @@ type ChromeConfig struct {
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	Server ServerConfig `mapstructure:",squash"`
+	Server    config.ServerConfig    `mapstructure:",squash"`
+	Telemetry config.TelemetryConfig `mapstructure:",squash"`
+
 	Chrome ChromeConfig `mapstructure:",squash"`
 }
 

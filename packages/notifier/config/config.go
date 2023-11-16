@@ -6,20 +6,6 @@ import (
 	"github.com/dupmanio/dupman/packages/config"
 )
 
-type RabbitMQ struct {
-	Host      string `mapstructure:"RMQ_HOST" default:"127.0.0.1"`
-	Port      string `mapstructure:"RMQ_PORT" default:"5672"`
-	User      string `mapstructure:"RMQ_USER"`
-	Password  string `mapstructure:"RMQ_PASSWORD"`
-	QueueName string `mapstructure:"RMQ_QUEUE_NAME"`
-}
-
-type Worker struct {
-	PrefetchCount int `mapstructure:"WORKER_PREFETCH_COUNT" default:"1"`
-	PrefetchSize  int `mapstructure:"WORKER_PREFETCH_SIZE" default:"0"`
-	RetryAttempts int `mapstructure:"WORKER_RETRY_ATTEMPTS" default:"3"`
-}
-
 type Mailer struct {
 	Host     string `mapstructure:"MAILER_HOST"`
 	Port     int    `mapstructure:"MAILER_PORT"`
@@ -31,19 +17,15 @@ type Email struct {
 	From string `mapstructure:"EMAIL_FROM"`
 }
 
-type DupmanAPIService struct {
-	ClientID     string `mapstructure:"DUPMAN_API_SERVICE_CLIENT_ID"`
-	ClientSecret string `mapstructure:"DUPMAN_API_SERVICE_CLIENT_SECRET"`
-}
-
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	RabbitMQ         RabbitMQ         `mapstructure:",squash"`
-	Worker           Worker           `mapstructure:",squash"`
-	Mailer           Mailer           `mapstructure:",squash"`
-	Email            Email            `mapstructure:",squash"`
-	DupmanAPIService DupmanAPIService `mapstructure:",squash"`
+	RabbitMQ config.RabbitMQConfig `mapstructure:",squash"`
+	Worker   config.WorkerConfig   `mapstructure:",squash"`
+	Dupman   config.DupmanConfig   `mapstructure:",squash"`
+
+	Mailer Mailer `mapstructure:",squash"`
+	Email  Email  `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {

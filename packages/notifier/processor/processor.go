@@ -36,8 +36,8 @@ func NewProcessor(
 	notifyDeliverer *notify.Deliverer,
 ) (*Processor, error) {
 	cred, err := credentials.NewClientCredentials(
-		config.DupmanAPIService.ClientID,
-		config.DupmanAPIService.ClientSecret,
+		config.Dupman.ClientID,
+		config.Dupman.ClientSecret,
 		[]string{"user:get_contact_info"},
 	)
 	if err != nil {

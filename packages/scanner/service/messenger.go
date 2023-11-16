@@ -42,7 +42,7 @@ func NewMessengerService(
 }
 
 func (mess *MessengerService) Consume() (<-chan amqp.Delivery, error) {
-	messages, err := mess.broker.ConsumeQueue(mess.config.RabbitMQ.QueueName)
+	messages, err := mess.broker.ConsumeQueue(mess.config.Worker.QueueName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to consume messages: %w", err)
 	}

@@ -18,8 +18,8 @@ type Deliverer struct {
 
 func New(config *config.Config, dupmanAPIService *service.DupmanAPIService) (*Deliverer, error) {
 	cred, err := credentials.NewClientCredentials(
-		config.DupmanAPIService.ClientID,
-		config.DupmanAPIService.ClientSecret,
+		config.Dupman.ClientID,
+		config.Dupman.ClientSecret,
 		[]string{"notify:notification:create"},
 	)
 	if err != nil {
