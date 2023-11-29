@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/common/broker"
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/scanner/config"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -18,13 +19,14 @@ type MessengerService struct {
 func NewMessengerService(
 	logger *zap.Logger,
 	config *config.Config,
+	ot *otel.OTel,
 ) (*MessengerService, error) {
-	brk, err := broker.NewRabbitMQ(&broker.RabbitMQConfig{
+	brk, err := broker.NewRabbitMQ(ot, &broker.RabbitMQConfig{
 		User:     config.RabbitMQ.User,
 		Password: config.RabbitMQ.Password,
 		Host:     config.RabbitMQ.Host,
 		Port:     config.RabbitMQ.Port,
-		AppID:    "scanner",
+		AppID:    config.AppName,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to create RabbitMQ Broker: %w", err)

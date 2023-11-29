@@ -1,9 +1,11 @@
 package scheduler
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/encryptor"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/config"
@@ -20,9 +22,10 @@ type Scheduler struct {
 	systemService *system.System
 	encryptor     encryptor.Encryptor
 	messengerSvc  *messenger.Service
+	ot            *otel.OTel
 }
 
-func New(conf *config.Config, logger *zap.Logger, messengerSvc *messenger.Service) (*Scheduler, error) {
+func New(conf *config.Config, logger *zap.Logger, messengerSvc *messenger.Service, ot *otel.OTel) (*Scheduler, error) {
 	cred, err := credentials.NewClientCredentials(conf.Dupman.ClientID, conf.Dupman.ClientSecret, []string{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to initiate credentials provider: %w", err)
@@ -43,10 +46,11 @@ func New(conf *config.Config, logger *zap.Logger, messengerSvc *messenger.Servic
 		encryptor:     rsaEncryptor,
 		systemService: system.New(sess),
 		messengerSvc:  messengerSvc,
+		ot:            ot,
 	}, nil
 }
 
-func (scheduler *Scheduler) Process() error {
+func (scheduler *Scheduler) Process(ctx context.Context) error {
 	scheduler.logger.Info("Starting Scheduler Process")
 
 	publicKey, err := scheduler.encryptor.PublicKey()
@@ -79,7 +83,7 @@ func (scheduler *Scheduler) Process() error {
 			go func(website dto.WebsiteOnSystemResponse) {
 				defer wg.Done()
 
-				if err = scheduler.scheduleWebsiteScanning(website); err != nil {
+				if err = scheduler.scheduleWebsiteScanning(ctx, website); err != nil {
 					scheduler.logger.Error(
 						"Unable to schedule website scanning",
 						zap.Error(err),
@@ -101,7 +105,7 @@ func (scheduler *Scheduler) Process() error {
 	return nil
 }
 
-func (scheduler *Scheduler) scheduleWebsiteScanning(website dto.WebsiteOnSystemResponse) error {
+func (scheduler *Scheduler) scheduleWebsiteScanning(ctx context.Context, website dto.WebsiteOnSystemResponse) error {
 	scheduler.logger.Info(
 		"Started processing Website",
 		zap.String("websiteID", website.ID.String()),
@@ -113,7 +117,7 @@ func (scheduler *Scheduler) scheduleWebsiteScanning(website dto.WebsiteOnSystemR
 		return fmt.Errorf("unable to decrypt Website token: %w", err)
 	}
 
-	err = scheduler.messengerSvc.SendScanWebsiteMessage(website, token)
+	err = scheduler.messengerSvc.SendScanWebsiteMessage(ctx, website, token)
 	if err != nil {
 		return fmt.Errorf("unable to publish message: %w", err)
 	}

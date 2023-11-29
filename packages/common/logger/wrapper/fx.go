@@ -3,6 +3,7 @@ package wrapper
 import (
 	"strings"
 
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
 )
@@ -13,7 +14,7 @@ type FxWrapper struct {
 
 func NewFxWrapper(logger *zap.Logger) *FxWrapper {
 	logger = logger.With(
-		zap.String("component", "fx"),
+		zap.String(string(otel.ComponentKey), "fx"),
 	)
 
 	return &FxWrapper{

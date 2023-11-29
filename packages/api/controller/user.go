@@ -7,6 +7,7 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
+	"github.com/dupmanio/dupman/packages/common/otel"
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
@@ -18,10 +19,19 @@ import (
 type UserController struct {
 	httpSvc *commonServices.HTTPService
 	userSvc *service.UserService
+	ot      *otel.OTel
 }
 
-func NewUserController(httpSvc *commonServices.HTTPService, userSvc *service.UserService) (*UserController, error) {
-	return &UserController{httpSvc: httpSvc, userSvc: userSvc}, nil
+func NewUserController(
+	httpSvc *commonServices.HTTPService,
+	userSvc *service.UserService,
+	ot *otel.OTel,
+) (*UserController, error) {
+	return &UserController{
+		httpSvc: httpSvc,
+		userSvc: userSvc,
+		ot:      ot,
+	}, nil
 }
 
 func (ctrl *UserController) Create(ctx *gin.Context) {
@@ -32,8 +42,10 @@ func (ctrl *UserController) Create(ctx *gin.Context) {
 		response dto.UserAccount
 	)
 
+	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
+
 	if err := ctx.ShouldBind(&payload); err != nil {
-		ctrl.httpSvc.HTTPValidationError(ctx, err)
+		ctrl.httpSvc.HTTPValidationErrorWithOTelLog(ctx, err)
 
 		return
 	}
@@ -47,13 +59,14 @@ func (ctrl *UserController) Create(ctx *gin.Context) {
 			statusCode = http.StatusBadRequest
 		}
 
-		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to create User", statusCode, err)
 
 		return
 	}
 
 	_ = copier.Copy(&response, &user)
 
+	ctrl.ot.LogInfoEvent(ctx, "User has been created successfully", otel.UserID(user.ID))
 	ctrl.httpSvc.HTTPResponse(ctx, http.StatusCreated, response)
 }
 
@@ -65,8 +78,10 @@ func (ctrl *UserController) Update(ctx *gin.Context) {
 		response dto.UserAccount
 	)
 
+	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
+
 	if err := ctx.ShouldBind(&payload); err != nil {
-		ctrl.httpSvc.HTTPValidationError(ctx, err)
+		ctrl.httpSvc.HTTPValidationErrorWithOTelLog(ctx, err)
 
 		return
 	}
@@ -80,22 +95,30 @@ func (ctrl *UserController) Update(ctx *gin.Context) {
 			statusCode = http.StatusNotFound
 		}
 
-		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to update User", statusCode, err, otel.UserID(payload.ID))
 
 		return
 	}
 
 	_ = copier.Copy(&response, &user)
 
+	ctrl.ot.LogInfoEvent(ctx, "User has been updated successfully", otel.UserID(user.ID))
 	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
 }
 
 func (ctrl *UserController) GetContactInfo(ctx *gin.Context) {
 	var response dto.ContactInfo
 
+	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
+
 	userID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid user ID: %s", err))
+		ctrl.httpSvc.HTTPErrorWithOTelLog(
+			ctx,
+			"Invalid User ID",
+			http.StatusBadRequest,
+			fmt.Errorf("invalid user ID: %w", err),
+		)
 
 		return
 	}
@@ -107,7 +130,7 @@ func (ctrl *UserController) GetContactInfo(ctx *gin.Context) {
 			statusCode = http.StatusNotFound
 		}
 
-		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to load User", statusCode, err, otel.UserID(userID))
 
 		return
 	}

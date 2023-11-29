@@ -13,7 +13,7 @@ import (
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -22,7 +22,7 @@ type Server struct {
 	Engine *gin.Engine
 }
 
-func New(logger *zap.Logger, config *config.Config) (*Server, error) {
+func New(logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, error) {
 	ginLogWrapper := logWrapper.NewGinWrapper(logger)
 
 	gin.DefaultWriter = ginLogWrapper
@@ -36,15 +36,13 @@ func New(logger *zap.Logger, config *config.Config) (*Server, error) {
 	}
 
 	engine := gin.New()
+	engine.ContextWithFallback = true
 
 	if err := engine.SetTrustedProxies(config.Server.TrustedProxies); err != nil {
 		return nil, fmt.Errorf("unable to set trusted proxies: %w", err)
 	}
 
-	if config.Telemetry.Enabled {
-		engine.Use(otelgin.Middleware(config.AppName))
-	}
-
+	engine.Use(ot.GetOTelGinMiddleware())
 	engine.Use(ginLogWrapper.GetGinzapMiddleware())
 	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
 
@@ -59,6 +57,7 @@ func Run(
 	logger *zap.Logger,
 	config *config.Config,
 	messengerSvc *service.MessengerService,
+	ot *otel.OTel,
 ) error {
 	httpServer := http.Server{
 		Addr:              net.JoinHostPort(config.Server.ListenAddr, config.Server.Port),
@@ -66,20 +65,13 @@ func Run(
 		ReadHeaderTimeout: 0,
 	}
 
-	var ot *otel.OTel
-
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			var err error
-
-			logger.Info("Starting HTTP Server", zap.String("address", httpServer.Addr))
-
-			if config.Telemetry.Enabled {
-				ot, err = otel.NewOTel(ctx, config.AppName, "1.0.0", config.Telemetry.CollectorURL)
-				if err != nil {
-					return fmt.Errorf("failed to initialize Telemetry service: %w", err)
-				}
-			}
+			logger.Info(
+				"Starting HTTP Server",
+				zap.String(string(semconv.ServerAddressKey), config.Server.ListenAddr),
+				zap.String(string(semconv.ServerPortKey), config.Server.Port),
+			)
 
 			go func() {
 				if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -100,10 +92,8 @@ func Run(
 				return fmt.Errorf("failed to close messenger: %w", err)
 			}
 
-			if config.Telemetry.Enabled {
-				if err := ot.Shutdown(ctx); err != nil {
-					return fmt.Errorf("failed to shutdown telemetry service: %w", err)
-				}
+			if err := ot.Shutdown(ctx); err != nil {
+				return fmt.Errorf("failed to shutdown telemetry service: %w", err)
 			}
 
 			return nil

@@ -729,6 +729,19 @@ def go_dependencies():
         version = "v1.9.0",
     )
     go_repository(
+        name = "com_github_redis_go_redis_extra_rediscmd_v9",
+        importpath = "github.com/redis/go-redis/extra/rediscmd/v9",
+        sum = "h1:EaDatTxkdHG+U3Bk4EUr+DZ7fOGwTfezUiUJMaIcaho=",
+        version = "v9.0.5",
+    )
+    go_repository(
+        name = "com_github_redis_go_redis_extra_redisotel_v9",
+        importpath = "github.com/redis/go-redis/extra/redisotel/v9",
+        sum = "h1:EfpWLLCyXw8PSM2/XNJLjI3Pb27yVE+gIAfeqp8LUCc=",
+        version = "v9.0.5",
+    )
+
+    go_repository(
         name = "com_github_redis_go_redis_v9",
         importpath = "github.com/redis/go-redis/v9",
         sum = "h1:WlYJg71ODF0dVspZZCpYmoF1+U1Jjk9Rwd7pq6QmlCg=",

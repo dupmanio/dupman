@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/common/broker",
+        "//packages/common/otel",
         "//packages/common/service",
         "//packages/notifier/config",
         "@com_github_rabbitmq_amqp091_go//:amqp091-go",

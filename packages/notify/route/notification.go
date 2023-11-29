@@ -4,6 +4,7 @@ import (
 	"github.com/dupmanio/dupman/packages/notify/controller"
 	"github.com/dupmanio/dupman/packages/notify/middleware"
 	"github.com/dupmanio/dupman/packages/notify/server"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +30,10 @@ func NewNotificationRoute(
 }
 
 func (route *NotificationRoute) Setup() {
-	route.logger.Debug("Setting up Notification route")
+	route.logger.Debug(
+		"Setting up route",
+		zap.String(string(semconv.HTTPRouteKey), "notification"),
+	)
 
 	group := route.server.Engine.Group(
 		"/notification",

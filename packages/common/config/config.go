@@ -14,7 +14,6 @@ type BaseConfig struct {
 }
 
 type TelemetryConfig struct {
-	Enabled      bool   `mapstructure:"TELEMETRY_ENABLED" default:"false"`
 	CollectorURL string `mapstructure:"TELEMETRY_COLLECTOR_URL"`
 }
 

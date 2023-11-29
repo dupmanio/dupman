@@ -5,10 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"strconv"
 	"time"
 
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type RabbitMQConfig struct {
@@ -20,12 +26,13 @@ type RabbitMQConfig struct {
 }
 
 type RabbitMQ struct {
+	ot         *otel.OTel
 	config     *RabbitMQConfig
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
 }
 
-func NewRabbitMQ(config *RabbitMQConfig) (*RabbitMQ, error) {
+func NewRabbitMQ(ot *otel.OTel, config *RabbitMQConfig) (*RabbitMQ, error) {
 	url := fmt.Sprintf(
 		"amqp://%s:%s@%s/",
 		config.User,
@@ -44,16 +51,33 @@ func NewRabbitMQ(config *RabbitMQConfig) (*RabbitMQ, error) {
 	}
 
 	return &RabbitMQ{
+		ot:         ot,
 		config:     config,
 		Connection: connection,
 		Channel:    channel,
 	}, nil
 }
 
-func (brk *RabbitMQ) PublishToExchange(exchangeName string, routingKey string, message any) error {
+func (brk *RabbitMQ) PublishToExchange(ctx context.Context, exchangeName string, routingKey string, message any) error {
 	const timeout = 5 * time.Second
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	messageID := uuid.New().String()
+
+	ctx, span := brk.ot.Tracer.Start(
+		ctx,
+		fmt.Sprintf("%s.%s publish", exchangeName, routingKey),
+		trace.WithSpanKind(trace.SpanKindProducer),
+		trace.WithAttributes(brk.getCommonOTelAttributes()...),
+		trace.WithAttributes(
+			semconv.MessagingOperationPublish,
+			semconv.MessagingMessageID(messageID),
+			semconv.MessagingDestinationName(exchangeName),
+			semconv.MessagingRabbitmqDestinationRoutingKey(routingKey),
+		),
+	)
+	defer span.End()
+
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	jsonMessage, err := json.Marshal(message)
@@ -61,16 +85,6 @@ func (brk *RabbitMQ) PublishToExchange(exchangeName string, routingKey string, m
 		return err
 	}
 
-	// @todo: Implement ack checking and retry functionality.
-	// pubAck, pubNack := brk.Channel.NotifyConfirm(make(chan uint64, 1), make(chan uint64, 1))
-	// select {
-	// case <-pubAck:
-	//	 return nil
-	// case <-pubNack:
-	//	 return domainErrors.ErrUnableToPublishMessage
-	// case <-time.After(5 * time.Second):
-	//	 return domainErrors.ErrUnableToPublishMessage
-	// }
 	// @todo: add some logging.
 	err = brk.Channel.PublishWithContext(ctx,
 		exchangeName,
@@ -78,7 +92,11 @@ func (brk *RabbitMQ) PublishToExchange(exchangeName string, routingKey string, m
 		false,
 		false,
 		amqp.Publishing{
-			MessageId:    uuid.New().String(),
+			Headers: amqp.Table{
+				"trace_id": span.SpanContext().TraceID().String(),
+				"span_id":  span.SpanContext().SpanID().String(),
+			},
+			MessageId:    messageID,
 			UserId:       brk.config.User,
 			AppId:        brk.config.AppID,
 			DeliveryMode: amqp.Persistent,
@@ -89,7 +107,27 @@ func (brk *RabbitMQ) PublishToExchange(exchangeName string, routingKey string, m
 		return fmt.Errorf("failed to publish to channel: %w", err)
 	}
 
+	messagesPublished, _ := brk.ot.Meter.Int64Counter(
+		"go.rabbitmq.message.published",
+		metric.WithDescription("The total number of messages published"),
+	)
+	messagesPublished.Add(ctx, 1)
+
 	return nil
+}
+
+func (brk *RabbitMQ) getCommonOTelAttributes() []attribute.KeyValue {
+	fields := []attribute.KeyValue{
+		semconv.MessagingSystem("rabbitmq"),
+		semconv.MessagingClientID(brk.config.AppID),
+		semconv.ServerAddress(brk.config.Host),
+	}
+
+	if port, err := strconv.Atoi(brk.config.Port); err == nil {
+		fields = append(fields, semconv.ServerPort(port))
+	}
+
+	return fields
 }
 
 func (brk *RabbitMQ) ConsumeQueue(queueName string) (<-chan amqp.Delivery, error) {

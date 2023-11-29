@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/common/broker",
+        "//packages/common/otel",
         "//packages/domain/dto",
         "//packages/scanner-scheduler/config",
         "@org_uber_go_zap//:zap",

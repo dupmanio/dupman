@@ -8,9 +8,9 @@ go_library(
     deps = [
         "//packages/api/config",
         "//packages/common/logger/wrapper",
+        "//packages/common/otel",
         "@io_gorm_driver_postgres//:postgres",
         "@io_gorm_gorm//:gorm",
-        "@io_gorm_plugin_opentelemetry//tracing",
         "@org_uber_go_zap//:zap",
     ],
 )

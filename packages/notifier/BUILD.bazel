@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//packages/common/logger",
         "//packages/common/logger/wrapper",
+        "//packages/common/otel",
         "//packages/notifier/config",
         "//packages/notifier/deliverer",
         "//packages/notifier/processor",

@@ -14,8 +14,9 @@ type Scanner struct {
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	RabbitMQ config.RabbitMQConfig `mapstructure:",squash"`
-	Dupman   config.DupmanConfig   `mapstructure:",squash"`
+	RabbitMQ  config.RabbitMQConfig  `mapstructure:",squash"`
+	Dupman    config.DupmanConfig    `mapstructure:",squash"`
+	Telemetry config.TelemetryConfig `mapstructure:",squash"`
 
 	Scanner Scanner `mapstructure:",squash"`
 }

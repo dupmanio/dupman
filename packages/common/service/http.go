@@ -1,20 +1,31 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.opentelemetry.io/otel/attribute"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
-type HTTPService struct{}
+type HTTPService struct {
+	authSvc *AuthService
+	ot      *otel.OTel
+}
 
-func NewHTTPService() *HTTPService {
-	return &HTTPService{}
+func NewHTTPService(authSvc *AuthService, ot *otel.OTel) *HTTPService {
+	return &HTTPService{
+		authSvc: authSvc,
+		ot:      ot,
+	}
 }
 
 func (svc *HTTPService) HTTPError(ctx *gin.Context, code int, err any) {
@@ -22,6 +33,26 @@ func (svc *HTTPService) HTTPError(ctx *gin.Context, code int, err any) {
 		Code:  code,
 		Error: err,
 	})
+}
+
+func (svc *HTTPService) HTTPErrorWithOTelLog(
+	ctx *gin.Context,
+	description string,
+	code int,
+	err error,
+	attributes ...attribute.KeyValue,
+) {
+	svc.ot.LogErrorEvent(ctx, description, err, attributes...)
+	svc.HTTPError(ctx, code, err.Error())
+}
+
+func (svc *HTTPService) HTTPValidationErrorWithOTelLog(
+	ctx *gin.Context,
+	err error,
+	attributes ...attribute.KeyValue,
+) {
+	svc.ot.LogErrorEvent(ctx, "Invalid Payload", err, attributes...)
+	svc.HTTPValidationError(ctx, err)
 }
 
 func (svc *HTTPService) HTTPResponse(ctx *gin.Context, code int, data any) {
@@ -41,6 +72,14 @@ func (svc *HTTPService) HTTPPaginatedResponse(ctx *gin.Context, code int, data a
 
 func (svc *HTTPService) HTTPValidationError(ctx *gin.Context, err error) {
 	svc.HTTPError(ctx, http.StatusBadRequest, svc.normalizeHTTPValidationError(err))
+}
+
+func (svc *HTTPService) EnrichSpanWithControllerAttributes(ctx context.Context) {
+	span := trace.SpanFromContext(ctx)
+	_, functionAttributes := otel.GetFunctionCallAttributes(1)
+
+	span.SetAttributes(functionAttributes...)
+	span.SetAttributes(semconv.EnduserID(svc.authSvc.CurrentUserID(ctx).String()))
 }
 
 func (svc *HTTPService) normalizeHTTPValidationError(err error) []string {

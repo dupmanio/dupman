@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//packages/common/logger",
+        "//packages/common/otel",
         "//packages/scanner-scheduler/config",
         "//packages/scanner-scheduler/messenger",
         "//packages/scanner-scheduler/scheduler",

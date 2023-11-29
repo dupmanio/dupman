@@ -1,9 +1,11 @@
 package processor
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
+	"github.com/dupmanio/dupman/packages/common/otel"
 	commonService "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/scanner/config"
@@ -14,6 +16,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	amqp "github.com/rabbitmq/amqp091-go"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
 
@@ -24,6 +28,7 @@ type Processor struct {
 	fetcher           *fetcher.Fetcher
 	dupmanCredentials credentials.Provider
 	dupmanAPIService  *commonService.DupmanAPIService
+	ot                *otel.OTel
 }
 
 func NewProcessor(
@@ -32,6 +37,7 @@ func NewProcessor(
 	messengerSvc *service.MessengerService,
 	fetcher *fetcher.Fetcher,
 	dupmanAPIService *commonService.DupmanAPIService,
+	ot *otel.OTel,
 ) (*Processor, error) {
 	cred, err := credentials.NewClientCredentials(
 		config.Dupman.ClientID,
@@ -49,6 +55,7 @@ func NewProcessor(
 		fetcher:           fetcher,
 		dupmanCredentials: cred,
 		dupmanAPIService:  dupmanAPIService,
+		ot:                ot,
 	}, nil
 }
 
@@ -66,6 +73,29 @@ func (proc *Processor) Process() error {
 }
 
 func (proc *Processor) processMessage(delivery amqp.Delivery) {
+	ctx := proc.getOTelContext(delivery)
+
+	ctx, span := proc.ot.Tracer.Start(
+		ctx,
+		fmt.Sprintf("%s receive", proc.config.Worker.QueueName),
+		trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithAttributes(
+			semconv.MessagingOperationReceive,
+			semconv.MessagingMessageID(delivery.MessageId),
+
+			// semconv.MessagingSystem("rabbitmq"),
+			// semconv.MessagingClientID(proc.config.RabbitMQ),
+			// semconv.ServerAddress(proc.config.RabbitMQ.Host),
+		),
+	)
+	defer span.End()
+
+	proc.ot.LogInfoEvent(
+		ctx,
+		"Received a message",
+		semconv.MessagingMessageID(delivery.MessageId),
+	)
+
 	proc.logger.Info(
 		"Received a message",
 		zap.String("messageID", delivery.MessageId),
@@ -89,6 +119,34 @@ func (proc *Processor) processMessage(delivery amqp.Delivery) {
 	}
 
 	proc.messengerSvc.AcknowledgeMessage(successfullyProcessed, delivery)
+}
+
+func (proc *Processor) getOTelContext(delivery amqp.Delivery) context.Context {
+	ctx := context.Background()
+	traceID, _ := trace.TraceIDFromHex(proc.getDeliveryStringHeader(delivery, "trace_id"))
+	spanID, _ := trace.SpanIDFromHex(proc.getDeliveryStringHeader(delivery, "span_id"))
+
+	if traceID.IsValid() && spanID.IsValid() {
+		ctx = trace.ContextWithRemoteSpanContext(
+			ctx,
+			trace.NewSpanContext(trace.SpanContextConfig{
+				TraceID: traceID,
+				// SpanID:  spanID,
+			}),
+		)
+	}
+
+	return ctx
+}
+
+func (proc *Processor) getDeliveryStringHeader(delivery amqp.Delivery, headerName string) string {
+	if headerRaw := delivery.Headers[headerName]; headerRaw != nil {
+		if headerString, ok := headerRaw.(string); ok {
+			return headerString
+		}
+	}
+
+	return ""
 }
 
 func (proc *Processor) processScanning(delivery amqp.Delivery) error {

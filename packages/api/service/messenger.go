@@ -1,11 +1,13 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/api/config"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/common/broker"
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"go.uber.org/zap"
 )
@@ -14,13 +16,15 @@ type MessengerService struct {
 	logger *zap.Logger
 	config *config.Config
 	broker *broker.RabbitMQ
+	ot     *otel.OTel
 }
 
 func NewMessengerService(
 	logger *zap.Logger,
 	config *config.Config,
+	ot *otel.OTel,
 ) (*MessengerService, error) {
-	brk, err := broker.NewRabbitMQ(&broker.RabbitMQConfig{
+	brk, err := broker.NewRabbitMQ(ot, &broker.RabbitMQConfig{
 		User:     config.RabbitMQ.User,
 		Password: config.RabbitMQ.Password,
 		Host:     config.RabbitMQ.Host,
@@ -39,10 +43,14 @@ func NewMessengerService(
 		logger: logger,
 		config: config,
 		broker: brk,
+		ot:     ot,
 	}, nil
 }
 
-func (mess *MessengerService) SendScanWebsiteMessage(website *model.Website) error {
+func (mess *MessengerService) SendScanWebsiteMessage(ctx context.Context, website *model.Website) error {
+	ctx, span := mess.ot.GetSpanForFunctionCall(ctx, 1)
+	defer span.End()
+
 	mess.logger.Info(
 		"Sending Message",
 		zap.String("type", "ScanWebsiteMessage"),
@@ -56,6 +64,7 @@ func (mess *MessengerService) SendScanWebsiteMessage(website *model.Website) err
 	}
 
 	if err := mess.broker.PublishToExchange(
+		ctx,
 		mess.config.Scanner.ExchangeName,
 		mess.config.Scanner.RoutingKey,
 		message,
@@ -67,15 +76,20 @@ func (mess *MessengerService) SendScanWebsiteMessage(website *model.Website) err
 }
 
 func (mess *MessengerService) SendStatusChangeNotificationMessage(
+	ctx context.Context,
 	website *model.Website,
 	oldStatus model.Status,
 	newStatus model.Status,
 	updates []model.Update,
 ) error {
-	mess.logger.Info(
+	ctx, span := mess.ot.GetSpanForFunctionCall(ctx, 1)
+	defer span.End()
+
+	mess.ot.LogInfoEvent(
+		ctx,
 		"Sending Message",
-		zap.String("type", "StatusChangeNotificationMessage"),
-		zap.String("websiteID", website.ID.String()),
+		otel.MessageType("StatusChangeNotificationMessage"),
+		otel.WebsiteID(website.ID),
 	)
 
 	message := dto.NotificationMessage{}
@@ -90,10 +104,13 @@ func (mess *MessengerService) SendStatusChangeNotificationMessage(
 
 	if message.Type != "" {
 		if err := mess.broker.PublishToExchange(
+			ctx,
 			mess.config.Notifier.ExchangeName,
 			mess.config.Notifier.RoutingKey,
 			message,
 		); err != nil {
+			mess.ot.ErrorEvent(ctx, "Failed to publish message to exchange", err)
+
 			return fmt.Errorf("failed to publish message to exchange: %w", err)
 		}
 	}

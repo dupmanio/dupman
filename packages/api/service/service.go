@@ -6,10 +6,11 @@ import (
 )
 
 func Create() fx.Option {
-	return fx.Options(
-		fx.Provide(commonServices.NewHTTPService),
-		fx.Provide(NewMessengerService),
-		fx.Provide(NewUserService),
-		fx.Provide(NewWebsiteService),
+	return fx.Provide(
+		commonServices.NewHTTPService,
+		commonServices.NewAuthService,
+		NewMessengerService,
+		NewUserService,
+		NewWebsiteService,
 	)
 }

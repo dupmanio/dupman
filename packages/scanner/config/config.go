@@ -9,9 +9,10 @@ import (
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	RabbitMQ config.RabbitMQConfig `mapstructure:",squash"`
-	Worker   config.WorkerConfig   `mapstructure:",squash"`
-	Dupman   config.DupmanConfig   `mapstructure:",squash"`
+	RabbitMQ  config.RabbitMQConfig  `mapstructure:",squash"`
+	Worker    config.WorkerConfig    `mapstructure:",squash"`
+	Dupman    config.DupmanConfig    `mapstructure:",squash"`
+	Telemetry config.TelemetryConfig `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {

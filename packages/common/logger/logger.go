@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -16,9 +17,9 @@ func New(env, appName, appVersion, logPath string) (*zap.Logger, error) {
 
 	return zap.New(
 		zapcore.NewTee(cores...),
-		zap.Fields(zap.String("appName", appName)),
-		zap.Fields(zap.String("appVersion", appVersion)),
-		zap.Fields(zap.String("appEnv", env)),
+		zap.Fields(zap.String(string(semconv.ServiceNameKey), appName)),
+		zap.Fields(zap.String(string(semconv.ServiceVersionKey), appVersion)),
+		zap.Fields(zap.String(string(semconv.DeploymentEnvironmentKey), env)),
 	), nil
 }
 

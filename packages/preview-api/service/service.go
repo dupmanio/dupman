@@ -6,9 +6,10 @@ import (
 )
 
 func Create() fx.Option {
-	return fx.Options(
-		fx.Provide(commonServices.NewHTTPService),
-		fx.Provide(commonServices.NewDupmanAPIService),
-		fx.Provide(NewChromeService),
+	return fx.Provide(
+		commonServices.NewHTTPService,
+		commonServices.NewAuthService,
+		commonServices.NewDupmanAPIService,
+		NewChromeService,
 	)
 }

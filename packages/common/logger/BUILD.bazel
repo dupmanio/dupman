@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/common/logger",
     visibility = ["//visibility:public"],
     deps = [
+        "@io_opentelemetry_go_otel//semconv/v1.21.0:v1_21_0",
         "@org_uber_go_zap//:zap",
         "@org_uber_go_zap//zapcore",
     ],

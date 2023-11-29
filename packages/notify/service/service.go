@@ -6,8 +6,9 @@ import (
 )
 
 func Create() fx.Option {
-	return fx.Options(
-		fx.Provide(commonServices.NewHTTPService),
-		fx.Provide(NewNotificationService),
+	return fx.Provide(
+		commonServices.NewHTTPService,
+		commonServices.NewAuthService,
+		NewNotificationService,
 	)
 }

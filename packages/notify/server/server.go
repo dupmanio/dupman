@@ -14,7 +14,7 @@ import (
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/notify/config"
 	"github.com/gin-gonic/gin"
-	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -24,7 +24,9 @@ type Server struct {
 	Interrupt chan os.Signal
 }
 
-func New(logger *zap.Logger, config *config.Config) (*Server, error) {
+// @todo: reduce code duplication.
+
+func New(logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, error) {
 	ginLogWrapper := logWrapper.NewGinWrapper(logger)
 
 	gin.DefaultWriter = ginLogWrapper
@@ -38,15 +40,13 @@ func New(logger *zap.Logger, config *config.Config) (*Server, error) {
 	}
 
 	engine := gin.New()
+	engine.ContextWithFallback = true
 
 	if err := engine.SetTrustedProxies(config.Server.TrustedProxies); err != nil {
 		return nil, fmt.Errorf("unable to set trusted proxies: %w", err)
 	}
 
-	if config.Telemetry.Enabled {
-		engine.Use(otelgin.Middleware(config.AppName))
-	}
-
+	engine.Use(ot.GetOTelGinMiddleware())
 	engine.Use(ginLogWrapper.GetGinzapMiddleware())
 	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
 
@@ -56,29 +56,20 @@ func New(logger *zap.Logger, config *config.Config) (*Server, error) {
 	}, nil
 }
 
-func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config) error {
+func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, ot *otel.OTel) error {
 	httpServer := http.Server{
 		Addr:              net.JoinHostPort(config.Server.ListenAddr, config.Server.Port),
 		Handler:           server.Engine,
 		ReadHeaderTimeout: 0,
 	}
 
-	var ot *otel.OTel
-
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			var err error
-
-			logger.Info("Starting HTTP Server", zap.String("address", httpServer.Addr))
-
-			if config.Telemetry.Enabled {
-				logger.Info("Setting up Telemetry service")
-
-				ot, err = otel.NewOTel(ctx, config.AppName, "1.0.0", config.Telemetry.CollectorURL)
-				if err != nil {
-					return fmt.Errorf("failed to initialize Telemetry service: %w", err)
-				}
-			}
+			logger.Info(
+				"Starting HTTP Server",
+				zap.String(string(semconv.ServerAddressKey), config.Server.ListenAddr),
+				zap.String(string(semconv.ServerPortKey), config.Server.Port),
+			)
 
 			go func() {
 				if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -93,15 +84,11 @@ func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Con
 
 			server.Interrupt <- syscall.SIGTERM
 			if err := httpServer.Shutdown(ctx); err != nil {
-				return fmt.Errorf("failed to Telemetry server: %w", err)
+				return fmt.Errorf("failed to shutdown server: %w", err)
 			}
 
-			if config.Telemetry.Enabled {
-				logger.Info("Shutting down telemetry service")
-
-				if err := ot.Shutdown(ctx); err != nil {
-					return fmt.Errorf("failed to shutdown telemetry service: %w", err)
-				}
+			if err := ot.Shutdown(ctx); err != nil {
+				return fmt.Errorf("failed to shutdown telemetry service: %w", err)
 			}
 
 			return nil

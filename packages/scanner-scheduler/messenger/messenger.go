@@ -1,9 +1,11 @@
 package messenger
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/common/broker"
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/config"
 	"go.uber.org/zap"
@@ -13,15 +15,17 @@ type Service struct {
 	logger *zap.Logger
 	config *config.Config
 	broker *broker.RabbitMQ
+	ot     *otel.OTel
 }
 
-func NewMessengerService(logger *zap.Logger, config *config.Config) (*Service, error) {
-	brk, err := broker.NewRabbitMQ(&broker.RabbitMQConfig{
+// @todo: reduce code duplication.
+func NewMessengerService(logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Service, error) {
+	brk, err := broker.NewRabbitMQ(ot, &broker.RabbitMQConfig{
 		User:     config.RabbitMQ.User,
 		Password: config.RabbitMQ.Password,
 		Host:     config.RabbitMQ.Host,
 		Port:     config.RabbitMQ.Port,
-		AppID:    "scanner-scheduler",
+		AppID:    config.AppName,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to create RabbitMQ Broker: %w", err)
@@ -35,10 +39,15 @@ func NewMessengerService(logger *zap.Logger, config *config.Config) (*Service, e
 		logger: logger,
 		config: config,
 		broker: brk,
+		ot:     ot,
 	}, nil
 }
 
-func (mess *Service) SendScanWebsiteMessage(website dto.WebsiteOnSystemResponse, token string) error {
+func (mess *Service) SendScanWebsiteMessage(
+	ctx context.Context,
+	website dto.WebsiteOnSystemResponse,
+	token string,
+) error {
 	mess.logger.Info(
 		"Sending Message",
 		zap.String("type", "ScanWebsiteMessage"),
@@ -52,6 +61,7 @@ func (mess *Service) SendScanWebsiteMessage(website dto.WebsiteOnSystemResponse,
 	}
 
 	if err := mess.broker.PublishToExchange(
+		ctx,
 		mess.config.Scanner.ExchangeName,
 		mess.config.Scanner.RoutingKey,
 		message,

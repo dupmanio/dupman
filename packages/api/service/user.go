@@ -1,67 +1,78 @@
 package service
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/domain/errors"
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type UserService struct {
 	userRepo *repository.UserRepository
+	ot       *otel.OTel
 }
 
-func NewUserService(userRepo *repository.UserRepository) *UserService {
+func NewUserService(userRepo *repository.UserRepository, ot *otel.OTel) *UserService {
 	return &UserService{
 		userRepo: userRepo,
+		ot:       ot,
 	}
 }
 
-func (svc *UserService) Create(ctx *gin.Context, entity *model.User) (*model.User, error) {
-	if user := svc.userRepo.FindByID(ctx.Request.Context(), entity.ID.String()); user != nil {
-		return nil, errors.ErrUserAlreadyExists
+func (svc *UserService) Create(ctx context.Context, entity *model.User) (*model.User, error) {
+	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
+	defer span.End()
+
+	if user := svc.userRepo.FindByID(ctx, entity.ID.String()); user != nil {
+		err := errors.ErrUserAlreadyExists
+		svc.ot.ErrorEvent(ctx, "User already exists", err)
+
+		return nil, err
 	}
 
-	if err := svc.userRepo.Create(ctx.Request.Context(), entity); err != nil {
+	if err := svc.userRepo.Create(ctx, entity); err != nil {
+		svc.ot.ErrorEvent(ctx, "Unable to create User", err)
+
 		return nil, fmt.Errorf("unable to create User: %w", err)
 	}
 
 	return entity, nil
 }
 
-func (svc *UserService) Update(ctx *gin.Context, entity *model.User) (*model.User, error) {
-	if user := svc.userRepo.FindByID(ctx.Request.Context(), entity.ID.String()); user == nil {
-		return nil, errors.ErrUserDoesNotExist
+func (svc *UserService) Update(ctx context.Context, entity *model.User) (*model.User, error) {
+	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
+	defer span.End()
+
+	if user := svc.userRepo.FindByID(ctx, entity.ID.String()); user == nil {
+		err := errors.ErrUserDoesNotExist
+		svc.ot.ErrorEvent(ctx, "User does not exist", err)
+
+		return nil, err
 	}
 
-	if err := svc.userRepo.Update(ctx.Request.Context(), entity); err != nil {
+	if err := svc.userRepo.Update(ctx, entity); err != nil {
+		svc.ot.ErrorEvent(ctx, "Unable to update User", err)
+
 		return nil, fmt.Errorf("unable to update User: %w", err)
 	}
 
 	return entity, nil
 }
 
-func (svc *UserService) CurrentUser(ctx *gin.Context) *model.User {
-	if user, ok := ctx.Get(constant.CurrentUserKey); ok {
-		if currentUser, ok := user.(*model.User); ok {
-			return currentUser
-		}
-	}
+func (svc *UserService) GetSingle(ctx context.Context, userID uuid.UUID) (*model.User, error) {
+	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
+	defer span.End()
 
-	return nil
-}
-
-func (svc *UserService) GetSingle(
-	ctx *gin.Context,
-	userID uuid.UUID,
-) (*model.User, error) {
-	user := svc.userRepo.FindByID(ctx.Request.Context(), userID.String())
+	user := svc.userRepo.FindByID(ctx, userID.String())
 	if user == nil {
-		return nil, errors.ErrUserDoesNotExist
+		err := errors.ErrUserDoesNotExist
+		svc.ot.ErrorEvent(ctx, "User does not exist", err)
+
+		return nil, err
 	}
 
 	return user, nil

@@ -20,9 +20,10 @@ type Email struct {
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	RabbitMQ config.RabbitMQConfig `mapstructure:",squash"`
-	Worker   config.WorkerConfig   `mapstructure:",squash"`
-	Dupman   config.DupmanConfig   `mapstructure:",squash"`
+	RabbitMQ  config.RabbitMQConfig  `mapstructure:",squash"`
+	Worker    config.WorkerConfig    `mapstructure:",squash"`
+	Dupman    config.DupmanConfig    `mapstructure:",squash"`
+	Telemetry config.TelemetryConfig `mapstructure:",squash"`
 
 	Mailer Mailer `mapstructure:",squash"`
 	Email  Email  `mapstructure:",squash"`

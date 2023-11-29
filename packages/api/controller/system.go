@@ -8,6 +8,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
@@ -20,24 +21,34 @@ import (
 type SystemController struct {
 	httpSvc    *commonServices.HTTPService
 	websiteSvc *service.WebsiteService
+	ot         *otel.OTel
 }
 
 func NewSystemController(
 	httpSvc *commonServices.HTTPService,
 	websiteSvc *service.WebsiteService,
+	ot *otel.OTel,
 ) (*SystemController, error) {
 	return &SystemController{
 		httpSvc:    httpSvc,
 		websiteSvc: websiteSvc,
+		ot:         ot,
 	}, nil
 }
 
 func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
 	var response dto.WebsitesOnSystemResponse
 
+	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
+
 	publicKey := ctx.GetHeader(constant.PublicKeyHeaderKey)
 	if publicKey == "" {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusBadRequest, fmt.Sprintf("Header '%s' is missing", constant.PublicKeyHeaderKey))
+		ctrl.httpSvc.HTTPErrorWithOTelLog(
+			ctx,
+			fmt.Sprintf("Header '%s' is missing", constant.PublicKeyHeaderKey),
+			http.StatusInternalServerError,
+			domainErrors.ErrHeaderIsMissing,
+		)
 
 		return
 	}
@@ -46,7 +57,7 @@ func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
 
 	websites, err := ctrl.websiteSvc.GetAllWithToken(ctx, pager, publicKey)
 	if err != nil {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to load Websites", http.StatusInternalServerError, err)
 
 		return
 	}
@@ -65,15 +76,22 @@ func (ctrl *SystemController) UpdateWebsiteStatus(ctx *gin.Context) {
 		response dto.WebsiteStatusUpdateResponse
 	)
 
+	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
+
 	websiteID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusBadRequest, fmt.Sprintf("invalid website ID: %s", err))
+		ctrl.httpSvc.HTTPErrorWithOTelLog(
+			ctx,
+			"Invalid Website ID",
+			http.StatusBadRequest,
+			fmt.Errorf("invalid Website ID: %w", err),
+		)
 
 		return
 	}
 
 	if err = ctx.ShouldBind(&payload); err != nil {
-		ctrl.httpSvc.HTTPValidationError(ctx, err)
+		ctrl.httpSvc.HTTPValidationErrorWithOTelLog(ctx, err)
 
 		return
 	}
@@ -88,18 +106,25 @@ func (ctrl *SystemController) UpdateWebsiteStatus(ctx *gin.Context) {
 			statusCode = http.StatusNotFound
 		}
 
-		ctrl.httpSvc.HTTPError(ctx, statusCode, err.Error())
+		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to load Website", statusCode, err, otel.WebsiteID(websiteID))
 
 		return
 	}
 
 	website, err = ctrl.websiteSvc.UpdateStatus(ctx, website, statusEntity, updateEntities)
 	if err != nil {
-		ctrl.httpSvc.HTTPError(ctx, http.StatusInternalServerError, err.Error())
+		ctrl.httpSvc.HTTPErrorWithOTelLog(
+			ctx,
+			"Unable to update Website Status",
+			http.StatusInternalServerError,
+			err,
+			otel.WebsiteID(websiteID),
+		)
 
 		return
 	}
 
+	// @todo: refactor.
 	_ = copier.Copy(&response.Status, &website.Status)
 	_ = copier.Copy(&response.Updates, &website.Updates)
 

@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/dupmanio/dupman/packages/common/otel"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/zap"
 	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
@@ -18,7 +21,7 @@ type GormWrapper struct {
 
 func NewGormWrapper(logger *zap.Logger) *GormWrapper {
 	logger = logger.With(
-		zap.String("component", "gorm"),
+		zap.String(string(otel.ComponentKey), "gorm"),
 	)
 
 	return &GormWrapper{
@@ -62,10 +65,17 @@ func (wrap *GormWrapper) Trace(_ context.Context, begin time.Time, fc func() (st
 	elapsed := time.Since(begin)
 	sql, rows := fc()
 	logFields := []zap.Field{
-		zap.String("caller", utils.FileWithLineNum()),
-		zap.String("sql", sql),
+		zap.String(string(semconv.DBStatementKey), sql),
 		zap.Int64("rows", rows),
 		zap.String("elapsed", elapsed.String()),
+	}
+
+	if caller := strings.Split(utils.FileWithLineNum(), ":"); len(caller) > 0 {
+		logFields = append(
+			logFields,
+			zap.String(string(semconv.CodeFilepathKey), caller[0]),
+			zap.String(string(semconv.CodeLineNumberKey), caller[1]),
+		)
 	}
 
 	switch {

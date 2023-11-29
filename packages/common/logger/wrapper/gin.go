@@ -5,9 +5,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dupmanio/dupman/packages/common/otel"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type GinWrapper struct {
@@ -16,7 +20,7 @@ type GinWrapper struct {
 
 func NewGinWrapper(logger *zap.Logger) *GinWrapper {
 	logger = logger.With(
-		zap.String("component", "gin"),
+		zap.String(string(otel.ComponentKey), "gin"),
 	)
 
 	return &GinWrapper{
@@ -44,10 +48,10 @@ func (wrap *GinWrapper) logGinDebug(message string) {
 	if matches := re.FindStringSubmatch(message); len(matches) > 0 {
 		wrap.logger.Debug(
 			"New handler added",
-			zap.String("method", matches[1]),
-			zap.String("route", matches[2]),
-			zap.String("handler", matches[3]),
-			zap.String("handlersNum", matches[4]),
+			zap.String(string(semconv.HTTPMethodKey), matches[1]),
+			zap.String(string(semconv.HTTPRouteKey), matches[2]),
+			zap.String(string(otel.GinHandlerKey), matches[3]),
+			zap.String(string(otel.GinHandlerNumKey), matches[4]),
 		)
 
 		return
@@ -62,7 +66,21 @@ func (wrap *GinWrapper) GetGinzapMiddleware() gin.HandlerFunc {
 		&ginzap.Config{
 			TimeFormat: time.RFC3339,
 			UTC:        true,
-			TraceID:    true,
+			Context: func(c *gin.Context) []zapcore.Field {
+				var fields []zapcore.Field
+
+				if spanContext := trace.SpanFromContext(c.Request.Context()).SpanContext(); spanContext.IsValid() {
+					if spanContext.TraceID().IsValid() {
+						fields = append(fields, zap.String(string(otel.TraceIDKey), spanContext.TraceID().String()))
+					}
+
+					if spanContext.SpanID().IsValid() {
+						fields = append(fields, zap.String(string(otel.SpanIDKey), spanContext.SpanID().String()))
+					}
+				}
+
+				return fields
+			},
 		},
 	)
 }

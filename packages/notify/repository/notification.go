@@ -25,6 +25,7 @@ func NewNotificationRepository(
 	}
 }
 
+// @todo: refactor using value groups.
 func (repo *NotificationRepository) Setup() {
 	repo.logger.Debug("Setting up Notification repository")
 
