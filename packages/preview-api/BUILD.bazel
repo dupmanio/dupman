@@ -18,6 +18,7 @@ go_library(
         "//packages/preview-api/route",
         "//packages/preview-api/server",
         "//packages/preview-api/service",
+        "//packages/preview-api/version",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",
         "@org_uber_go_zap//:zap",
@@ -28,4 +29,9 @@ go_binary(
     name = "preview-api",
     embed = [":preview-api_lib"],
     visibility = ["//visibility:public"],
+    x_defs = {
+        "github.com/dupmanio/dupman/packages/preview-api/version.BuildTime": "{STABLE_BUILD_TIME}",
+        "github.com/dupmanio/dupman/packages/preview-api/version.GitCommit": "{STABLE_GIT_COMMIT}",
+        "github.com/dupmanio/dupman/packages/preview-api/version.Version": "{STABLE_VERSION}",
+    },
 )
