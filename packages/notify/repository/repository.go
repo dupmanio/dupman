@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func Create() fx.Option {
+func Provide() fx.Option {
 	return fx.Options(
 		fx.Provide(NewNotificationRepository),
 		fx.Invoke(

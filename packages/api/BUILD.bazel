@@ -17,6 +17,7 @@ go_library(
         "//packages/api/route",
         "//packages/api/server",
         "//packages/api/service",
+        "//packages/common/helper/fx",
         "//packages/common/logger",
         "//packages/common/logger/wrapper",
         "//packages/common/otel",

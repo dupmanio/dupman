@@ -5,7 +5,7 @@ import (
 	"go.uber.org/fx"
 )
 
-func Create() fx.Option {
+func Provide() fx.Option {
 	return fx.Provide(
 		commonServices.NewHTTPService,
 		commonServices.NewAuthService,

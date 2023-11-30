@@ -3,35 +3,32 @@ package route
 import (
 	"github.com/dupmanio/dupman/packages/api/controller"
 	"github.com/dupmanio/dupman/packages/api/middleware"
-	"github.com/dupmanio/dupman/packages/api/server"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type WebsiteRoute struct {
-	server         *server.Server
 	controller     *controller.WebsiteController
 	authMiddleware *middleware.AuthMiddleware
 	logger         *zap.Logger
 }
 
 func NewWebsiteRoute(
-	server *server.Server,
 	controller *controller.WebsiteController,
 	authMiddleware *middleware.AuthMiddleware,
 	logger *zap.Logger,
 ) *WebsiteRoute {
 	return &WebsiteRoute{
-		server:         server,
 		controller:     controller,
 		authMiddleware: authMiddleware,
 		logger:         logger,
 	}
 }
 
-func (route *WebsiteRoute) Setup() {
+func (route *WebsiteRoute) Register(engine *gin.Engine) {
 	route.logger.Debug("Setting up Website route")
 
-	group := route.server.Engine.Group(
+	group := engine.Group(
 		"/website",
 		route.authMiddleware.RequiresAuth(),
 		route.authMiddleware.RequiresRole("user"),

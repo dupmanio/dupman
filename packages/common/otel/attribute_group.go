@@ -26,6 +26,8 @@ const (
 	NotificationIDKey = attribute.Key(AttributeKeyPrefix + "notification.id")
 
 	UserIDKey = attribute.Key(AttributeKeyPrefix + "user.id")
+
+	RouteKey = attribute.Key(AttributeKeyPrefix + "route")
 )
 
 func TraceID(val string) attribute.KeyValue {

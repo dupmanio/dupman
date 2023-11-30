@@ -13,7 +13,8 @@ go_library(
     deps = [
         "//packages/api/controller",
         "//packages/api/middleware",
-        "//packages/api/server",
+        "//packages/common/helper/fx",
+        "@com_github_gin_gonic_gin//:gin",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",
     ],

@@ -23,8 +23,6 @@ func NewAuthMiddleware(
 	}, nil
 }
 
-func (mid *AuthMiddleware) Setup() {}
-
 func (mid *AuthMiddleware) RequiresAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// @todo: check if we need this condition as API GW adds JWT to Option requests as well.

@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//packages/api/config",
         "//packages/api/service",
+        "//packages/common/helper/fx",
         "//packages/common/logger/wrapper",
         "//packages/common/otel",
         "@com_github_gin_gonic_gin//:gin",

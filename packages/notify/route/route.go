@@ -1,20 +1,12 @@
 package route
 
 import (
+	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
-func Create() fx.Option {
-	return fx.Options(
-		fx.Provide(NewNotificationRoute),
-		fx.Invoke(
-			// @todo: refactor using value groups.
-			func(logger *zap.Logger, notificationRoute *NotificationRoute) {
-				logger.Debug("Setting up routes")
-
-				notificationRoute.Setup()
-			},
-		),
+func Provide() fx.Option {
+	return fx.Provide(
+		fxHelper.AsRoute(NewNotificationRoute),
 	)
 }

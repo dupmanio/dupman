@@ -1,37 +1,35 @@
 package route
 
 import (
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/preview-api/controller"
 	"github.com/dupmanio/dupman/packages/preview-api/middleware"
-	"github.com/dupmanio/dupman/packages/preview-api/server"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type PreviewRoute struct {
-	server     *server.Server
 	controller *controller.PreviewController
 	authMid    *middleware.AuthMiddleware
 	logger     *zap.Logger
 }
 
 func NewPreviewRoute(
-	server *server.Server,
 	controller *controller.PreviewController,
 	authMid *middleware.AuthMiddleware,
 	logger *zap.Logger,
 ) *PreviewRoute {
 	return &PreviewRoute{
-		server:     server,
 		controller: controller,
 		authMid:    authMid,
 		logger:     logger,
 	}
 }
 
-func (route *PreviewRoute) Setup() {
-	route.logger.Debug("Setting up Preview route")
+func (route *PreviewRoute) Register(engine *gin.Engine) {
+	route.logger.Debug("Setting up route", zap.String(string(otel.RouteKey), "preview"))
 
-	group := route.server.Engine.Group(
+	group := engine.Group(
 		"/preview",
 		route.authMid.RequiresAuth(),
 		route.authMid.RequiresRole("user"),

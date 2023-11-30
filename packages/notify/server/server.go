@@ -7,9 +7,8 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
-	"syscall"
 
+	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/notify/config"
@@ -20,13 +19,12 @@ import (
 )
 
 type Server struct {
-	Engine    *gin.Engine
-	Interrupt chan os.Signal
+	engine *gin.Engine
 }
 
 // @todo: reduce code duplication.
 
-func New(logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, error) {
+func New(routes []fxHelper.IRoute, logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, error) {
 	ginLogWrapper := logWrapper.NewGinWrapper(logger)
 
 	gin.DefaultWriter = ginLogWrapper
@@ -50,16 +48,17 @@ func New(logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, err
 	engine.Use(ginLogWrapper.GetGinzapMiddleware())
 	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
 
+	fxHelper.RegisterRoutes(engine, routes...)
+
 	return &Server{
-		Engine:    engine,
-		Interrupt: make(chan os.Signal, 1),
+		engine: engine,
 	}, nil
 }
 
 func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, ot *otel.OTel) error {
 	httpServer := http.Server{
 		Addr:              net.JoinHostPort(config.Server.ListenAddr, config.Server.Port),
-		Handler:           server.Engine,
+		Handler:           server.engine,
 		ReadHeaderTimeout: 0,
 	}
 
@@ -82,7 +81,6 @@ func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Con
 		OnStop: func(ctx context.Context) error {
 			logger.Info("Shutting down HTTP Server")
 
-			server.Interrupt <- syscall.SIGTERM
 			if err := httpServer.Shutdown(ctx); err != nil {
 				return fmt.Errorf("failed to shutdown server: %w", err)
 			}

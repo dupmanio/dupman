@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 
+	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/preview-api/config"
@@ -18,10 +19,10 @@ import (
 )
 
 type Server struct {
-	Engine *gin.Engine
+	engine *gin.Engine
 }
 
-func New(logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, error) {
+func New(routes []fxHelper.IRoute, logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, error) {
 	ginLogWrapper := logWrapper.NewGinWrapper(logger)
 
 	gin.DefaultWriter = ginLogWrapper
@@ -45,15 +46,17 @@ func New(logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, err
 	engine.Use(ginLogWrapper.GetGinzapMiddleware())
 	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
 
+	fxHelper.RegisterRoutes(engine, routes...)
+
 	return &Server{
-		Engine: engine,
+		engine: engine,
 	}, nil
 }
 
 func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, ot *otel.OTel) error {
 	httpServer := http.Server{
 		Addr:              net.JoinHostPort(config.Server.ListenAddr, config.Server.Port),
-		Handler:           server.Engine,
+		Handler:           server.engine,
 		ReadHeaderTimeout: 0,
 	}
 

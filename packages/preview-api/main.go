@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/logger"
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/common/otel"
@@ -51,14 +52,14 @@ func main() {
 		}),
 		fx.Provide(
 			config.New,
-			server.New,
+			fxHelper.AsRouteReceiver(server.New),
 			loggerProvider,
 			oTelProvider,
 		),
-		controller.Create(),
-		middleware.Create(),
-		route.Create(),
-		service.Create(),
+		controller.Provide(),
+		middleware.Provide(),
+		route.Provide(),
+		service.Provide(),
 		fx.Invoke(server.Run),
 	)
 

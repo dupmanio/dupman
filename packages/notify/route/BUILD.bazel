@@ -9,10 +9,11 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/notify/route",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/common/helper/fx",
+        "//packages/common/otel",
         "//packages/notify/controller",
         "//packages/notify/middleware",
-        "//packages/notify/server",
-        "@io_opentelemetry_go_otel//semconv/v1.21.0:v1_21_0",
+        "@com_github_gin_gonic_gin//:gin",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",
     ],

@@ -10,7 +10,6 @@ import (
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/notify/model"
-	"github.com/dupmanio/dupman/packages/notify/server"
 	"github.com/dupmanio/dupman/packages/notify/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -18,20 +17,17 @@ import (
 )
 
 type NotificationController struct {
-	server          *server.Server
 	httpSvc         *commonServices.HTTPService
 	notificationSvc *service.NotificationService
 	ot              *otel.OTel
 }
 
 func NewNotificationController(
-	server *server.Server,
 	httpSvc *commonServices.HTTPService,
 	notificationSvc *service.NotificationService,
 	ot *otel.OTel,
 ) (*NotificationController, error) {
 	return &NotificationController{
-		server:          server,
 		httpSvc:         httpSvc,
 		notificationSvc: notificationSvc,
 		ot:              ot,
@@ -129,6 +125,7 @@ func (ctrl *NotificationController) Realtime(ctx *gin.Context) {
 	ctx.Header("Connection", "keep-alive")
 	ctx.Header("Transfer-Encoding", "chunked")
 
+	// @todo: implement graceful shutdown.
 	for {
 		select {
 		case message := <-pubSub.Channel():
@@ -137,12 +134,6 @@ func (ctrl *NotificationController) Realtime(ctx *gin.Context) {
 		case now := <-time.After(heartbeatInterval):
 			ctx.SSEvent("heartbeat", now)
 			ctx.Writer.Flush()
-		// @todo: fix graceful shutdown.
-		case sig := <-ctrl.server.Interrupt:
-			ctx.SSEvent("close", sig)
-			ctx.Writer.Flush()
-
-			return
 		}
 	}
 }

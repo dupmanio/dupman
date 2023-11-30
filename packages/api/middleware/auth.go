@@ -34,8 +34,6 @@ func NewAuthMiddleware(
 	}, nil
 }
 
-func (mid *AuthMiddleware) Setup() {}
-
 func (mid *AuthMiddleware) RequiresAuth() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if ctx.Request.Method == http.MethodOptions {

@@ -1,41 +1,35 @@
 package route
 
 import (
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/notify/controller"
 	"github.com/dupmanio/dupman/packages/notify/middleware"
-	"github.com/dupmanio/dupman/packages/notify/server"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
 type NotificationRoute struct {
-	server     *server.Server
 	controller *controller.NotificationController
 	authMid    *middleware.AuthMiddleware
 	logger     *zap.Logger
 }
 
 func NewNotificationRoute(
-	server *server.Server,
 	controller *controller.NotificationController,
 	authMid *middleware.AuthMiddleware,
 	logger *zap.Logger,
 ) *NotificationRoute {
 	return &NotificationRoute{
-		server:     server,
 		controller: controller,
 		authMid:    authMid,
 		logger:     logger,
 	}
 }
 
-func (route *NotificationRoute) Setup() {
-	route.logger.Debug(
-		"Setting up route",
-		zap.String(string(semconv.HTTPRouteKey), "notification"),
-	)
+func (route *NotificationRoute) Register(engine *gin.Engine) {
+	route.logger.Debug("Setting up route", zap.String(string(otel.RouteKey), "notification"))
 
-	group := route.server.Engine.Group(
+	group := engine.Group(
 		"/notification",
 		route.authMid.RequiresAuth(),
 	)
