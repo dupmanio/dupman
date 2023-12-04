@@ -5,13 +5,13 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/config"
 	"github.com/dupmanio/dupman/packages/api/controller"
-	"github.com/dupmanio/dupman/packages/api/database"
 	"github.com/dupmanio/dupman/packages/api/middleware"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	"github.com/dupmanio/dupman/packages/api/route"
 	"github.com/dupmanio/dupman/packages/api/server"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/api/version"
+	"github.com/dupmanio/dupman/packages/common/database"
 	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/logger"
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
@@ -47,6 +47,15 @@ func oTelProvider(conf *config.Config, logger *zap.Logger) (*otel.OTel, error) {
 	return ot, nil
 }
 
+func databaseProvider(conf *config.Config, logger *zap.Logger, ot *otel.OTel) (*database.Database, error) {
+	db, err := database.New(conf.Database, logger, ot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	return db, nil
+}
+
 func main() {
 	app := fx.New(
 		fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
@@ -55,9 +64,9 @@ func main() {
 		fx.Provide(
 			config.New,
 			fxHelper.AsRouteReceiver(server.New),
-			database.New,
 			loggerProvider,
 			oTelProvider,
+			databaseProvider,
 		),
 		controller.Provide(),
 		middleware.Provide(),

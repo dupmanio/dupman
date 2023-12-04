@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 
+	"github.com/dupmanio/dupman/packages/common/database"
 	"github.com/dupmanio/dupman/packages/common/pagination"
-	"github.com/dupmanio/dupman/packages/notify/database"
 	"github.com/dupmanio/dupman/packages/notify/model"
 	"github.com/google/uuid"
 	"go.uber.org/zap"

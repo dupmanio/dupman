@@ -3,12 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "database",
     srcs = ["database.go"],
-    importpath = "github.com/dupmanio/dupman/packages/notify/database",
+    importpath = "github.com/dupmanio/dupman/packages/common/database",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/common/config",
         "//packages/common/logger/wrapper",
         "//packages/common/otel",
-        "//packages/notify/config",
         "@io_gorm_driver_postgres//:postgres",
         "@io_gorm_gorm//:gorm",
         "@org_uber_go_zap//:zap",

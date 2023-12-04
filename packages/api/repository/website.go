@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/api/constant"
-	"github.com/dupmanio/dupman/packages/api/database"
 	"github.com/dupmanio/dupman/packages/api/model"
+	"github.com/dupmanio/dupman/packages/common/database"
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/google/uuid"
 	"go.uber.org/zap"

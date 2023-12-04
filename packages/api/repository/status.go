@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/dupmanio/dupman/packages/api/database"
 	"github.com/dupmanio/dupman/packages/api/model"
+	"github.com/dupmanio/dupman/packages/common/database"
 	"go.uber.org/zap"
 )
 

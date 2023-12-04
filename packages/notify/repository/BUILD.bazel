@@ -9,8 +9,8 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/notify/repository",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/common/database",
         "//packages/common/pagination",
-        "//packages/notify/database",
         "//packages/notify/model",
         "@com_github_google_uuid//:uuid",
         "@org_uber_go_fx//:fx",
