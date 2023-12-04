@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/notify/config"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
@@ -13,31 +14,43 @@ import (
 	"go.uber.org/zap"
 )
 
-func Run(server *http.Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, ot *otel.OTel) error {
+type Params struct {
+	fx.In
+
+	Server    *http.Server
+	Migrators []fxHelper.IMigrator `group:"migrators"`
+	Logger    *zap.Logger
+	Config    *config.Config
+	OT        *otel.OTel
+}
+
+func Run(params Params, lc fx.Lifecycle) error {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			logger.Info(
+			fxHelper.Migrate(params.Logger, params.Migrators...)
+
+			params.Logger.Info(
 				"Starting HTTP Server",
-				zap.String(string(semconv.ServerAddressKey), config.Server.ListenAddr),
-				zap.String(string(semconv.ServerPortKey), config.Server.Port),
+				zap.String(string(semconv.ServerAddressKey), params.Config.Server.ListenAddr),
+				zap.String(string(semconv.ServerPortKey), params.Config.Server.Port),
 			)
 
 			go func() {
-				if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-					logger.Fatal("Unable to start HTTP Server", zap.Error(err))
+				if err := params.Server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+					params.Logger.Fatal("Unable to start HTTP Server", zap.Error(err))
 				}
 			}()
 
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			logger.Info("Shutting down HTTP Server")
+			params.Logger.Info("Shutting down HTTP Server")
 
-			if err := server.Shutdown(ctx); err != nil {
+			if err := params.Server.Shutdown(ctx); err != nil {
 				return fmt.Errorf("failed to shutdown server: %w", err)
 			}
 
-			if err := ot.Shutdown(ctx); err != nil {
+			if err := params.OT.Shutdown(ctx); err != nil {
 				return fmt.Errorf("failed to shutdown telemetry service: %w", err)
 			}
 

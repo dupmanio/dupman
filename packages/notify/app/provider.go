@@ -12,6 +12,7 @@ import (
 	"github.com/dupmanio/dupman/packages/notify/config"
 	"github.com/dupmanio/dupman/packages/notify/controller"
 	"github.com/dupmanio/dupman/packages/notify/middleware"
+	"github.com/dupmanio/dupman/packages/notify/migrator"
 	"github.com/dupmanio/dupman/packages/notify/repository"
 	"github.com/dupmanio/dupman/packages/notify/route"
 	"github.com/dupmanio/dupman/packages/notify/service"
@@ -78,8 +79,9 @@ func Provide() fx.Option {
 		),
 		controller.Provide(),
 		middleware.Provide(),
-		route.Provide(),
+		migrator.Provide(),
 		repository.Provide(),
+		route.Provide(),
 		service.Provide(),
 	)
 }

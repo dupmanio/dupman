@@ -17,6 +17,7 @@ go_library(
         "//packages/notify/config",
         "//packages/notify/controller",
         "//packages/notify/middleware",
+        "//packages/notify/migrator",
         "//packages/notify/repository",
         "//packages/notify/route",
         "//packages/notify/service",

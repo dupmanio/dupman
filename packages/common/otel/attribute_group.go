@@ -27,7 +27,8 @@ const (
 
 	UserIDKey = attribute.Key(AttributeKeyPrefix + "user.id")
 
-	RouteKey = attribute.Key(AttributeKeyPrefix + "route")
+	RouteKey    = attribute.Key(AttributeKeyPrefix + "route")
+	MigratorKey = attribute.Key(AttributeKeyPrefix + "migrator")
 )
 
 func TraceID(val string) attribute.KeyValue {

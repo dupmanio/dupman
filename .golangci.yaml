@@ -33,6 +33,7 @@ linters-settings:
       - .WithStack(
       # Custom Sigs.
       - .Marshal(
+      - .AutoMigrate(
 
   gomnd:
     ignored-numbers:

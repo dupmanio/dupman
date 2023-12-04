@@ -1,18 +1,17 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "repository",
+    name = "migrator",
     srcs = [
+        "migrator.go",
         "notification.go",
-        "repository.go",
     ],
-    importpath = "github.com/dupmanio/dupman/packages/notify/repository",
+    importpath = "github.com/dupmanio/dupman/packages/notify/migrator",
     visibility = ["//visibility:public"],
     deps = [
         "//packages/common/database",
-        "//packages/common/pagination",
+        "//packages/common/helper/fx",
         "//packages/notify/model",
-        "@com_github_google_uuid//:uuid",
         "@org_uber_go_fx//:fx",
     ],
 )

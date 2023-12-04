@@ -12,6 +12,7 @@ go_library(
         "//packages/api/config",
         "//packages/api/controller",
         "//packages/api/middleware",
+        "//packages/api/migrator",
         "//packages/api/repository",
         "//packages/api/route",
         "//packages/api/service",

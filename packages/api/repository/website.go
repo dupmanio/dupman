@@ -10,30 +10,16 @@ import (
 	"github.com/dupmanio/dupman/packages/common/database"
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type WebsiteRepository struct {
-	db     *database.Database
-	logger *zap.Logger
+	db *database.Database
 }
 
-func NewWebsiteRepository(
-	db *database.Database,
-	logger *zap.Logger,
-) *WebsiteRepository {
+func NewWebsiteRepository(db *database.Database) *WebsiteRepository {
 	return &WebsiteRepository{
-		db:     db,
-		logger: logger,
-	}
-}
-
-func (repo *WebsiteRepository) Setup() {
-	repo.logger.Debug("Setting up Website repository")
-
-	if err := repo.db.AutoMigrate(&model.Website{}); err != nil {
-		repo.logger.Error(err.Error())
+		db: db,
 	}
 }
 

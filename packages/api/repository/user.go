@@ -6,30 +6,16 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/common/database"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type UserRepository struct {
-	db     *database.Database
-	logger *zap.Logger
+	db *database.Database
 }
 
-func NewUserRepository(
-	db *database.Database,
-	logger *zap.Logger,
-) *UserRepository {
+func NewUserRepository(db *database.Database) *UserRepository {
 	return &UserRepository{
-		db:     db,
-		logger: logger,
-	}
-}
-
-func (repo *UserRepository) Setup() {
-	repo.logger.Debug("Setting up User repository")
-
-	if err := repo.db.AutoMigrate(&model.User{}); err != nil {
-		repo.logger.Error(err.Error())
+		db: db,
 	}
 }
 

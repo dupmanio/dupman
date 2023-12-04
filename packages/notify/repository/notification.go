@@ -7,30 +7,15 @@ import (
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/dupmanio/dupman/packages/notify/model"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 type NotificationRepository struct {
-	db     *database.Database
-	logger *zap.Logger
+	db *database.Database
 }
 
-func NewNotificationRepository(
-	db *database.Database,
-	logger *zap.Logger,
-) *NotificationRepository {
+func NewNotificationRepository(db *database.Database) *NotificationRepository {
 	return &NotificationRepository{
-		db:     db,
-		logger: logger,
-	}
-}
-
-// @todo: refactor using value groups.
-func (repo *NotificationRepository) Setup() {
-	repo.logger.Debug("Setting up Notification repository")
-
-	if err := repo.db.AutoMigrate(&model.Notification{}); err != nil {
-		repo.logger.Error(err.Error())
+		db: db,
 	}
 }
 
