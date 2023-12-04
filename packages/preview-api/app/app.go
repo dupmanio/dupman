@@ -1,27 +1,20 @@
-package server
+package app
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/dupmanio/dupman/packages/api/config"
-	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/common/otel"
+	"github.com/dupmanio/dupman/packages/preview-api/config"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-func Run(
-	server *http.Server,
-	lc fx.Lifecycle,
-	logger *zap.Logger,
-	config *config.Config,
-	messengerSvc *service.MessengerService,
-	ot *otel.OTel,
-) error {
+func Run(server *http.Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, ot *otel.OTel) error {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Info(
@@ -32,7 +25,7 @@ func Run(
 
 			go func() {
 				if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-					logger.Fatal("Unable to start HTTP Server", zap.Error(err))
+					log.Fatal(err)
 				}
 			}()
 
@@ -43,10 +36,6 @@ func Run(
 
 			if err := server.Shutdown(ctx); err != nil {
 				return fmt.Errorf("failed to shutdown server: %w", err)
-			}
-
-			if err := messengerSvc.Close(); err != nil {
-				return fmt.Errorf("failed to close messenger: %w", err)
 			}
 
 			if err := ot.Shutdown(ctx); err != nil {
