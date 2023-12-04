@@ -14,6 +14,7 @@ go_library(
         "//packages/scanner-scheduler/config",
         "//packages/scanner-scheduler/messenger",
         "//packages/scanner-scheduler/scheduler",
+        "//packages/scanner-scheduler/version",
     ],
 )
 
@@ -21,4 +22,9 @@ go_binary(
     name = "scanner-scheduler",
     embed = [":scanner-scheduler_lib"],
     visibility = ["//visibility:public"],
+    x_defs = {
+        "github.com/dupmanio/dupman/packages/scanner-scheduler/version.BuildTime": "{STABLE_BUILD_TIME}",
+        "github.com/dupmanio/dupman/packages/scanner-scheduler/version.GitCommit": "{STABLE_GIT_COMMIT}",
+        "github.com/dupmanio/dupman/packages/scanner-scheduler/version.Version": "{STABLE_VERSION}",
+    },
 )

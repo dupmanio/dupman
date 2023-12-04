@@ -9,6 +9,7 @@ import (
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/config"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/messenger"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/scheduler"
+	"github.com/dupmanio/dupman/packages/scanner-scheduler/version"
 )
 
 func process(ctx context.Context) error {
@@ -17,7 +18,7 @@ func process(ctx context.Context) error {
 		return fmt.Errorf("unable to create config: %w", err)
 	}
 
-	loggerInst, err := logger.New(conf.Env, conf.AppName, "1.0.0", conf.LogPath)
+	loggerInst, err := logger.New(conf.Env, conf.AppName, version.Version, conf.LogPath)
 	if err != nil {
 		return fmt.Errorf("unable to create logger: %w", err)
 	}
@@ -25,7 +26,7 @@ func process(ctx context.Context) error {
 	ot, err := otel.NewOTel(
 		conf.Env,
 		conf.AppName,
-		"1.0.0",
+		version.Version,
 		conf.Telemetry.CollectorURL,
 		loggerInst,
 	)

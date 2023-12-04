@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	// @todo: refactor: remove API service dependency.
 	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	authConstant "github.com/dupmanio/dupman/packages/auth/constant"

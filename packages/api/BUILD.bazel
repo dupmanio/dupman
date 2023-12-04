@@ -17,6 +17,7 @@ go_library(
         "//packages/api/route",
         "//packages/api/server",
         "//packages/api/service",
+        "//packages/api/version",
         "//packages/common/helper/fx",
         "//packages/common/logger",
         "//packages/common/logger/wrapper",
@@ -31,4 +32,9 @@ go_binary(
     name = "api",
     embed = [":api_lib"],
     visibility = ["//visibility:public"],
+    x_defs = {
+        "github.com/dupmanio/dupman/packages/api/version.BuildTime": "{STABLE_BUILD_TIME}",
+        "github.com/dupmanio/dupman/packages/api/version.GitCommit": "{STABLE_GIT_COMMIT}",
+        "github.com/dupmanio/dupman/packages/api/version.Version": "{STABLE_VERSION}",
+    },
 )

@@ -21,6 +21,7 @@ go_library(
         "//packages/notify/route",
         "//packages/notify/server",
         "//packages/notify/service",
+        "//packages/notify/version",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",
         "@org_uber_go_zap//:zap",
@@ -31,4 +32,9 @@ go_binary(
     name = "notify",
     embed = [":notify_lib"],
     visibility = ["//visibility:public"],
+    x_defs = {
+        "github.com/dupmanio/dupman/packages/notify/version.BuildTime": "{STABLE_BUILD_TIME}",
+        "github.com/dupmanio/dupman/packages/notify/version.GitCommit": "{STABLE_GIT_COMMIT}",
+        "github.com/dupmanio/dupman/packages/notify/version.Version": "{STABLE_VERSION}",
+    },
 )

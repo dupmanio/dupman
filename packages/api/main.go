@@ -11,6 +11,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/route"
 	"github.com/dupmanio/dupman/packages/api/server"
 	"github.com/dupmanio/dupman/packages/api/service"
+	"github.com/dupmanio/dupman/packages/api/version"
 	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/logger"
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
@@ -23,8 +24,7 @@ import (
 // @todo: move provider functions from main package.
 
 func loggerProvider(conf *config.Config) (*zap.Logger, error) {
-	// @todo: store app version separately.
-	loggerInst, err := logger.New(conf.Env, conf.AppName, "1.0.0", conf.LogPath)
+	loggerInst, err := logger.New(conf.Env, conf.AppName, version.Version, conf.LogPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create logger: %w", err)
 	}
@@ -36,7 +36,7 @@ func oTelProvider(conf *config.Config, logger *zap.Logger) (*otel.OTel, error) {
 	ot, err := otel.NewOTel(
 		conf.Env,
 		conf.AppName,
-		"1.0.0",
+		version.Version,
 		conf.Telemetry.CollectorURL,
 		logger,
 	)

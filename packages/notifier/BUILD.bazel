@@ -16,6 +16,7 @@ go_library(
         "//packages/notifier/deliverer",
         "//packages/notifier/processor",
         "//packages/notifier/service",
+        "//packages/notifier/version",
         "//packages/notifier/worker",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",
@@ -27,4 +28,9 @@ go_binary(
     name = "notifier",
     embed = [":notifier_lib"],
     visibility = ["//visibility:public"],
+    x_defs = {
+        "github.com/dupmanio/dupman/packages/notifier/version.BuildTime": "{STABLE_BUILD_TIME}",
+        "github.com/dupmanio/dupman/packages/notifier/version.GitCommit": "{STABLE_GIT_COMMIT}",
+        "github.com/dupmanio/dupman/packages/notifier/version.Version": "{STABLE_VERSION}",
+    },
 )

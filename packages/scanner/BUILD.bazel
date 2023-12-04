@@ -16,6 +16,7 @@ go_library(
         "//packages/scanner/fetcher",
         "//packages/scanner/processor",
         "//packages/scanner/service",
+        "//packages/scanner/version",
         "//packages/scanner/worker",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",
@@ -27,4 +28,9 @@ go_binary(
     name = "scanner",
     embed = [":scanner_lib"],
     visibility = ["//visibility:public"],
+    x_defs = {
+        "github.com/dupmanio/dupman/packages/scanner/version.BuildTime": "{STABLE_BUILD_TIME}",
+        "github.com/dupmanio/dupman/packages/scanner/version.GitCommit": "{STABLE_GIT_COMMIT}",
+        "github.com/dupmanio/dupman/packages/scanner/version.Version": "{STABLE_VERSION}",
+    },
 )
