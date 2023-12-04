@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/dupmanio/dupman/packages/common/database"
 	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/logger"
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/common/otel"
+	commonServer "github.com/dupmanio/dupman/packages/common/server"
 	"github.com/dupmanio/dupman/packages/notify/config"
 	"github.com/dupmanio/dupman/packages/notify/controller"
 	"github.com/dupmanio/dupman/packages/notify/middleware"
@@ -56,6 +58,20 @@ func databaseProvider(conf *config.Config, logger *zap.Logger, ot *otel.OTel) (*
 	return db, nil
 }
 
+func serverProvider(
+	routes []fxHelper.IRoute,
+	logger *zap.Logger,
+	conf *config.Config,
+	ot *otel.OTel,
+) (*http.Server, error) {
+	srv, err := commonServer.New(conf.Env, conf.Server, routes, logger, ot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize server: %w", err)
+	}
+
+	return srv, nil
+}
+
 func main() {
 	app := fx.New(
 		fx.WithLogger(func(logger *zap.Logger) fxevent.Logger {
@@ -63,7 +79,7 @@ func main() {
 		}),
 		fx.Provide(
 			config.New,
-			fxHelper.AsRouteReceiver(server.New),
+			fxHelper.AsRouteReceiver(serverProvider),
 			loggerProvider,
 			oTelProvider,
 			databaseProvider,

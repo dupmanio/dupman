@@ -22,6 +22,7 @@ go_library(
         "//packages/common/logger",
         "//packages/common/logger/wrapper",
         "//packages/common/otel",
+        "//packages/common/server",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",
         "@org_uber_go_zap//:zap",

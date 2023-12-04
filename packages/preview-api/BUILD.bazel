@@ -13,6 +13,7 @@ go_library(
         "//packages/common/logger",
         "//packages/common/logger/wrapper",
         "//packages/common/otel",
+        "//packages/common/server",
         "//packages/preview-api/config",
         "//packages/preview-api/controller",
         "//packages/preview-api/middleware",

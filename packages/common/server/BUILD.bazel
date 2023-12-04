@@ -3,14 +3,14 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "server",
     srcs = ["server.go"],
-    importpath = "github.com/dupmanio/dupman/packages/preview-api/server",
+    importpath = "github.com/dupmanio/dupman/packages/common/server",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/common/config",
+        "//packages/common/helper/fx",
+        "//packages/common/logger/wrapper",
         "//packages/common/otel",
-        "//packages/preview-api/config",
         "@com_github_gin_gonic_gin//:gin",
-        "@io_opentelemetry_go_otel//semconv/v1.21.0:v1_21_0",
-        "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",
     ],
 )

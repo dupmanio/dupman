@@ -5,61 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 
-	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
-	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/preview-api/config"
-	"github.com/gin-gonic/gin"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
-type Server struct {
-	engine *gin.Engine
-}
-
-func New(routes []fxHelper.IRoute, logger *zap.Logger, config *config.Config, ot *otel.OTel) (*Server, error) {
-	ginLogWrapper := logWrapper.NewGinWrapper(logger)
-
-	gin.DefaultWriter = ginLogWrapper
-
-	if config.Env == "prod" {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
-	if config.Env == "test" {
-		gin.SetMode(gin.TestMode)
-	}
-
-	engine := gin.New()
-	engine.ContextWithFallback = true
-
-	if err := engine.SetTrustedProxies(config.Server.TrustedProxies); err != nil {
-		return nil, fmt.Errorf("unable to set trusted proxies: %w", err)
-	}
-
-	engine.Use(ot.GetOTelGinMiddleware())
-	engine.Use(ginLogWrapper.GetGinzapMiddleware())
-	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
-
-	fxHelper.RegisterRoutes(engine, routes...)
-
-	return &Server{
-		engine: engine,
-	}, nil
-}
-
-func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, ot *otel.OTel) error {
-	httpServer := http.Server{
-		Addr:              net.JoinHostPort(config.Server.ListenAddr, config.Server.Port),
-		Handler:           server.engine,
-		ReadHeaderTimeout: 0,
-	}
-
+func Run(server *http.Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, ot *otel.OTel) error {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Info(
@@ -69,7 +24,7 @@ func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Con
 			)
 
 			go func() {
-				if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 					log.Fatal(err)
 				}
 			}()
@@ -79,7 +34,7 @@ func Run(server *Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Con
 		OnStop: func(ctx context.Context) error {
 			logger.Info("Shutting down HTTP Server")
 
-			if err := httpServer.Shutdown(ctx); err != nil {
+			if err := server.Shutdown(ctx); err != nil {
 				return fmt.Errorf("failed to shutdown server: %w", err)
 			}
 
