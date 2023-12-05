@@ -12,9 +12,17 @@ type Deliverer interface {
 	Deliver(dto.NotificationMessage, *dto.ContactInfo) error
 }
 
-func Create() fx.Option {
-	return fx.Options(
-		fx.Provide(email.New),
-		fx.Provide(notify.New),
+func Provide() fx.Option {
+	return fx.Provide(
+		fx.Annotate(
+			email.New,
+			fx.As(new(Deliverer)),
+			fx.ResultTags(`group:"deliverers"`),
+		),
+		fx.Annotate(
+			notify.New,
+			fx.As(new(Deliverer)),
+			fx.ResultTags(`group:"deliverers"`),
+		),
 	)
 }

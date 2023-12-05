@@ -5,9 +5,9 @@ import (
 	"go.uber.org/fx"
 )
 
-func Create() fx.Option {
-	return fx.Options(
-		fx.Provide(commonServices.NewDupmanAPIService),
-		fx.Provide(NewMessengerService),
+func Provide() fx.Option {
+	return fx.Provide(
+		commonServices.NewDupmanAPIService,
+		NewMessengerService,
 	)
 }

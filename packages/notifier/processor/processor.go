@@ -8,8 +8,6 @@ import (
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/notifier/config"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer"
-	"github.com/dupmanio/dupman/packages/notifier/deliverer/email"
-	"github.com/dupmanio/dupman/packages/notifier/deliverer/notify"
 	"github.com/dupmanio/dupman/packages/notifier/service"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	"github.com/google/uuid"
@@ -23,17 +21,15 @@ type Processor struct {
 	messengerSvc      *service.MessengerService
 	dupmanCredentials credentials.Provider
 	dupmanAPIService  *commonService.DupmanAPIService
-	// @todo: Rewrite using fx value groups.
-	deliverers []deliverer.Deliverer
+	deliverers        []deliverer.Deliverer
 }
 
 func NewProcessor(
+	deliverers []deliverer.Deliverer,
 	logger *zap.Logger,
 	config *config.Config,
 	messengerSvc *service.MessengerService,
 	dupmanAPIService *commonService.DupmanAPIService,
-	emailDeliverer *email.Deliverer,
-	notifyDeliverer *notify.Deliverer,
 ) (*Processor, error) {
 	cred, err := credentials.NewClientCredentials(
 		config.Dupman.ClientID,
@@ -50,10 +46,7 @@ func NewProcessor(
 		messengerSvc:      messengerSvc,
 		dupmanCredentials: cred,
 		dupmanAPIService:  dupmanAPIService,
-		deliverers: []deliverer.Deliverer{
-			emailDeliverer,
-			notifyDeliverer,
-		},
+		deliverers:        deliverers,
 	}, nil
 }
 

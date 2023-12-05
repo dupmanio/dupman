@@ -124,9 +124,7 @@ func (ctrl *SystemController) UpdateWebsiteStatus(ctx *gin.Context) {
 		return
 	}
 
-	// @todo: refactor.
-	_ = copier.Copy(&response.Status, &website.Status)
-	_ = copier.Copy(&response.Updates, &website.Updates)
+	_ = copier.Copy(&response, &website)
 
 	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
 }
