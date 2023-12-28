@@ -44,8 +44,8 @@ http_archive(
     name = "bazel_gazelle",
     sha256 = RULES_GAZELLE_EXTERNAL_SHA,
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/%s/bazel-gazelle-%s.tar.gz" % (RULES_GO_EXTERNAL_TAG, RULES_GO_EXTERNAL_TAG),
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/%s/bazel-gazelle-%s.tar.gz" % (RULES_GO_EXTERNAL_TAG, RULES_GO_EXTERNAL_TAG),
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/%s/bazel-gazelle-%s.tar.gz" % (RULES_GAZELLE_EXTERNAL_TAG, RULES_GAZELLE_EXTERNAL_TAG),
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/%s/bazel-gazelle-%s.tar.gz" % (RULES_GAZELLE_EXTERNAL_TAG, RULES_GAZELLE_EXTERNAL_TAG),
     ],
 )
 

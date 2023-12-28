@@ -4,3 +4,5 @@ bazel-*
 .ijwb
 
 .env
+
+.DS_Store
