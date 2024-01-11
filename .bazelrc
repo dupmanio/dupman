@@ -1,1 +1,8 @@
-build --host_cxxopt='-std=c++14' --java_language_version=17 --stamp --workspace_status_command=./scripts/status.sh
+# C++ Settings.
+build --host_cxxopt='-std=c++14'
+
+# Java Settings.
+build --java_language_version=17
+
+# Stamp Settings.
+build --stamp --workspace_status_command=./scripts/status.sh
