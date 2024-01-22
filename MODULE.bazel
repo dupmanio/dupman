@@ -23,6 +23,8 @@ use_repo(
     "com_github_go_resty_resty_v2",
     "com_github_golang_jwt_jwt_v5",
     "com_github_google_uuid",
+    "com_github_hashicorp_vault_api",
+    "com_github_hashicorp_vault_api_auth_approle",
     "com_github_jinzhu_copier",
     "com_github_mcuadros_go_defaults",
     "com_github_rabbitmq_amqp091_go",

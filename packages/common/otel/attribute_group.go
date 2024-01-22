@@ -29,6 +29,11 @@ const (
 
 	RouteKey    = attribute.Key(AttributeKeyPrefix + "route")
 	MigratorKey = attribute.Key(AttributeKeyPrefix + "migrator")
+
+	DurationKey  = attribute.Key(AttributeKeyPrefix + "duration")
+	RenewedAtKey = attribute.Key(AttributeKeyPrefix + "renewed_at")
+
+	VaultPathKey = attribute.Key(AttributeKeyPrefix + "vault.path")
 )
 
 func TraceID(val string) attribute.KeyValue {
@@ -61,4 +66,8 @@ func NotificationID(val uuid.UUID) attribute.KeyValue {
 
 func UserID(val uuid.UUID) attribute.KeyValue {
 	return UserIDKey.String(val.String())
+}
+
+func VaultPath(val string) attribute.KeyValue {
+	return VaultPathKey.String(val)
 }

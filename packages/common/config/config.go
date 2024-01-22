@@ -58,6 +58,12 @@ type DupmanConfig struct {
 	ClientSecret string `mapstructure:"DUPMAN_CLIENT_SECRET"`
 }
 
+type VaultConfig struct {
+	ServerAddress string `mapstructure:"VAULT_SERVER_ADDRESS"`
+	RoleID        string `mapstructure:"VAULT_ROLE_ID"`
+	SecretID      string `mapstructure:"VAULT_SECRET_ID"`
+}
+
 type Config interface {
 	SetAppName(string)
 }
