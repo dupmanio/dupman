@@ -2,10 +2,12 @@ package vault
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/common/otel"
-	"github.com/dupmanio/dupman/packages/user-api/model"
+	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
+	"github.com/google/uuid"
 	vault "github.com/hashicorp/vault/api"
 	auth "github.com/hashicorp/vault/api/auth/approle"
 	"go.uber.org/zap"
@@ -62,8 +64,8 @@ func (inst *Vault) login(ctx context.Context) (*vault.Secret, error) {
 	return authInfo, nil
 }
 
-func (inst *Vault) CreateUserTransitKey(ctx context.Context, user *model.User) error {
-	path := fmt.Sprintf("transit/keys/user-%s", user.ID)
+func (inst *Vault) CreateUserTransitKey(ctx context.Context, userID uuid.UUID) error {
+	path := fmt.Sprintf("transit/keys/user-%s", userID)
 	data := map[string]interface{}{
 		"type": "aes256-gcm96",
 	}
@@ -80,4 +82,56 @@ func (inst *Vault) CreateUserTransitKey(ctx context.Context, user *model.User) e
 	}
 
 	return nil
+}
+
+func (inst *Vault) EncryptWithUserTransitKey(ctx context.Context, userID uuid.UUID, plaintext string) (string, error) {
+	path := fmt.Sprintf("transit/encrypt/user-%s", userID)
+	data := map[string]interface{}{
+		"plaintext": base64.StdEncoding.EncodeToString([]byte(plaintext)),
+	}
+
+	_, span := inst.ot.GetSpanForFunctionCall(
+		ctx,
+		1,
+		otel.VaultPath(path),
+	)
+	defer span.End()
+
+	secret, err := inst.client.Logical().Write(path, data)
+	if err != nil {
+		return "", fmt.Errorf("unable to Encrypt text: %w", err)
+	}
+
+	ciphertext, ok := secret.Data["ciphertext"].(string)
+	if !ok {
+		return "", domainErrors.ErrSomethingWentWrong
+	}
+
+	return ciphertext, nil
+}
+
+func (inst *Vault) DecryptWithUserTransitKey(ctx context.Context, userID uuid.UUID, ciphertext string) (string, error) {
+	path := fmt.Sprintf("transit/decrypt/user-%s", userID)
+	data := map[string]interface{}{
+		"ciphertext": ciphertext,
+	}
+
+	_, span := inst.ot.GetSpanForFunctionCall(
+		ctx,
+		1,
+		otel.VaultPath(path),
+	)
+	defer span.End()
+
+	secret, err := inst.client.Logical().Write(path, data)
+	if err != nil {
+		return "", fmt.Errorf("unable to Decrypt cipher: %w", err)
+	}
+
+	plaintext, err := base64.StdEncoding.DecodeString(secret.Data["plaintext"].(string))
+	if err != nil {
+		return "", fmt.Errorf("unable to decode plaintext: %w", err)
+	}
+
+	return string(plaintext), nil
 }

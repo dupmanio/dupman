@@ -11,7 +11,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/common/otel",
-        "//packages/user-api/model",
+        "@com_github_google_uuid//:uuid",
         "@com_github_hashicorp_vault_api//:api",
         "@com_github_hashicorp_vault_api_auth_approle//:approle",
         "@org_uber_go_zap//:zap",
