@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/common/database"
 	"github.com/dupmanio/dupman/packages/common/pagination"
@@ -23,9 +22,7 @@ func NewWebsiteRepository(db *database.Database) *WebsiteRepository {
 	}
 }
 
-func (repo *WebsiteRepository) Create(ctx context.Context, website *model.Website, encryptionKKey string) error {
-	ctx = context.WithValue(ctx, constant.EncryptionKeyKey, encryptionKKey)
-
+func (repo *WebsiteRepository) Create(ctx context.Context, website *model.Website) error {
 	return repo.db.
 		WithContext(ctx).
 		Create(website).
@@ -112,10 +109,7 @@ func (repo *WebsiteRepository) Update(
 	ctx context.Context,
 	website *model.Website,
 	fieldsToUpdate []string,
-	encryptionKKey string,
 ) error {
-	ctx = context.WithValue(ctx, constant.EncryptionKeyKey, encryptionKKey)
-
 	return repo.db.
 		WithContext(ctx).
 		Select("UpdatedAt", fieldsToUpdate).

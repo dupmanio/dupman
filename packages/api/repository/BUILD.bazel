@@ -4,13 +4,11 @@ go_library(
     name = "repository",
     srcs = [
         "repository.go",
-        "user.go",
         "website.go",
     ],
     importpath = "github.com/dupmanio/dupman/packages/api/repository",
     visibility = ["//visibility:public"],
     deps = [
-        "//packages/api/constant",
         "//packages/api/model",
         "//packages/common/database",
         "//packages/common/pagination",

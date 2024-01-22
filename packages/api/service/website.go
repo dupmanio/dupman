@@ -6,10 +6,10 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
-	sqltype "github.com/dupmanio/dupman/packages/api/sql/type"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	commonService "github.com/dupmanio/dupman/packages/common/service"
+	"github.com/dupmanio/dupman/packages/common/vault"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/google/uuid"
@@ -19,27 +19,27 @@ import (
 type WebsiteService struct {
 	websiteRepo  *repository.WebsiteRepository
 	authSvc      *commonService.AuthService
-	userRepo     *repository.UserRepository
 	messengerSvc *MessengerService
 	logger       *zap.Logger
 	ot           *otel.OTel
+	vault        *vault.Vault
 }
 
 func NewWebsiteService(
 	websiteRepo *repository.WebsiteRepository,
 	authSvc *commonService.AuthService,
-	userRepo *repository.UserRepository,
 	messengerSvc *MessengerService,
 	logger *zap.Logger,
 	ot *otel.OTel,
+	vault *vault.Vault,
 ) *WebsiteService {
 	return &WebsiteService{
 		websiteRepo:  websiteRepo,
 		authSvc:      authSvc,
-		userRepo:     userRepo,
 		messengerSvc: messengerSvc,
 		logger:       logger,
 		ot:           ot,
+		vault:        vault,
 	}
 }
 
@@ -47,16 +47,24 @@ func (svc *WebsiteService) Create(ctx context.Context, entity *model.Website) (*
 	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
 	defer span.End()
 
-	currentUser := svc.authSvc.CurrentUser(ctx)
-	entity.UserID = currentUser.ID
+	entity.UserID = svc.authSvc.CurrentUserID(ctx)
 
-	if err := svc.websiteRepo.Create(ctx, entity, currentUser.KeyPair.PublicKey); err != nil {
+	token, err := svc.vault.EncryptWithUserTransitKey(ctx, entity.UserID, entity.Token)
+	if err != nil {
+		svc.ot.ErrorEvent(ctx, "Unable to Encrypt Website Token", err)
+
+		return nil, fmt.Errorf("unable to Encrypt Website Token: %w", err)
+	}
+
+	entity.Token = token
+
+	if err = svc.websiteRepo.Create(ctx, entity); err != nil {
 		svc.ot.ErrorEvent(ctx, "Unable to create Website", err)
 
 		return nil, fmt.Errorf("unable to create Website: %w", err)
 	}
 
-	if err := svc.messengerSvc.SendScanWebsiteMessage(ctx, entity); err != nil {
+	if err = svc.messengerSvc.SendScanWebsiteMessage(ctx, entity); err != nil {
 		svc.ot.LogErrorEvent(ctx, "Unable to publish message to Scanner", err, otel.WebsiteID(entity.ID))
 	}
 
@@ -70,9 +78,9 @@ func (svc *WebsiteService) GetAllForCurrentUser(
 	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
 	defer span.End()
 
-	currentUser := svc.authSvc.CurrentUser(ctx)
+	currentUserID := svc.authSvc.CurrentUserID(ctx)
 
-	websites, err := svc.websiteRepo.FindByUserID(ctx, currentUser.ID.String(), pagination)
+	websites, err := svc.websiteRepo.FindByUserID(ctx, currentUserID.String(), pagination)
 	if err != nil {
 		svc.ot.ErrorEvent(ctx, "Unable to load Websites", err)
 
@@ -89,7 +97,7 @@ func (svc *WebsiteService) GetSingleForCurrentUser(
 	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
 	defer span.End()
 
-	currentUser := svc.authSvc.CurrentUser(ctx)
+	currentUserID := svc.authSvc.CurrentUserID(ctx)
 
 	website := svc.websiteRepo.FindByID(ctx, websiteID.String())
 	if website == nil {
@@ -99,7 +107,7 @@ func (svc *WebsiteService) GetSingleForCurrentUser(
 		return nil, err
 	}
 
-	if website.UserID != currentUser.ID {
+	if website.UserID != currentUserID {
 		err := errors.ErrAccessIsForbidden
 		svc.ot.ErrorEvent(ctx, "Access Denied", err)
 
@@ -116,8 +124,8 @@ func (svc *WebsiteService) DeleteForCurrentUser(
 	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
 	defer span.End()
 
-	currentUser := svc.authSvc.CurrentUser(ctx)
-	if err := svc.websiteRepo.DeleteByIDAndUserID(ctx, websiteID, currentUser.ID); err != nil {
+	currentUserID := svc.authSvc.CurrentUserID(ctx)
+	if err := svc.websiteRepo.DeleteByIDAndUserID(ctx, websiteID, currentUserID); err != nil {
 		svc.ot.ErrorEvent(ctx, "Unable to delete Websites", err)
 
 		return fmt.Errorf("unable to delete Websites: %w", err)
@@ -147,7 +155,6 @@ func (svc *WebsiteService) GetSingle(
 func (svc *WebsiteService) GetAllWithToken(
 	ctx context.Context,
 	pagination *pagination.Pagination,
-	publicKey string,
 ) ([]model.Website, error) {
 	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
 	defer span.End()
@@ -157,21 +164,6 @@ func (svc *WebsiteService) GetAllWithToken(
 		svc.ot.ErrorEvent(ctx, "Unable to load Websites", err)
 
 		return nil, fmt.Errorf("unable to load Websites: %w", err)
-	}
-
-	for i := 0; i < len(websites); i++ {
-		// @todo: Implement user key caching.
-		user := svc.userRepo.FindByID(ctx, websites[i].UserID.String())
-
-		if rawToken, err := websites[i].Token.Decrypt(user.KeyPair.PrivateKey); err == nil {
-			websites[i].Token = sqltype.WebsiteToken(rawToken)
-
-			if tokenEncrypted, err := websites[i].Token.Encrypt(publicKey); err == nil {
-				websites[i].Token = sqltype.WebsiteToken(tokenEncrypted)
-			} else {
-				websites[i].Token = ""
-			}
-		}
 	}
 
 	return websites, nil
@@ -185,12 +177,19 @@ func (svc *WebsiteService) Update(
 	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
 	defer span.End()
 
-	currentUser := svc.authSvc.CurrentUser(ctx)
+	currentUserID := svc.authSvc.CurrentUserID(ctx)
 	fieldsToUpdate := []string{"URL"}
 	website.URL = updates.URL
 
 	if updates.Token != "" {
-		website.Token = sqltype.WebsiteToken(updates.Token)
+		token, err := svc.vault.EncryptWithUserTransitKey(ctx, currentUserID, updates.Token)
+		if err != nil {
+			svc.ot.ErrorEvent(ctx, "Unable to Encrypt Website Token", err)
+
+			return nil, fmt.Errorf("unable to Encrypt Website Token: %w", err)
+		}
+
+		website.Token = token
 
 		fieldsToUpdate = append(fieldsToUpdate, "Token")
 	}
@@ -199,7 +198,6 @@ func (svc *WebsiteService) Update(
 		ctx,
 		website,
 		fieldsToUpdate,
-		currentUser.KeyPair.PublicKey,
 	); err != nil {
 		svc.ot.ErrorEvent(ctx, "Unable to update Website", err)
 

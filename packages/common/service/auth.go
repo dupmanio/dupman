@@ -3,9 +3,6 @@ package service
 import (
 	"context"
 
-	// @todo: refactor: remove API service dependency.
-	"github.com/dupmanio/dupman/packages/api/constant"
-	"github.com/dupmanio/dupman/packages/api/model"
 	authConstant "github.com/dupmanio/dupman/packages/auth/constant"
 	"github.com/google/uuid"
 )
@@ -23,12 +20,4 @@ func (svc *AuthService) CurrentUserID(ctx context.Context) uuid.UUID {
 	}
 
 	return userID
-}
-
-func (svc *AuthService) CurrentUser(ctx context.Context) *model.User {
-	if user, ok := ctx.Value(constant.CurrentUserKey).(*model.User); ok {
-		return user
-	}
-
-	return nil
 }

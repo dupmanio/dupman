@@ -6,7 +6,6 @@ import (
 
 func Provide() fx.Option {
 	return fx.Provide(
-		NewUserRepository,
 		NewWebsiteRepository,
 	)
 }

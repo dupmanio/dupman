@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "route.go",
         "system.go",
-        "user.go",
         "website.go",
     ],
     importpath = "github.com/dupmanio/dupman/packages/api/route",

@@ -27,9 +27,10 @@ type WebsiteOnResponse struct {
 type WebsitesOnResponse []WebsiteOnResponse
 
 type WebsiteOnSystemResponse struct {
-	ID    uuid.UUID `json:"id" binding:"required"`
-	URL   string    `json:"url" binding:"required"`
-	Token string    `json:"token" binding:"required"`
+	ID     uuid.UUID `json:"id" binding:"required"`
+	UserID uuid.UUID `json:"userID" binding:"required"`
+	URL    string    `json:"url" binding:"required"`
+	Token  string    `json:"token" binding:"required"`
 }
 
 type WebsitesOnSystemResponse []WebsiteOnSystemResponse

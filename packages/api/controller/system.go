@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dupmanio/dupman/packages/api/constant"
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/service"
 	"github.com/dupmanio/dupman/packages/common/otel"
@@ -41,21 +40,9 @@ func (ctrl *SystemController) GetWebsites(ctx *gin.Context) {
 
 	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
 
-	publicKey := ctx.GetHeader(constant.PublicKeyHeaderKey)
-	if publicKey == "" {
-		ctrl.httpSvc.HTTPErrorWithOTelLog(
-			ctx,
-			fmt.Sprintf("Header '%s' is missing", constant.PublicKeyHeaderKey),
-			http.StatusInternalServerError,
-			domainErrors.ErrHeaderIsMissing,
-		)
-
-		return
-	}
-
 	pager := pagination.Paginate(ctx)
 
-	websites, err := ctrl.websiteSvc.GetAllWithToken(ctx, pager, publicKey)
+	websites, err := ctrl.websiteSvc.GetAllWithToken(ctx, pager)
 	if err != nil {
 		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to load Websites", http.StatusInternalServerError, err)
 

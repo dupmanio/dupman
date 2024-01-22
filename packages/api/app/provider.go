@@ -17,6 +17,7 @@ import (
 	"github.com/dupmanio/dupman/packages/common/logger"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	commonServer "github.com/dupmanio/dupman/packages/common/server"
+	"github.com/dupmanio/dupman/packages/common/vault"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -54,6 +55,21 @@ func databaseProvider(conf *config.Config, logger *zap.Logger, ot *otel.OTel) (*
 	return db, nil
 }
 
+func vaultProvider(conf *config.Config, logger *zap.Logger, ot *otel.OTel) (*vault.Vault, error) {
+	vaultConf := vault.Config{
+		Address:  conf.Vault.ServerAddress,
+		RoleID:   conf.Vault.RoleID,
+		SecretID: conf.Vault.SecretID,
+	}
+
+	vaultInst, err := vault.New(vaultConf, logger, ot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize Vault: %w", err)
+	}
+
+	return vaultInst, nil
+}
+
 func serverProvider(
 	routes []fxHelper.IRoute,
 	logger *zap.Logger,
@@ -75,6 +91,7 @@ func Provide() fx.Option {
 			loggerProvider,
 			oTelProvider,
 			databaseProvider,
+			vaultProvider,
 			fxHelper.AsRouteReceiver(serverProvider),
 		),
 		controller.Provide(),

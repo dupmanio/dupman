@@ -59,8 +59,9 @@ func (mess *MessengerService) SendScanWebsiteMessage(ctx context.Context, websit
 
 	message := dto.ScanWebsiteMessage{
 		WebsiteID:    website.ID,
+		UserID:       website.UserID,
 		WebsiteURL:   website.URL,
-		WebsiteToken: string(website.Token),
+		WebsiteToken: website.Token,
 	}
 
 	if err := mess.broker.PublishToExchange(

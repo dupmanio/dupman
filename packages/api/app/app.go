@@ -10,6 +10,7 @@ import (
 	"github.com/dupmanio/dupman/packages/api/service"
 	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/otel"
+	"github.com/dupmanio/dupman/packages/common/vault"
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -24,12 +25,23 @@ type Params struct {
 	Config       *config.Config
 	OT           *otel.OTel
 	MessengerSvc *service.MessengerService
+	Vault        *vault.Vault
 }
 
 func Run(params Params, lc fx.Lifecycle) error {
+	vaultRenewerCtx, vaultRenewerCtxCancel := context.WithCancel(context.Background())
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			fxHelper.Migrate(params.Logger, params.Migrators...)
+
+			params.Logger.Info("Starting Vault Renewer")
+
+			go func() {
+				if err := params.Vault.PeriodicallyRenewLeases(vaultRenewerCtx); err != nil {
+					params.Logger.Fatal("Unable to start Vault Renewer", zap.Error(err))
+				}
+			}()
 
 			params.Logger.Info(
 				"Starting HTTP Server",
@@ -55,6 +67,8 @@ func Run(params Params, lc fx.Lifecycle) error {
 			if err := params.MessengerSvc.Close(); err != nil {
 				return fmt.Errorf("failed to close messenger: %w", err)
 			}
+
+			vaultRenewerCtxCancel()
 
 			if err := params.OT.Shutdown(ctx); err != nil {
 				return fmt.Errorf("failed to shutdown telemetry service: %w", err)

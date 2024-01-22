@@ -22,6 +22,7 @@ go_library(
         "//packages/common/logger",
         "//packages/common/otel",
         "//packages/common/server",
+        "//packages/common/vault",
         "@io_opentelemetry_go_otel//semconv/v1.21.0:v1_21_0",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",

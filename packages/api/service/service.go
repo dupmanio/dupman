@@ -10,7 +10,6 @@ func Provide() fx.Option {
 		commonServices.NewHTTPService,
 		commonServices.NewAuthService,
 		NewMessengerService,
-		NewUserService,
 		NewWebsiteService,
 	)
 }

@@ -23,6 +23,7 @@ type Config struct {
 	Database  config.DatabaseConfig  `mapstructure:",squash"`
 	RabbitMQ  config.RabbitMQConfig  `mapstructure:",squash"`
 	Telemetry config.TelemetryConfig `mapstructure:",squash"`
+	Vault     config.VaultConfig     `mapstructure:",squash"`
 
 	Notifier Notifier `mapstructure:",squash"`
 	Scanner  Scanner  `mapstructure:",squash"`

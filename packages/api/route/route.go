@@ -8,7 +8,6 @@ import (
 func Provide() fx.Option {
 	return fx.Provide(
 		fxHelper.AsRoute(NewSystemRoute),
-		fxHelper.AsRoute(NewUserRoute),
 		fxHelper.AsRoute(NewWebsiteRoute),
 	)
 }

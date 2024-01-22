@@ -7,10 +7,8 @@ import (
 
 func Provide() fx.Option {
 	return fx.Provide(
-		fxHelper.AsMigrator(NewKeyPairMigrator),
 		fxHelper.AsMigrator(NewStatusMigrator),
 		fxHelper.AsMigrator(NewUpdateMigrator),
-		fxHelper.AsMigrator(NewUserMigrator),
 		fxHelper.AsMigrator(NewWebsiteMigrator),
 	)
 }
