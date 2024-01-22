@@ -28,7 +28,7 @@ type User struct {
 //	svc := user.New(sess)
 func New(sess *session.Session) *User {
 	return &User{
-		client: client.NewAPIClient(sess),
+		client: client.NewUserAPIClient(sess),
 	}
 }
 

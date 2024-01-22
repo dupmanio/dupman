@@ -6,6 +6,7 @@ go_library(
         "api.go",
         "client.go",
         "notify.go",
+        "user.go",
     ],
     importpath = "github.com/dupmanio/dupman/packages/sdk/internal/client",
     visibility = ["//packages/sdk:__subpackages__"],
