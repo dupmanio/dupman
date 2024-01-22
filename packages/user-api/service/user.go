@@ -43,7 +43,7 @@ func (svc *UserService) Create(ctx context.Context, entity *model.User) (*model.
 		return nil, fmt.Errorf("unable to create User: %w", err)
 	}
 
-	if err := svc.vaultSvc.CreateUserTransitKey(ctx, entity); err != nil {
+	if err := svc.vaultSvc.CreateUserTransitKey(ctx, entity.ID); err != nil {
 		return nil, fmt.Errorf("unable to create User Vault key: %w", err)
 	}
 
