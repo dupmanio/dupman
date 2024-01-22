@@ -1,0 +1,30 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "app",
+    srcs = [
+        "app.go",
+        "provider.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/user-api/app",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/database",
+        "//packages/common/helper/fx",
+        "//packages/common/logger",
+        "//packages/common/otel",
+        "//packages/common/server",
+        "//packages/common/vault",
+        "//packages/user-api/config",
+        "//packages/user-api/controller",
+        "//packages/user-api/middleware",
+        "//packages/user-api/migrator",
+        "//packages/user-api/repository",
+        "//packages/user-api/route",
+        "//packages/user-api/service",
+        "//packages/user-api/version",
+        "@io_opentelemetry_go_otel//semconv/v1.21.0:v1_21_0",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_zap//:zap",
+    ],
+)

@@ -1,0 +1,21 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "service",
+    srcs = [
+        "service.go",
+        "user.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/user-api/service",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/otel",
+        "//packages/common/service",
+        "//packages/common/vault",
+        "//packages/domain/errors",
+        "//packages/user-api/model",
+        "//packages/user-api/repository",
+        "@com_github_google_uuid//:uuid",
+        "@org_uber_go_fx//:fx",
+    ],
+)

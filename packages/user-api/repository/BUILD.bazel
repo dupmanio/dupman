@@ -1,0 +1,17 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "repository",
+    srcs = [
+        "repository.go",
+        "user.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/user-api/repository",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/database",
+        "//packages/user-api/model",
+        "@io_gorm_gorm//:gorm",
+        "@org_uber_go_fx//:fx",
+    ],
+)

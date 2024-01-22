@@ -1,0 +1,17 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "migrator",
+    srcs = [
+        "migrator.go",
+        "user.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/user-api/migrator",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/database",
+        "//packages/common/helper/fx",
+        "//packages/user-api/model",
+        "@org_uber_go_fx//:fx",
+    ],
+)

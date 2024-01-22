@@ -1,0 +1,29 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "user-api_lib",
+    srcs = ["main.go"],
+    data = [
+        ".env",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/user-api",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//packages/common/logger/wrapper",
+        "//packages/user-api/app",
+        "@org_uber_go_fx//:fx",
+        "@org_uber_go_fx//fxevent",
+        "@org_uber_go_zap//:zap",
+    ],
+)
+
+go_binary(
+    name = "user-api",
+    embed = [":user-api_lib"],
+    visibility = ["//visibility:public"],
+    x_defs = {
+        "github.com/dupmanio/dupman/packages/user-api/version.BuildTime": "{STABLE_BUILD_TIME}",
+        "github.com/dupmanio/dupman/packages/user-api/version.GitCommit": "{STABLE_GIT_COMMIT}",
+        "github.com/dupmanio/dupman/packages/user-api/version.Version": "{STABLE_VERSION}",
+    },
+)
