@@ -7,7 +7,6 @@ import (
 
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/domain/dto"
-	"github.com/dupmanio/dupman/packages/encryptor"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/config"
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/messenger"
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
@@ -20,7 +19,6 @@ import (
 type Scheduler struct {
 	logger        *zap.Logger
 	systemService *system.System
-	encryptor     encryptor.Encryptor
 	messengerSvc  *messenger.Service
 	ot            *otel.OTel
 }
@@ -36,14 +34,8 @@ func New(conf *config.Config, logger *zap.Logger, messengerSvc *messenger.Servic
 		return nil, fmt.Errorf("unable to create dupman session: %w", err)
 	}
 
-	rsaEncryptor := encryptor.NewRSAEncryptor()
-	if err = rsaEncryptor.GenerateKeyPair(); err != nil {
-		return nil, fmt.Errorf("unable to generate RSA Key Pair: %w", err)
-	}
-
 	return &Scheduler{
 		logger:        logger,
-		encryptor:     rsaEncryptor,
 		systemService: system.New(sess),
 		messengerSvc:  messengerSvc,
 		ot:            ot,
@@ -53,18 +45,13 @@ func New(conf *config.Config, logger *zap.Logger, messengerSvc *messenger.Servic
 func (scheduler *Scheduler) Process(ctx context.Context) error {
 	scheduler.logger.Info("Starting Scheduler Process")
 
-	publicKey, err := scheduler.encryptor.PublicKey()
-	if err != nil {
-		return fmt.Errorf("unable to get public key: %w", err)
-	}
-
 	currentPage := 1
 	totalPages := 1
 
 	var wg sync.WaitGroup
 
 	for currentPage <= totalPages {
-		websites, pager, err := scheduler.systemService.GetWebsites(publicKey, currentPage)
+		websites, pager, err := scheduler.systemService.GetWebsites(currentPage)
 		if err != nil {
 			scheduler.logger.Error("unable to get Websites", zap.Error(err))
 		}
@@ -112,13 +99,7 @@ func (scheduler *Scheduler) scheduleWebsiteScanning(ctx context.Context, website
 		zap.String("websiteURL", website.URL),
 	)
 
-	token, err := scheduler.encryptor.Decrypt(website.Token)
-	if err != nil {
-		return fmt.Errorf("unable to decrypt Website token: %w", err)
-	}
-
-	err = scheduler.messengerSvc.SendScanWebsiteMessage(ctx, website, token)
-	if err != nil {
+	if err := scheduler.messengerSvc.SendScanWebsiteMessage(ctx, website); err != nil {
 		return fmt.Errorf("unable to publish message: %w", err)
 	}
 

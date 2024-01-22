@@ -46,7 +46,6 @@ func NewMessengerService(logger *zap.Logger, config *config.Config, ot *otel.OTe
 func (mess *Service) SendScanWebsiteMessage(
 	ctx context.Context,
 	website dto.WebsiteOnSystemResponse,
-	token string,
 ) error {
 	mess.logger.Info(
 		"Sending Message",
@@ -56,8 +55,9 @@ func (mess *Service) SendScanWebsiteMessage(
 
 	message := dto.ScanWebsiteMessage{
 		WebsiteID:    website.ID,
+		UserID:       website.UserID,
 		WebsiteURL:   website.URL,
-		WebsiteToken: token,
+		WebsiteToken: website.Token,
 	}
 
 	if err := mess.broker.PublishToExchange(
