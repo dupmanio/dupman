@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/dupmanio/dupman/packages/common/vault"
 	"github.com/dupmanio/dupman/packages/scanner/processor"
 	"github.com/dupmanio/dupman/packages/scanner/service"
 	"go.uber.org/fx"
@@ -15,9 +16,20 @@ func Run(
 	logger *zap.Logger,
 	processor *processor.Processor,
 	messengerSvc *service.MessengerService,
+	vault *vault.Vault,
 ) error {
+	vaultRenewerCtx, vaultRenewerCtxCancel := context.WithCancel(context.Background())
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
+			logger.Info("Starting Vault Renewer")
+
+			go func() {
+				if err := vault.PeriodicallyRenewLeases(vaultRenewerCtx); err != nil {
+					logger.Fatal("Unable to start Vault Renewer", zap.Error(err))
+				}
+			}()
+
 			logger.Info("Starting Worker")
 
 			go func() {
@@ -36,6 +48,8 @@ func Run(
 			if err := messengerSvc.Close(); err != nil {
 				return fmt.Errorf("failed to close messenger: %w", err)
 			}
+
+			vaultRenewerCtxCancel()
 
 			return nil
 		},

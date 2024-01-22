@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//packages/common/logger",
         "//packages/common/otel",
+        "//packages/common/vault",
         "//packages/scanner/config",
         "//packages/scanner/fetcher",
         "//packages/scanner/processor",

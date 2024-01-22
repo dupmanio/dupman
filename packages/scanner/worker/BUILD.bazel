@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/scanner/worker",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/common/vault",
         "//packages/scanner/processor",
         "//packages/scanner/service",
         "@org_uber_go_fx//:fx",

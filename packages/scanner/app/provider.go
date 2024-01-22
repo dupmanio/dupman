@@ -5,6 +5,7 @@ import (
 
 	"github.com/dupmanio/dupman/packages/common/logger"
 	"github.com/dupmanio/dupman/packages/common/otel"
+	"github.com/dupmanio/dupman/packages/common/vault"
 	"github.com/dupmanio/dupman/packages/scanner/config"
 	"github.com/dupmanio/dupman/packages/scanner/fetcher"
 	"github.com/dupmanio/dupman/packages/scanner/processor"
@@ -38,6 +39,21 @@ func oTelProvider(conf *config.Config, logger *zap.Logger) (*otel.OTel, error) {
 	return ot, nil
 }
 
+func vaultProvider(conf *config.Config, logger *zap.Logger, ot *otel.OTel) (*vault.Vault, error) {
+	vaultConf := vault.Config{
+		Address:  conf.Vault.ServerAddress,
+		RoleID:   conf.Vault.RoleID,
+		SecretID: conf.Vault.SecretID,
+	}
+
+	vaultInst, err := vault.New(vaultConf, logger, ot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize Vault: %w", err)
+	}
+
+	return vaultInst, nil
+}
+
 func Provide() fx.Option {
 	return fx.Options(
 		fx.Provide(
@@ -46,6 +62,7 @@ func Provide() fx.Option {
 			processor.NewProcessor,
 			loggerProvider,
 			oTelProvider,
+			vaultProvider,
 		),
 		service.Provide(),
 	)

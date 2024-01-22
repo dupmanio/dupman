@@ -13,6 +13,7 @@ type Config struct {
 	Worker    config.WorkerConfig    `mapstructure:",squash"`
 	Dupman    config.DupmanConfig    `mapstructure:",squash"`
 	Telemetry config.TelemetryConfig `mapstructure:",squash"`
+	Vault     config.VaultConfig     `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {

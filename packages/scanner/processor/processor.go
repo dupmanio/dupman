@@ -7,6 +7,7 @@ import (
 
 	"github.com/dupmanio/dupman/packages/common/otel"
 	commonService "github.com/dupmanio/dupman/packages/common/service"
+	"github.com/dupmanio/dupman/packages/common/vault"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/scanner/config"
 	"github.com/dupmanio/dupman/packages/scanner/fetcher"
@@ -29,6 +30,7 @@ type Processor struct {
 	dupmanCredentials credentials.Provider
 	dupmanAPIService  *commonService.DupmanAPIService
 	ot                *otel.OTel
+	vault             *vault.Vault
 }
 
 func NewProcessor(
@@ -38,6 +40,7 @@ func NewProcessor(
 	fetcher *fetcher.Fetcher,
 	dupmanAPIService *commonService.DupmanAPIService,
 	ot *otel.OTel,
+	vault *vault.Vault,
 ) (*Processor, error) {
 	cred, err := credentials.NewClientCredentials(
 		config.Dupman.ClientID,
@@ -56,6 +59,7 @@ func NewProcessor(
 		dupmanCredentials: cred,
 		dupmanAPIService:  dupmanAPIService,
 		ot:                ot,
+		vault:             vault,
 	}, nil
 }
 
@@ -108,7 +112,7 @@ func (proc *Processor) processMessage(delivery amqp.Delivery) {
 	)
 
 	successfullyProcessed := true
-	if err := proc.processScanning(delivery); err != nil {
+	if err := proc.processScanning(ctx, delivery); err != nil {
 		successfullyProcessed = false
 
 		proc.logger.Error(
@@ -149,18 +153,23 @@ func (proc *Processor) getDeliveryStringHeader(delivery amqp.Delivery, headerNam
 	return ""
 }
 
-func (proc *Processor) processScanning(delivery amqp.Delivery) error {
+func (proc *Processor) processScanning(ctx context.Context, delivery amqp.Delivery) error {
 	var message dto.ScanWebsiteMessage
 
 	if err := json.Unmarshal(delivery.Body, &message); err != nil {
 		return fmt.Errorf("unable to unmarshal message: %w", err)
 	}
 
+	token, err := proc.vault.DecryptWithUserTransitKey(ctx, message.UserID, message.WebsiteToken)
+	if err != nil {
+		return fmt.Errorf("unable to decrypt Website token: %w", err)
+	}
+
 	status := dto.Status{
 		State: dto.StatusStateUpToDated,
 	}
 
-	updates, err := proc.fetcher.Fetch(message.WebsiteURL, message.WebsiteID, message.WebsiteToken)
+	updates, err := proc.fetcher.Fetch(message.WebsiteURL, message.WebsiteID, token)
 	if err != nil {
 		proc.logger.Error(
 			"Unable to fetch Website Updates",
