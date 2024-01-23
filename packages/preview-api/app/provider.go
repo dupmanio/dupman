@@ -10,7 +10,6 @@ import (
 	commonServer "github.com/dupmanio/dupman/packages/common/server"
 	"github.com/dupmanio/dupman/packages/preview-api/config"
 	"github.com/dupmanio/dupman/packages/preview-api/controller"
-	"github.com/dupmanio/dupman/packages/preview-api/middleware"
 	"github.com/dupmanio/dupman/packages/preview-api/route"
 	"github.com/dupmanio/dupman/packages/preview-api/service"
 	"github.com/dupmanio/dupman/packages/preview-api/version"
@@ -65,7 +64,6 @@ func Provide() fx.Option {
 			fxHelper.AsRouteReceiver(serverProvider),
 		),
 		controller.Provide(),
-		middleware.Provide(),
 		route.Provide(),
 		service.Provide(),
 	)

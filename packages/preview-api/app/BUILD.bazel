@@ -15,7 +15,6 @@ go_library(
         "//packages/common/server",
         "//packages/preview-api/config",
         "//packages/preview-api/controller",
-        "//packages/preview-api/middleware",
         "//packages/preview-api/route",
         "//packages/preview-api/service",
         "//packages/preview-api/version",
