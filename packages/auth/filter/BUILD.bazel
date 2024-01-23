@@ -1,0 +1,16 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "filter",
+    srcs = [
+        "role.go",
+        "scope.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/auth/filter",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/auth",
+        "//packages/domain/errors",
+        "@com_github_gin_gonic_gin//:gin",
+    ],
+)

@@ -2,11 +2,16 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "auth",
-    srcs = ["auth.go"],
+    srcs = [
+        "auth.go",
+        "middleware.go",
+        "middleware_options.go",
+    ],
     importpath = "github.com/dupmanio/dupman/packages/auth",
     visibility = ["//visibility:public"],
     deps = [
         "//packages/auth/constant",
+        "//packages/domain/errors",
         "@com_github_gin_gonic_gin//:gin",
         "@com_github_golang_jwt_jwt_v5//:jwt",
     ],
