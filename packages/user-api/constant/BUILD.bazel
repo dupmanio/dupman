@@ -1,8 +1,0 @@
-load("@rules_go//go:def.bzl", "go_library")
-
-go_library(
-    name = "constant",
-    srcs = ["constant.go"],
-    importpath = "github.com/dupmanio/dupman/packages/user-api/constant",
-    visibility = ["//visibility:public"],
-)

@@ -17,7 +17,6 @@ go_library(
         "//packages/common/vault",
         "//packages/user-api/config",
         "//packages/user-api/controller",
-        "//packages/user-api/middleware",
         "//packages/user-api/migrator",
         "//packages/user-api/repository",
         "//packages/user-api/route",

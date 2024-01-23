@@ -12,7 +12,6 @@ import (
 	"github.com/dupmanio/dupman/packages/common/vault"
 	"github.com/dupmanio/dupman/packages/user-api/config"
 	"github.com/dupmanio/dupman/packages/user-api/controller"
-	"github.com/dupmanio/dupman/packages/user-api/middleware"
 	"github.com/dupmanio/dupman/packages/user-api/migrator"
 	"github.com/dupmanio/dupman/packages/user-api/repository"
 	"github.com/dupmanio/dupman/packages/user-api/route"
@@ -95,7 +94,6 @@ func Provide() fx.Option {
 			fxHelper.AsRouteReceiver(serverProvider),
 		),
 		controller.Provide(),
-		middleware.Provide(),
 		migrator.Provide(),
 		repository.Provide(),
 		route.Provide(),
