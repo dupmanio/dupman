@@ -11,8 +11,11 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/api/controller",
-        "//packages/api/middleware",
+        "//packages/auth",
+        "//packages/auth/filter",
         "//packages/common/helper/fx",
+        "//packages/common/otel",
+        "//packages/common/service",
         "@com_github_gin_gonic_gin//:gin",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_zap//:zap",

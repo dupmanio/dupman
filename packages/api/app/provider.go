@@ -6,7 +6,6 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/config"
 	"github.com/dupmanio/dupman/packages/api/controller"
-	"github.com/dupmanio/dupman/packages/api/middleware"
 	"github.com/dupmanio/dupman/packages/api/migrator"
 	"github.com/dupmanio/dupman/packages/api/repository"
 	"github.com/dupmanio/dupman/packages/api/route"
@@ -95,7 +94,6 @@ func Provide() fx.Option {
 			fxHelper.AsRouteReceiver(serverProvider),
 		),
 		controller.Provide(),
-		middleware.Provide(),
 		migrator.Provide(),
 		repository.Provide(),
 		route.Provide(),
