@@ -11,7 +11,6 @@ import (
 	commonServer "github.com/dupmanio/dupman/packages/common/server"
 	"github.com/dupmanio/dupman/packages/notify/config"
 	"github.com/dupmanio/dupman/packages/notify/controller"
-	"github.com/dupmanio/dupman/packages/notify/middleware"
 	"github.com/dupmanio/dupman/packages/notify/migrator"
 	"github.com/dupmanio/dupman/packages/notify/repository"
 	"github.com/dupmanio/dupman/packages/notify/route"
@@ -78,7 +77,6 @@ func Provide() fx.Option {
 			fxHelper.AsRouteReceiver(serverProvider),
 		),
 		controller.Provide(),
-		middleware.Provide(),
 		migrator.Provide(),
 		repository.Provide(),
 		route.Provide(),
