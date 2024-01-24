@@ -68,5 +68,16 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			),
 			route.controller.GetContactInfo,
 		)
+		group.GET(
+			"/me",
+			authMiddleware.Handler(
+				auth.WithResetFilters(),
+				auth.WithFilters(
+					filter.NewRoleFilter("user"),
+					filter.NewScopeFilter("user", "user:me"),
+				),
+			),
+			route.controller.Me,
+		)
 	}
 }

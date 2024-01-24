@@ -18,17 +18,20 @@ import (
 
 type UserController struct {
 	httpSvc *commonServices.HTTPService
+	authSvc *commonServices.AuthService
 	userSvc *service.UserService
 	ot      *otel.OTel
 }
 
 func NewUserController(
 	httpSvc *commonServices.HTTPService,
+	authSvc *commonServices.AuthService,
 	userSvc *service.UserService,
 	ot *otel.OTel,
 ) (*UserController, error) {
 	return &UserController{
 		httpSvc: httpSvc,
+		authSvc: authSvc,
 		userSvc: userSvc,
 		ot:      ot,
 	}, nil
@@ -122,6 +125,30 @@ func (ctrl *UserController) GetContactInfo(ctx *gin.Context) {
 
 		return
 	}
+
+	user, err := ctrl.userSvc.GetSingle(ctx, userID)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		if errors.Is(err, domainErrors.ErrUserDoesNotExist) {
+			statusCode = http.StatusNotFound
+		}
+
+		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to load User", statusCode, err, otel.UserID(userID))
+
+		return
+	}
+
+	_ = copier.Copy(&response, &user)
+
+	ctrl.httpSvc.HTTPResponse(ctx, http.StatusOK, response)
+}
+
+func (ctrl *UserController) Me(ctx *gin.Context) {
+	var response dto.UserAccount
+
+	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
+
+	userID := ctrl.authSvc.CurrentUserID(ctx)
 
 	user, err := ctrl.userSvc.GetSingle(ctx, userID)
 	if err != nil {
