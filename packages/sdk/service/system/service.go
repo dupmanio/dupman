@@ -7,8 +7,8 @@ import (
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/errors"
 	"github.com/dupmanio/dupman/packages/sdk/internal/client"
-	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 )

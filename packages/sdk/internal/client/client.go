@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
-	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
+	"github.com/dupmanio/dupman/packages/sdk/errors"
 	"github.com/go-resty/resty/v2"
 )
 

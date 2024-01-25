@@ -3,7 +3,7 @@ load("@rules_go//go:def.bzl", "go_library")
 go_library(
     name = "errors",
     srcs = ["http.go"],
-    importpath = "github.com/dupmanio/dupman/packages/sdk/internal/errors",
-    visibility = ["//packages/sdk:__subpackages__"],
+    importpath = "github.com/dupmanio/dupman/packages/sdk/errors",
+    visibility = ["//visibility:public"],
     deps = ["@com_github_go_resty_resty_v2//:resty"],
 )

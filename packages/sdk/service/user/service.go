@@ -6,8 +6,8 @@ import (
 
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/errors"
 	"github.com/dupmanio/dupman/packages/sdk/internal/client"
-	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
 	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 )
@@ -104,6 +104,32 @@ func (svc *User) GetContactInfo(id uuid.UUID) (*dto.ContactInfo, error) {
 		Get("/user/contact-info/{id}")
 	if err != nil {
 		return nil, fmt.Errorf("unable to get User Contact Info: %w", err)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return nil, errors.NewHTTPError(resp)
+	}
+
+	return response.Data, nil
+}
+
+// Me current authenticated user's data.
+//
+// Example:
+//
+//	// Create new instance of service using session.
+//	svc := user.New(sess)
+//
+//	// Get current user.
+//	contactInfo, err := svc.Me()
+func (svc *User) Me() (*dto.UserAccount, error) {
+	var response *dto.HTTPResponse[*dto.UserAccount]
+
+	resp, err := svc.client.R().
+		SetResult(&response).
+		Get("/user/me")
+	if err != nil {
+		return nil, fmt.Errorf("unable to get User Data: %w", err)
 	}
 
 	if resp.StatusCode() != http.StatusOK {

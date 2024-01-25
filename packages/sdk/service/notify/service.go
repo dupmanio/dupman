@@ -6,8 +6,8 @@ import (
 
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/errors"
 	"github.com/dupmanio/dupman/packages/sdk/internal/client"
-	"github.com/dupmanio/dupman/packages/sdk/internal/errors"
 	"github.com/go-resty/resty/v2"
 )
 

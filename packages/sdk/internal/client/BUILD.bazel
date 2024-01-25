@@ -13,7 +13,7 @@ go_library(
     deps = [
         "//packages/sdk/dupman",
         "//packages/sdk/dupman/session",
-        "//packages/sdk/internal/errors",
+        "//packages/sdk/errors",
         "@com_github_go_resty_resty_v2//:resty",
     ],
 )
