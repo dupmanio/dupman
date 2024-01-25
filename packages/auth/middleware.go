@@ -1,9 +1,17 @@
 package auth
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/dupmanio/dupman/packages/domain/dto"
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
+	"github.com/dupmanio/dupman/packages/sdk/dupman"
+	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
+	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	sdkErrors "github.com/dupmanio/dupman/packages/sdk/errors"
+	"github.com/dupmanio/dupman/packages/sdk/service/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,7 +25,7 @@ type Middleware struct {
 	handler *Handler
 
 	httpErrorHandler HTTPErrorHandlerFunc
-	callUserService  bool
+	fetchUserData    bool
 	filters          []Filter
 }
 
@@ -25,8 +33,7 @@ func NewMiddleware(options ...Option) *Middleware {
 	mid := &Middleware{
 		handler: NewHandler(),
 
-		callUserService: true,
-		filters:         make([]Filter, 0),
+		filters: make([]Filter, 0),
 	}
 
 	mid.applyOptions(options)
@@ -49,17 +56,27 @@ func (mid *Middleware) Handler(options ...Option) gin.HandlerFunc {
 
 func (mid *Middleware) getGinHandler() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		claims, err := mid.checkAuthHeader(ctx)
+		var (
+			userData *dto.UserAccount
+			code     int
+		)
+
+		claims, rawToken, err := mid.checkAuthHeader(ctx)
 		if err != nil {
 			mid.httpErrorHandler(ctx, http.StatusUnauthorized, err.Error())
 
 			return
 		}
 
-		// @todo: optionally call User API and get current user's data.
-		// if mid.callUserService {}
+		if mid.fetchUserData {
+			if userData, code, err = mid.getUserData(rawToken); err != nil {
+				mid.httpErrorHandler(ctx, code, err.Error())
 
-		mid.handler.StoreAuthData(ctx, claims)
+				return
+			}
+		}
+
+		mid.handler.StoreAuthData(ctx, claims, userData)
 		// @todo: run additional store callbacks.
 
 		if code, err := mid.applyFilters(ctx); err != nil {
@@ -72,18 +89,53 @@ func (mid *Middleware) getGinHandler() gin.HandlerFunc {
 	}
 }
 
-func (mid *Middleware) checkAuthHeader(ctx *gin.Context) (Claims, error) {
+func (mid *Middleware) checkAuthHeader(ctx *gin.Context) (Claims, string, error) {
 	authHeader := ctx.GetHeader("Authorization")
 	if authHeader == "" {
-		return Claims{}, domainErrors.ErrAuthorizationRequired
+		return Claims{}, "", domainErrors.ErrAuthorizationRequired
 	}
 
 	claims, err := mid.handler.ExtractAuthClaims(authHeader)
 	if err != nil {
-		return Claims{}, err
+		return Claims{}, "", err
 	}
 
-	return claims, nil
+	return claims, authHeader, nil
+}
+
+func (mid *Middleware) getUserData(token string) (*dto.UserAccount, int, error) {
+	svc, err := mid.createDupmanUserSvc(token)
+	if err != nil {
+		return nil, http.StatusInternalServerError, domainErrors.ErrSomethingWentWrong
+	}
+
+	data, err := svc.Me()
+	if err != nil {
+		var sdkErr *sdkErrors.HTTPError
+		if errors.As(err, &sdkErr) {
+			if sdkErr.Code == http.StatusUnauthorized || sdkErr.Code == http.StatusForbidden {
+				return nil, sdkErr.Code, err //nolint: wrapcheck
+			}
+		}
+
+		return nil, http.StatusInternalServerError, domainErrors.ErrSomethingWentWrong
+	}
+
+	return data, http.StatusOK, nil
+}
+
+func (mid *Middleware) createDupmanUserSvc(token string) (*user.User, error) {
+	cred, err := credentials.NewRawTokenCredentials(token)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create Dupman Credentials: %w", err)
+	}
+
+	sess, err := session.New(&dupman.Config{Credentials: cred})
+	if err != nil {
+		return nil, fmt.Errorf("unable to creaet Dupman Session: %w", err)
+	}
+
+	return user.New(sess), nil
 }
 
 func (mid *Middleware) applyFilters(ctx *gin.Context) (int, error) {

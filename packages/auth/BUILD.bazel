@@ -11,7 +11,13 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/auth/constant",
+        "//packages/domain/dto",
         "//packages/domain/errors",
+        "//packages/sdk/dupman",
+        "//packages/sdk/dupman/credentials",
+        "//packages/sdk/dupman/session",
+        "//packages/sdk/errors",
+        "//packages/sdk/service/user",
         "@com_github_gin_gonic_gin//:gin",
         "@com_github_golang_jwt_jwt_v5//:jwt",
     ],

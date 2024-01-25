@@ -32,7 +32,6 @@ func (route *NotificationRoute) Register(engine *gin.Engine) {
 	route.logger.Debug("Setting up route", zap.String(string(otel.RouteKey), "notification"))
 
 	authMiddleware := auth.NewMiddleware(
-		auth.WithCallUserService(false),
 		auth.WithHTTPErrorHandler(route.httpService.HTTPError),
 	)
 

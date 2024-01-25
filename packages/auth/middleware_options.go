@@ -8,9 +8,9 @@ func WithHTTPErrorHandler(handler HTTPErrorHandlerFunc) Option {
 	}
 }
 
-func WithCallUserService(callUserService bool) Option {
+func WithFetchUserData(fetchUserData bool) Option {
 	return func(mid *Middleware) {
-		mid.callUserService = callUserService
+		mid.fetchUserData = fetchUserData
 	}
 }
 

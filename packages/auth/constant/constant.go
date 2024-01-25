@@ -9,4 +9,7 @@ const (
 
 	// UserIDKey represents key for storing user ID from Current JWT Token.
 	UserIDKey = "user_id"
+
+	// UserKey represents key for storing authenticated users object.
+	UserKey = "user"
 )

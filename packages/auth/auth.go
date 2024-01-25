@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/dupmanio/dupman/packages/auth/constant"
+	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -35,10 +36,11 @@ func (hand *Handler) ExtractAuthClaims(authHeaderValue string) (Claims, error) {
 	return claims, nil
 }
 
-func (hand *Handler) StoreAuthData(ctx *gin.Context, claims Claims) {
+func (hand *Handler) StoreAuthData(ctx *gin.Context, claims Claims, userData *dto.UserAccount) {
 	ctx.Set(constant.UserIDKey, claims.Subject)
 	ctx.Set(constant.TokenScopesKey, strings.Split(claims.Scope, " "))
 	ctx.Set(constant.TokenRolesKey, claims.RealmAccess.Roles)
+	ctx.Set(constant.UserKey, userData)
 }
 
 func (hand *Handler) HasRoles(ctx *gin.Context, roles []string) bool {
