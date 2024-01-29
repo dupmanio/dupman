@@ -11,7 +11,6 @@ go_library(
     deps = [
         "//packages/common/logger/wrapper",
         "//packages/notifier/app",
-        "//packages/notifier/worker",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",
         "@org_uber_go_zap//:zap",

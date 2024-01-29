@@ -2,7 +2,10 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "app",
-    srcs = ["provider.go"],
+    srcs = [
+        "app.go",
+        "provider.go",
+    ],
     importpath = "github.com/dupmanio/dupman/packages/scanner/app",
     visibility = ["//visibility:public"],
     deps = [

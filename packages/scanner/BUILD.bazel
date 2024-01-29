@@ -14,7 +14,6 @@ go_library(
     deps = [
         "//packages/common/logger/wrapper",
         "//packages/scanner/app",
-        "//packages/scanner/worker",
         "@org_uber_go_fx//:fx",
         "@org_uber_go_fx//fxevent",
         "@org_uber_go_zap//:zap",

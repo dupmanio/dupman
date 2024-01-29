@@ -3,7 +3,6 @@ package main
 import (
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
 	"github.com/dupmanio/dupman/packages/notifier/app"
-	"github.com/dupmanio/dupman/packages/notifier/worker"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"
@@ -15,7 +14,7 @@ func main() {
 			return logWrapper.NewFxWrapper(logger)
 		}),
 		app.Provide(),
-		fx.Invoke(worker.Run),
+		fx.Invoke(app.Run),
 	)
 	fxApp.Run()
 }
