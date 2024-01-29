@@ -28,7 +28,7 @@ func NewNotificationRoute(
 	}
 }
 
-func (route *NotificationRoute) Register(engine *gin.Engine) {
+func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 	route.logger.Debug("Setting up route", zap.String(string(otel.RouteKey), "notification"))
 
 	authMiddleware := auth.NewMiddleware(

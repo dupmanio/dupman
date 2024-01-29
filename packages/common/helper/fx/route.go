@@ -6,7 +6,7 @@ import (
 )
 
 type IRoute interface {
-	Register(*gin.Engine)
+	Register(engine *gin.Engine)
 }
 
 const routeGroupTag = `group:"routes"`

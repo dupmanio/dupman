@@ -65,7 +65,7 @@ type VaultConfig struct {
 }
 
 type Config interface {
-	SetAppName(string)
+	SetAppName(appName string)
 }
 
 func (conf *BaseConfig) SetAppName(appName string) {

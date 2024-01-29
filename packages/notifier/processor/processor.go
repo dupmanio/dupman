@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -31,7 +32,10 @@ func NewProcessor(
 	messengerSvc *service.MessengerService,
 	dupmanAPIService *commonService.DupmanAPIService,
 ) (*Processor, error) {
+	ctx := context.Background()
+
 	cred, err := credentials.NewClientCredentials(
+		ctx,
 		config.Dupman.ClientID,
 		config.Dupman.ClientSecret,
 		[]string{"user:get_contact_info"},

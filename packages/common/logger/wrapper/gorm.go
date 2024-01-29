@@ -57,7 +57,12 @@ func (wrap *GormWrapper) Error(_ context.Context, msg string, data ...interface{
 	}
 }
 
-func (wrap *GormWrapper) Trace(_ context.Context, begin time.Time, fc func() (string, int64), err error) {
+func (wrap *GormWrapper) Trace( //nolint: cyclop
+	_ context.Context,
+	begin time.Time,
+	fc func() (string, int64),
+	err error,
+) {
 	if wrap.config.LogLevel <= gormlogger.Silent {
 		return
 	}

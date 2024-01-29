@@ -22,7 +22,7 @@ func NewFxWrapper(logger *zap.Logger) *FxWrapper {
 	}
 }
 
-func (wrap *FxWrapper) LogEvent(event fxevent.Event) {
+func (wrap *FxWrapper) LogEvent(event fxevent.Event) { //nolint: funlen,gocognit,gocyclo,cyclop
 	switch ev := event.(type) {
 	case *fxevent.OnStartExecuting:
 		wrap.logger.Debug("OnStart hook executing",

@@ -3,6 +3,7 @@ package website
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
@@ -76,7 +77,7 @@ func (svc *Website) GetAll(page int) (*dto.WebsitesOnResponse, *pagination.Pagin
 	resp, err := svc.client.R().
 		SetResult(&response).
 		SetQueryParam("limit", "50").
-		SetQueryParam("page", fmt.Sprintf("%d", page)).
+		SetQueryParam("page", strconv.Itoa(page)).
 		Get("/website")
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to fetch Websites: %w", err)

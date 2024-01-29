@@ -35,7 +35,7 @@ func NewPreviewController(
 	}, nil
 }
 
-func (ctrl *PreviewController) Preview(ctx *gin.Context) {
+func (ctrl *PreviewController) Preview(ctx *gin.Context) { //nolint: funlen
 	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
 
 	websiteID, err := uuid.Parse(ctx.Param("id"))

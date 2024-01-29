@@ -23,8 +23,14 @@ type Scheduler struct {
 	ot            *otel.OTel
 }
 
-func New(conf *config.Config, logger *zap.Logger, messengerSvc *messenger.Service, ot *otel.OTel) (*Scheduler, error) {
-	cred, err := credentials.NewClientCredentials(conf.Dupman.ClientID, conf.Dupman.ClientSecret, []string{})
+func New(
+	ctx context.Context,
+	conf *config.Config,
+	logger *zap.Logger,
+	messengerSvc *messenger.Service,
+	ot *otel.OTel,
+) (*Scheduler, error) {
+	cred, err := credentials.NewClientCredentials(ctx, conf.Dupman.ClientID, conf.Dupman.ClientSecret, []string{})
 	if err != nil {
 		return nil, fmt.Errorf("unable to initiate credentials provider: %w", err)
 	}

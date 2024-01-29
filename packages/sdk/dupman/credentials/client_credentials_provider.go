@@ -25,8 +25,12 @@ type ClientCredentialsProvider struct {
 //
 //	// Create new session.
 //	sess, err := session.New(&dupman.Config{Credentials: cred})
-func NewClientCredentials(clientID, clientSecret string, scopes []string) (*ClientCredentialsProvider, error) {
-	ctx := context.Background()
+func NewClientCredentials(
+	ctx context.Context,
+	clientID string,
+	clientSecret string,
+	scopes []string,
+) (*ClientCredentialsProvider, error) {
 	// @todo: update url!
 	provider, err := oidc.NewProvider(ctx, "http://id.dupman.localhost/realms/dupman")
 	if err != nil {

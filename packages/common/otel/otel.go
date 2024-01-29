@@ -50,8 +50,14 @@ type OTel struct {
 	Meter  metric.Meter
 }
 
-func NewOTel(env, serviceName, serviceVersion, collectorURL string, logger *zap.Logger) (*OTel, error) {
-	ctx := context.Background()
+func NewOTel(
+	ctx context.Context,
+	env string,
+	serviceName string,
+	serviceVersion string,
+	collectorURL string,
+	logger *zap.Logger,
+) (*OTel, error) {
 	ot := &OTel{
 		env:            env,
 		serviceName:    serviceName,

@@ -42,7 +42,10 @@ func NewProcessor(
 	ot *otel.OTel,
 	vault *vault.Vault,
 ) (*Processor, error) {
+	ctx := context.Background()
+
 	cred, err := credentials.NewClientCredentials(
+		ctx,
 		config.Dupman.ClientID,
 		config.Dupman.ClientSecret,
 		[]string{},

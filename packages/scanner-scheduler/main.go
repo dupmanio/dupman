@@ -24,6 +24,7 @@ func process(ctx context.Context) error {
 	}
 
 	ot, err := otel.NewOTel(
+		ctx,
 		conf.Env,
 		conf.AppName,
 		version.Version,
@@ -40,7 +41,7 @@ func process(ctx context.Context) error {
 	}
 	defer mess.Close()
 
-	schedulerInst, err := scheduler.New(conf, loggerInst, mess, ot)
+	schedulerInst, err := scheduler.New(ctx, conf, loggerInst, mess, ot)
 	if err != nil {
 		return fmt.Errorf("unable to create instance of updater: %w", err)
 	}

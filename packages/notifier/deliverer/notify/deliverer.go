@@ -1,6 +1,7 @@
 package notify
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/common/service"
@@ -17,7 +18,10 @@ type Deliverer struct {
 }
 
 func New(config *config.Config, dupmanAPIService *service.DupmanAPIService) (*Deliverer, error) {
+	ctx := context.Background()
+
 	cred, err := credentials.NewClientCredentials(
+		ctx,
 		config.Dupman.ClientID,
 		config.Dupman.ClientSecret,
 		[]string{"notify:notification:create"},

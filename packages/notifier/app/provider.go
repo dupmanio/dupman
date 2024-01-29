@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/common/logger"
@@ -24,7 +25,10 @@ func loggerProvider(conf *config.Config) (*zap.Logger, error) {
 }
 
 func oTelProvider(conf *config.Config, logger *zap.Logger) (*otel.OTel, error) {
+	ctx := context.Background()
+
 	ot, err := otel.NewOTel(
+		ctx,
 		conf.Env,
 		conf.AppName,
 		version.Version,
