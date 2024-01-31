@@ -41,7 +41,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 	group := engine.Group("/user")
 	{
 		group.POST(
-			"/",
+			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewScopeFilter("user", "user:create"),
@@ -50,7 +50,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			route.controller.Create,
 		)
 		group.PATCH(
-			"/",
+			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewScopeFilter("user", "user:update"),

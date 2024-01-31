@@ -38,7 +38,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 	group := engine.Group("/notification")
 	{
 		group.POST(
-			"/",
+			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("service"),
@@ -48,7 +48,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			route.controller.Create,
 		)
 		group.GET(
-			"/",
+			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("user"),
@@ -98,7 +98,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			route.controller.MarkAllAsRead,
 		)
 		group.DELETE(
-			"/",
+			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("user"),

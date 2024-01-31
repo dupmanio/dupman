@@ -40,7 +40,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 	group := engine.Group("/website")
 	{
 		group.GET(
-			"/",
+			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewScopeFilter("website", "website:read"),
@@ -49,7 +49,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			route.controller.GetAll,
 		)
 		group.POST(
-			"/",
+			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewScopeFilter("website", "website:create"),
@@ -67,7 +67,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			route.controller.GetSingle,
 		)
 		group.PATCH(
-			"/",
+			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewScopeFilter("website", "website:update"),
