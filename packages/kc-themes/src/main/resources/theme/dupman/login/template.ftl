@@ -57,7 +57,9 @@
                     </div>
                 </div>
 
-                <#nested "leftTopContent">
+                <div class="col-12 pt-4 pe-5 d-flex justify-content-end mb-5">
+                    <#nested "leftTopContent">
+                </div>
 
                 <div class="d-flex justify-content-center">
                     <div class="col-12 w-75 w-xl-50">

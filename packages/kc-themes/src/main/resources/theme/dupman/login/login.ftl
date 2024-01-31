@@ -21,12 +21,10 @@
 
     <#if section = "leftTopContent">
         <#if realm.password && realm.registrationAllowed && !registrationDisabled??>
-            <div class="col-12 pt-4 pe-5 d-flex justify-content-end mb-5">
-                <span>
-                    <span class="me-2">${msg("noAccount")}</span>
-                    <a class="btn btn-primary" role="button" href="${url.registrationUrl}">${msg("doRegister")}</a>
-                </span>
-            </div>
+            <span>
+                <span class="me-2">${msg("noAccount")}</span>
+                <a class="btn btn-primary" role="button" href="${url.registrationUrl}">${msg("doRegister")}</a>
+            </span>
         </#if>
     </#if>
 

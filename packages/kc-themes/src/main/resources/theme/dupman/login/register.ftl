@@ -9,7 +9,7 @@
         <div class="d-flex">
             <div class="w-100 me-5">
                 <div class="col-12 d-flex justify-content-end">
-                    <img src="${url.resourcesPath}/img/sign-in.svg" class="w-100" alt="Regisster">
+                    <img src="${url.resourcesPath}/img/sign-in.svg" class="w-100" alt="Register">
                 </div>
             </div>
         </div>
@@ -17,12 +17,10 @@
 
     <#if section = "leftTopContent">
         <#if realm.password && realm.registrationAllowed && !registrationDisabled??>
-            <div class="col-12 pt-4 pe-5 d-flex justify-content-end mb-5">
-                <span>
-                    <span class="me-2">${msg("alreadyHaveAccount")}</span>
-                    <a class="btn btn-primary" role="button" href="${url.loginUrl}">${msg("doLogIn")}</a>
-                </span>
-            </div>
+            <span>
+                <span class="me-2">${msg("alreadyHaveAccount")}</span>
+                <a class="btn btn-primary" role="button" href="${url.loginUrl}">${msg("doLogIn")}</a>
+            </span>
         </#if>
     </#if>
 
