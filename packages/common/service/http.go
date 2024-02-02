@@ -62,6 +62,11 @@ func (svc *HTTPService) HTTPResponse(ctx *gin.Context, code int, data any) {
 	})
 }
 
+func (svc *HTTPService) SSEEvent(ctx *gin.Context, name string, message any) {
+	ctx.SSEvent(name, message)
+	ctx.Writer.Flush()
+}
+
 func (svc *HTTPService) HTTPPaginatedResponse(ctx *gin.Context, code int, data any, pagination *pagination.Pagination) {
 	ctx.JSON(code, dto.HTTPResponse[any]{
 		Code:       code,

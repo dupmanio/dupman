@@ -46,7 +46,9 @@ func Run(params Params, lc fx.Lifecycle) error {
 		OnStop: func(ctx context.Context) error {
 			params.Logger.Info("Shutting down HTTP Server")
 
-			if err := params.Server.Shutdown(ctx); err != nil {
+			// Shutdown does not close the open SSE connections,
+			// so we have to use Close here.
+			if err := params.Server.Close(); err != nil {
 				return fmt.Errorf("failed to shutdown server: %w", err)
 			}
 

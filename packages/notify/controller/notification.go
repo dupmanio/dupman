@@ -119,21 +119,26 @@ func (ctrl *NotificationController) Realtime(ctx *gin.Context) {
 
 		return
 	}
+	defer pubSub.Close()
 
 	ctx.Header("Content-Type", "text/event-stream")
 	ctx.Header("Cache-Control", "no-cache")
 	ctx.Header("Connection", "keep-alive")
 	ctx.Header("Transfer-Encoding", "chunked")
 
-	// @todo: implement graceful shutdown.
+	ctrl.httpSvc.SSEEvent(ctx, "connect", "")
+
 	for {
 		select {
 		case message := <-pubSub.Channel():
-			ctx.SSEvent("notification", message.Payload)
-			ctx.Writer.Flush()
+			ctrl.httpSvc.SSEEvent(ctx, "notification", message.Payload)
 		case now := <-time.After(heartbeatInterval):
-			ctx.SSEvent("heartbeat", now)
-			ctx.Writer.Flush()
+			ctrl.httpSvc.SSEEvent(ctx, "heartbeat", now)
+		case <-ctx.Request.Context().Done():
+			ctrl.httpSvc.SSEEvent(ctx, "close", "")
+			//ctx.Abort()
+
+			return
 		}
 	}
 }
