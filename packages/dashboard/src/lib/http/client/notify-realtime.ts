@@ -12,6 +12,8 @@ function useRealtimeNotifications(
   const session = useSession();
 
   useEffect(() => {
+    const controller = new AbortController();
+
     fetchEventSource(
       `${publicRuntimeConfig.DUPMAN_API}/notify/notification/realtime`,
       {
@@ -19,6 +21,7 @@ function useRealtimeNotifications(
         headers: {
           Authorization: `Bearer ${session.data?.accessToken}`,
         },
+        signal: controller.signal,
         onmessage(message) {
           if (message.event === "notification") {
             const notification = JSON.parse(
@@ -30,6 +33,8 @@ function useRealtimeNotifications(
         },
       },
     );
+
+    return () => controller.abort();
   }, []);
 }
 
