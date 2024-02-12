@@ -41,7 +41,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
-					filter.NewRoleFilter("service"),
+					filter.NewRoleFilter("notification-create"),
 					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:create"),
 				),
 			),
@@ -51,7 +51,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
-					filter.NewRoleFilter("user"),
+					filter.NewRoleFilter("notification-read"),
 					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:read"),
 				),
 			),
@@ -61,7 +61,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			"/count",
 			authMiddleware.Handler(
 				auth.WithFilters(
-					filter.NewRoleFilter("user"),
+					filter.NewRoleFilter("notification-read"),
 					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:read"),
 				),
 			),
@@ -71,7 +71,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			"/realtime",
 			authMiddleware.Handler(
 				auth.WithFilters(
-					filter.NewRoleFilter("user"),
+					filter.NewRoleFilter("notification-read"),
 					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:read"),
 				),
 			),
@@ -81,7 +81,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			"/:id/mark-as-read",
 			authMiddleware.Handler(
 				auth.WithFilters(
-					filter.NewRoleFilter("user"),
+					filter.NewRoleFilter("notification-update"),
 					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:update"),
 				),
 			),
@@ -91,7 +91,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			"/mark-all-as-read",
 			authMiddleware.Handler(
 				auth.WithFilters(
-					filter.NewRoleFilter("user"),
+					filter.NewRoleFilter("notification-update"),
 					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:update"),
 				),
 			),
@@ -101,7 +101,7 @@ func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
 			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
-					filter.NewRoleFilter("user"),
+					filter.NewRoleFilter("notification-delete"),
 					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:delete"),
 				),
 			),

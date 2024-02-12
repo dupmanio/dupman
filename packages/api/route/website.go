@@ -33,9 +33,6 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 
 	authMiddleware := auth.NewMiddleware(
 		auth.WithHTTPErrorHandler(route.httpService.HTTPError),
-		auth.WithFilters(
-			filter.NewRoleFilter("user"),
-		),
 	)
 	group := engine.Group("/website")
 	{
@@ -43,6 +40,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("website-read"),
 					filter.NewScopeFilter("website", "website:read"),
 				),
 			),
@@ -52,6 +50,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("website-create"),
 					filter.NewScopeFilter("website", "website:create"),
 				),
 			),
@@ -61,6 +60,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			"/:id",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("website-read"),
 					filter.NewScopeFilter("website", "website:read"),
 				),
 			),
@@ -70,6 +70,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("website-update"),
 					filter.NewScopeFilter("website", "website:update"),
 				),
 			),
@@ -79,6 +80,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			"/:id",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("website-delete"),
 					filter.NewScopeFilter("website", "website:delete"),
 				),
 			),

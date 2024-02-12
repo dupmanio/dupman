@@ -33,9 +33,6 @@ func (route *PreviewRoute) Register(engine *gin.Engine) {
 
 	authMiddleware := auth.NewMiddleware(
 		auth.WithHTTPErrorHandler(route.httpService.HTTPError),
-		auth.WithFilters(
-			filter.NewRoleFilter("user"),
-		),
 	)
 
 	group := engine.Group("/preview")
@@ -44,6 +41,7 @@ func (route *PreviewRoute) Register(engine *gin.Engine) {
 			":id",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("website-get-preview"),
 					filter.NewScopeFilter("preview_api", "preview_api:preview", "preview_api:preview:get"),
 				),
 			),

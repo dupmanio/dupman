@@ -33,9 +33,6 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 
 	authMiddleware := auth.NewMiddleware(
 		auth.WithHTTPErrorHandler(route.httpService.HTTPError),
-		auth.WithFilters(
-			filter.NewRoleFilter("service"),
-		),
 	)
 
 	group := engine.Group("/user")
@@ -44,6 +41,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("user-create"),
 					filter.NewScopeFilter("user", "user:create"),
 				),
 			),
@@ -53,6 +51,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			"",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("user-update"),
 					filter.NewScopeFilter("user", "user:update"),
 				),
 			),
@@ -62,6 +61,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			"/contact-info/:id",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("user-get-contact-info"),
 					filter.NewScopeFilter("user", "user:get_contact_info"),
 				),
 			),
@@ -70,9 +70,8 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 		group.GET(
 			"/me",
 			authMiddleware.Handler(
-				auth.WithResetFilters(),
 				auth.WithFilters(
-					filter.NewRoleFilter("user"),
+					filter.NewRoleFilter("user-read"),
 					filter.NewScopeFilter("user", "user:me"),
 				),
 			),

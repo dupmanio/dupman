@@ -33,9 +33,6 @@ func (route *SystemRoute) Register(engine *gin.Engine) {
 
 	authMiddleware := auth.NewMiddleware(
 		auth.WithHTTPErrorHandler(route.httpService.HTTPError),
-		auth.WithFilters(
-			filter.NewRoleFilter("service"),
-		),
 	)
 
 	group := engine.Group("/system")
@@ -44,6 +41,7 @@ func (route *SystemRoute) Register(engine *gin.Engine) {
 			"/websites",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("system-get-websites"),
 					filter.NewScopeFilter("system", "system:get_websites"),
 				),
 			),
@@ -53,6 +51,7 @@ func (route *SystemRoute) Register(engine *gin.Engine) {
 			"/websites/:id/status",
 			authMiddleware.Handler(
 				auth.WithFilters(
+					filter.NewRoleFilter("system-update-website-status"),
 					filter.NewScopeFilter("system", "system:update_website_status"),
 				),
 			),
