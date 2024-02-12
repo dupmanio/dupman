@@ -42,7 +42,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("user-create"),
-					filter.NewScopeFilter("user", "user:create"),
+					filter.NewScopeFilter("user_api", "user_api:user", "user_api:user:create"),
 				),
 			),
 			route.controller.Create,
@@ -52,7 +52,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("user-update"),
-					filter.NewScopeFilter("user", "user:update"),
+					filter.NewScopeFilter("user_api", "user_api:user", "user_api:user:update"),
 				),
 			),
 			route.controller.Update,
@@ -62,7 +62,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("user-get-contact-info"),
-					filter.NewScopeFilter("user", "user:get_contact_info"),
+					filter.NewScopeFilter("user_api", "user_api:user", "user_api:user:get_contact_info"),
 				),
 			),
 			route.controller.GetContactInfo,
@@ -72,7 +72,7 @@ func (route *UserRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("user-read"),
-					filter.NewScopeFilter("user", "user:me"),
+					filter.NewScopeFilter("user_api", "user_api:user", "user_api:user:me"),
 				),
 			),
 			route.controller.Me,

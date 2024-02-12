@@ -42,7 +42,7 @@ func (route *SystemRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("system-get-websites"),
-					filter.NewScopeFilter("system", "system:get_websites"),
+					filter.NewScopeFilter("api", "api:system", "api:system:get_websites"),
 				),
 			),
 			route.controller.GetWebsites,
@@ -52,7 +52,7 @@ func (route *SystemRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("system-update-website-status"),
-					filter.NewScopeFilter("system", "system:update_website_status"),
+					filter.NewScopeFilter("api", "api:system", "api:system:update_website_status"),
 				),
 			),
 			route.controller.UpdateWebsiteStatus,

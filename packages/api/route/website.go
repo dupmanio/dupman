@@ -41,7 +41,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("website-read"),
-					filter.NewScopeFilter("website", "website:read"),
+					filter.NewScopeFilter("api", "api:website", "api:website:read"),
 				),
 			),
 			route.controller.GetAll,
@@ -51,7 +51,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("website-create"),
-					filter.NewScopeFilter("website", "website:create"),
+					filter.NewScopeFilter("api", "api:website", "api:website:create"),
 				),
 			),
 			route.controller.Create,
@@ -61,7 +61,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("website-read"),
-					filter.NewScopeFilter("website", "website:read"),
+					filter.NewScopeFilter("api", "api:website", "api:website:read"),
 				),
 			),
 			route.controller.GetSingle,
@@ -71,7 +71,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("website-update"),
-					filter.NewScopeFilter("website", "website:update"),
+					filter.NewScopeFilter("api", "api:website", "api:website:update"),
 				),
 			),
 			route.controller.Update,
@@ -81,7 +81,7 @@ func (route *WebsiteRoute) Register(engine *gin.Engine) {
 			authMiddleware.Handler(
 				auth.WithFilters(
 					filter.NewRoleFilter("website-delete"),
-					filter.NewScopeFilter("website", "website:delete"),
+					filter.NewScopeFilter("api", "api:website", "api:website:delete"),
 				),
 			),
 			route.controller.Delete,
