@@ -7,49 +7,41 @@ import (
 
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	"github.com/dupmanio/dupman/packages/domain/dto"
-	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/errors"
 	"github.com/dupmanio/dupman/packages/sdk/internal/client"
-	"github.com/go-resty/resty/v2"
+	"github.com/dupmanio/dupman/packages/sdk/service"
 	"github.com/google/uuid"
 )
 
 // System provides the API operation methods for working with /system routes.
 type System struct {
-	client *resty.Client
+	service.Base
 }
 
-// New creates a new instance of the System client with a session.
-//
-// Example:
-//
-//	// Create new session with config.
-//	sess := session.New(&dupman.Config{...})
-//
-//	// Create a System client from just a session.
-//	svc := system.New(sess)
-func New(sess *session.Session) *System {
-	return &System{
-		client: client.NewAPIClient(sess),
-	}
+// New creates a new instance of the System service.
+func New(conf *dupman.Config) *System {
+	svc := new(System)
+
+	svc.SetConfig(conf)
+	svc.SetClient(client.NewAPIClient(conf))
+
+	return svc
 }
 
 // GetWebsites gets all websites.
 // Returns paginated response. You can specify the page argument.
-//
-// Example:
-//
-//	// Create new instance of service using session.
-//	svc := system.New(sess)
-//
-//	// Get first page of websites.
-//	websites, pager, err := svc.GetWebsites(1)
 func (svc *System) GetWebsites(
 	page int,
 ) (*dto.WebsitesOnSystemResponse, *pagination.Pagination, error) {
 	var response *dto.HTTPResponse[*dto.WebsitesOnSystemResponse]
 
-	resp, err := svc.client.R().
+	req, err := svc.Request()
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to initialize request: %w", err)
+	}
+
+	resp, err := req.
 		SetResult(&response).
 		SetQueryParam("limit", "50").
 		SetQueryParam("page", strconv.Itoa(page)).
@@ -66,14 +58,6 @@ func (svc *System) GetWebsites(
 }
 
 // UpdateWebsiteStatus updates website status and creates update entities.
-//
-// Example:
-//
-//	// Create new instance of service using session.
-//	svc := system.New(sess)
-//
-//	// Create updates.
-//	status, err := svc.UpdateWebsiteStatus(websiteID, &dto.Status{...}, &dto.Updates{...})
 func (svc *System) UpdateWebsiteStatus(
 	websiteID uuid.UUID,
 	status *dto.Status,
@@ -90,7 +74,12 @@ func (svc *System) UpdateWebsiteStatus(
 		payload.Updates = *updates
 	}
 
-	resp, err := svc.client.R().
+	req, err := svc.Request()
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize request: %w", err)
+	}
+
+	resp, err := req.
 		SetResult(&response).
 		SetBody(payload).
 		SetPathParam("websiteId", websiteID.String()).

@@ -2,7 +2,10 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "dupman",
-    srcs = ["config.go"],
+    srcs = [
+        "config.go",
+        "config_options.go",
+    ],
     importpath = "github.com/dupmanio/dupman/packages/sdk/dupman",
     visibility = ["//visibility:public"],
     deps = ["//packages/sdk/dupman/credentials"],

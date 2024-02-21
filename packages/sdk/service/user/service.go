@@ -5,46 +5,38 @@ import (
 	"net/http"
 
 	"github.com/dupmanio/dupman/packages/domain/dto"
-	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/errors"
 	"github.com/dupmanio/dupman/packages/sdk/internal/client"
-	"github.com/go-resty/resty/v2"
+	"github.com/dupmanio/dupman/packages/sdk/service"
 	"github.com/google/uuid"
 )
 
-// User provides the API operation methods for working with /user routes.
+// User provides the API operation methods for working with user service.
 type User struct {
-	client *resty.Client
+	service.Base
 }
 
-// New creates a new instance of the User client with a session.
-//
-// Example:
-//
-//	// Create new session with config.
-//	sess := session.New(&dupman.Config{...})
-//
-//	// Create a User client from just a session.
-//	svc := user.New(sess)
-func New(sess *session.Session) *User {
-	return &User{
-		client: client.NewUserAPIClient(sess),
-	}
+// New creates a new instance of the User service.
+func New(conf *dupman.Config) *User {
+	svc := new(User)
+
+	svc.SetConfig(conf)
+	svc.SetClient(client.NewUserAPIClient(conf))
+
+	return svc
 }
 
 // Create creates new user.
-//
-// Example:
-//
-//	// Create new instance of service using session.
-//	svc := user.New(sess)
-//
-//	// Create new user.
-//	account, err := svc.Create(&dto.UserOnCreate{...})
 func (svc *User) Create(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
 	var response *dto.HTTPResponse[*dto.UserAccount]
 
-	resp, err := svc.client.R().
+	req, err := svc.Request()
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize request: %w", err)
+	}
+
+	resp, err := req.
 		SetResult(&response).
 		SetBody(payload).
 		Post("/user")
@@ -60,18 +52,15 @@ func (svc *User) Create(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
 }
 
 // Update updates the user.
-//
-// Example:
-//
-//	// Create new instance of service using session.
-//	svc := user.New(sess)
-//
-//	// Update the user.
-//	account, err := svc.Update(&dto.UserOnUpdate{...})
 func (svc *User) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
 	var response *dto.HTTPResponse[*dto.UserAccount]
 
-	resp, err := svc.client.R().
+	req, err := svc.Request()
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize request: %w", err)
+	}
+
+	resp, err := req.
 		SetResult(&response).
 		SetBody(payload).
 		Patch("/user")
@@ -87,18 +76,15 @@ func (svc *User) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
 }
 
 // GetContactInfo gets user contact info.
-//
-// Example:
-//
-//	// Create new instance of service using session.
-//	svc := user.New(sess)
-//
-//	// Get contact info.
-//	contactInfo, err := svc.GetContactInfo(...)
 func (svc *User) GetContactInfo(id uuid.UUID) (*dto.ContactInfo, error) {
 	var response *dto.HTTPResponse[*dto.ContactInfo]
 
-	resp, err := svc.client.R().
+	req, err := svc.Request()
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize request: %w", err)
+	}
+
+	resp, err := req.
 		SetResult(&response).
 		SetPathParam("id", id.String()).
 		Get("/user/contact-info/{id}")
@@ -113,19 +99,16 @@ func (svc *User) GetContactInfo(id uuid.UUID) (*dto.ContactInfo, error) {
 	return response.Data, nil
 }
 
-// Me current authenticated user's data.
-//
-// Example:
-//
-//	// Create new instance of service using session.
-//	svc := user.New(sess)
-//
-//	// Get current user.
-//	contactInfo, err := svc.Me()
+// Me gets current authenticated user's data.
 func (svc *User) Me() (*dto.UserAccount, error) {
 	var response *dto.HTTPResponse[*dto.UserAccount]
 
-	resp, err := svc.client.R().
+	req, err := svc.Request()
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize request: %w", err)
+	}
+
+	resp, err := req.
 		SetResult(&response).
 		Get("/user/me")
 	if err != nil {

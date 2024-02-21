@@ -7,10 +7,10 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/domain/dto",
-        "//packages/sdk/dupman/session",
+        "//packages/sdk/dupman",
         "//packages/sdk/errors",
         "//packages/sdk/internal/client",
-        "@com_github_go_resty_resty_v2//:resty",
+        "//packages/sdk/service",
         "@com_github_google_uuid//:uuid",
     ],
 )

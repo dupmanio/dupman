@@ -1,12 +1,14 @@
 package client
 
 import (
-	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
+	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/go-resty/resty/v2"
 )
 
-func NewNotifyClient(sess *session.Session) *resty.Client {
-	// @todo: set url by ENV.
-	return getBaseClient(sess.Config, sess.Token.AccessToken).
-		SetBaseURL("http://gateway.dupman.localhost/notify")
+func NewNotifyClient(config *dupman.Config) *resty.Client {
+	if config.BaseURL == "" {
+		config.BaseURL = "http://gateway.dupman.localhost/notify"
+	}
+
+	return getBaseClient(config)
 }

@@ -17,14 +17,6 @@ type RawTokenProvider struct {
 }
 
 // NewRawTokenCredentials creates a new instance of the RawTokenProvider.
-//
-// Example:
-//
-//	// Create new instance of Credential Provider.
-//	cred, err := credentials.NewRawTokenCredentials("eyJhb...j4IIA")
-//
-//	// Create new session.
-//	sess, err := session.New(&dupman.Config{Credentials: cred})
 func NewRawTokenCredentials(rawToken string) (*RawTokenProvider, error) {
 	ctx := context.Background()
 	// @todo: update url!

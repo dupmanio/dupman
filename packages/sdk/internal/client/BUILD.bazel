@@ -12,7 +12,6 @@ go_library(
     visibility = ["//packages/sdk:__subpackages__"],
     deps = [
         "//packages/sdk/dupman",
-        "//packages/sdk/dupman/session",
         "//packages/sdk/errors",
         "@com_github_go_resty_resty_v2//:resty",
     ],

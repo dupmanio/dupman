@@ -17,14 +17,6 @@ type ClientCredentialsProvider struct {
 }
 
 // NewClientCredentials creates a new instance of the ClientCredentialsProvider.
-//
-// Example:
-//
-//	// Create new instance of Credential Provider, e.g ClientCredentials.
-//	cred, err := credentials.NewClientCredentials("worker", "some-secret-key", []string{"system"})
-//
-//	// Create new session.
-//	sess, err := session.New(&dupman.Config{Credentials: cred})
 func NewClientCredentials(
 	ctx context.Context,
 	clientID string,
