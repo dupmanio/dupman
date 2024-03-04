@@ -24,7 +24,7 @@ func New(config *config.Config, dupmanAPIService *service.DupmanAPIService) (*De
 		ctx,
 		config.Dupman.ClientID,
 		config.Dupman.ClientSecret,
-		[]string{"notify:notification:create"},
+		[]string{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create dupman credentials provider: %w", err)

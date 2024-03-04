@@ -38,7 +38,7 @@ func NewProcessor(
 		ctx,
 		config.Dupman.ClientID,
 		config.Dupman.ClientSecret,
-		[]string{"user:get_contact_info"},
+		[]string{},
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create dupman credentials provider: %w", err)

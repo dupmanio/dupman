@@ -136,7 +136,7 @@ func (ctrl *NotificationController) Realtime(ctx *gin.Context) {
 			ctrl.httpSvc.SSEEvent(ctx, "heartbeat", now)
 		case <-ctx.Request.Context().Done():
 			ctrl.httpSvc.SSEEvent(ctx, "close", "")
-			//ctx.Abort()
+			ctx.Abort()
 
 			return
 		}
