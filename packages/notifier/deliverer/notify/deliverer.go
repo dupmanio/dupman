@@ -4,20 +4,20 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/dupmanio/dupman/packages/notifier/config"
+	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
+	"github.com/dupmanio/dupman/packages/sdk/service/notify"
 )
 
 type Deliverer struct {
 	notificationSettingsMapping NotificationSettingsMapping
 	dupmanCredentials           credentials.Provider
-	dupmanAPIService            *service.DupmanAPIService
 }
 
-func New(config *config.Config, dupmanAPIService *service.DupmanAPIService) (*Deliverer, error) {
+func New(config *config.Config) (*Deliverer, error) {
 	ctx := context.Background()
 
 	cred, err := credentials.NewClientCredentials(
@@ -33,7 +33,6 @@ func New(config *config.Config, dupmanAPIService *service.DupmanAPIService) (*De
 	return &Deliverer{
 		notificationSettingsMapping: getNotificationSettingsMapping(),
 		dupmanCredentials:           cred,
-		dupmanAPIService:            dupmanAPIService,
 	}, nil
 }
 
@@ -47,11 +46,11 @@ func (del *Deliverer) Deliver(message dto.NotificationMessage, _ *dto.ContactInf
 		return domainErrors.ErrUnsupportedNotificationType
 	}
 
-	if err := del.dupmanAPIService.CreateSession(del.dupmanCredentials); err != nil {
-		return fmt.Errorf("unable to create dupman session: %w", err)
-	}
+	notifySvc := notify.New(dupman.NewConfig(
+		dupman.WithCredentials(del.dupmanCredentials),
+	))
 
-	_, err := del.dupmanAPIService.NotifySvc.Create(&dto.NotificationOnCreate{
+	_, err := notifySvc.Create(&dto.NotificationOnCreate{
 		UserID:  message.UserID,
 		Type:    notificationSettings.Type,
 		Title:   notificationSettings.Title,

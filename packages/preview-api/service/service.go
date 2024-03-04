@@ -9,7 +9,6 @@ func Provide() fx.Option {
 	return fx.Provide(
 		commonServices.NewHTTPService,
 		commonServices.NewAuthService,
-		commonServices.NewDupmanAPIService,
 		NewChromeService,
 	)
 }

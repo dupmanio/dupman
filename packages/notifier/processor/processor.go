@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	commonService "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/notifier/config"
 	"github.com/dupmanio/dupman/packages/notifier/deliverer"
 	"github.com/dupmanio/dupman/packages/notifier/service"
+	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
+	"github.com/dupmanio/dupman/packages/sdk/service/user"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -21,7 +22,6 @@ type Processor struct {
 	config            *config.Config
 	messengerSvc      *service.MessengerService
 	dupmanCredentials credentials.Provider
-	dupmanAPIService  *commonService.DupmanAPIService
 	deliverers        []deliverer.Deliverer
 }
 
@@ -30,7 +30,6 @@ func NewProcessor(
 	logger *zap.Logger,
 	config *config.Config,
 	messengerSvc *service.MessengerService,
-	dupmanAPIService *commonService.DupmanAPIService,
 ) (*Processor, error) {
 	ctx := context.Background()
 
@@ -49,7 +48,6 @@ func NewProcessor(
 		config:            config,
 		messengerSvc:      messengerSvc,
 		dupmanCredentials: cred,
-		dupmanAPIService:  dupmanAPIService,
 		deliverers:        deliverers,
 	}, nil
 }
@@ -113,16 +111,16 @@ func (proc *Processor) processDelivery(delivery amqp.Delivery) error {
 }
 
 func (proc *Processor) getUserContactInfo(userID uuid.UUID) (*dto.ContactInfo, error) {
-	if err := proc.dupmanAPIService.CreateSession(proc.dupmanCredentials); err != nil {
-		return nil, fmt.Errorf("unable to create dupman session: %w", err)
-	}
+	userSvc := user.New(dupman.NewConfig(
+		dupman.WithCredentials(proc.dupmanCredentials),
+	))
 
 	proc.logger.Info(
 		"Fetching user contact info",
 		zap.String("userID", userID.String()),
 	)
 
-	info, err := proc.dupmanAPIService.UserSvc.GetContactInfo(userID)
+	info, err := userSvc.GetContactInfo(userID)
 	if err != nil {
 		proc.logger.Error(
 			"Unable to fetch user contact info",

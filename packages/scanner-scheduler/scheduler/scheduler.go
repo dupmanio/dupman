@@ -34,15 +34,13 @@ func New(
 		return nil, fmt.Errorf("unable to initiate credentials provider: %w", err)
 	}
 
-	dupmanConf := dupman.NewConfig(
-		dupman.WithCredentials(cred),
-	)
-
 	return &Scheduler{
-		logger:        logger,
-		systemService: system.New(dupmanConf),
-		messengerSvc:  messengerSvc,
-		ot:            ot,
+		logger: logger,
+		systemService: system.New(dupman.NewConfig(
+			dupman.WithCredentials(cred),
+		)),
+		messengerSvc: messengerSvc,
+		ot:           ot,
 	}, nil
 }
 

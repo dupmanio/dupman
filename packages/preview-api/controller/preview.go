@@ -9,7 +9,9 @@ import (
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/preview-api/service"
+	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
+	"github.com/dupmanio/dupman/packages/sdk/service/website"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -17,20 +19,17 @@ import (
 type PreviewController struct {
 	chromeSvc *service.ChromeService
 	httpSvc   *commonServices.HTTPService
-	dupmanSvc *commonServices.DupmanAPIService
 	ot        *otel.OTel
 }
 
 func NewPreviewController(
 	chromeSvc *service.ChromeService,
 	httpSvc *commonServices.HTTPService,
-	dupmanSvc *commonServices.DupmanAPIService,
 	ot *otel.OTel,
 ) (*PreviewController, error) {
 	return &PreviewController{
 		chromeSvc: chromeSvc,
 		httpSvc:   httpSvc,
-		dupmanSvc: dupmanSvc,
 		ot:        ot,
 	}, nil
 }
@@ -64,21 +63,12 @@ func (ctrl *PreviewController) Preview(ctx *gin.Context) { //nolint: funlen
 		return
 	}
 
-	err = ctrl.dupmanSvc.CreateSession(cred)
-	if err != nil {
-		ctrl.httpSvc.HTTPErrorWithOTelLog(
-			ctx,
-			"Unable to create dupman session",
-			http.StatusUnauthorized,
-			err,
-			otel.WebsiteID(websiteID),
-		)
-
-		return
-	}
+	websiteSvc := website.New(dupman.NewConfig(
+		dupman.WithCredentials(cred),
+	))
 
 	// @todo: add tracing data to sdk request headers.
-	websiteInstance, err := ctrl.dupmanSvc.WebsiteSvc.Get(websiteID)
+	websiteInstance, err := websiteSvc.Get(websiteID)
 	if err != nil {
 		ctrl.httpSvc.HTTPErrorWithOTelLog(
 			ctx,

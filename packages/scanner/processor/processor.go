@@ -6,14 +6,15 @@ import (
 	"fmt"
 
 	"github.com/dupmanio/dupman/packages/common/otel"
-	commonService "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/common/vault"
 	"github.com/dupmanio/dupman/packages/domain/dto"
 	"github.com/dupmanio/dupman/packages/scanner/config"
 	"github.com/dupmanio/dupman/packages/scanner/fetcher"
 	"github.com/dupmanio/dupman/packages/scanner/model"
 	"github.com/dupmanio/dupman/packages/scanner/service"
+	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
+	"github.com/dupmanio/dupman/packages/sdk/service/system"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -28,7 +29,6 @@ type Processor struct {
 	messengerSvc      *service.MessengerService
 	fetcher           *fetcher.Fetcher
 	dupmanCredentials credentials.Provider
-	dupmanAPIService  *commonService.DupmanAPIService
 	ot                *otel.OTel
 	vault             *vault.Vault
 }
@@ -38,7 +38,6 @@ func NewProcessor(
 	config *config.Config,
 	messengerSvc *service.MessengerService,
 	fetcher *fetcher.Fetcher,
-	dupmanAPIService *commonService.DupmanAPIService,
 	ot *otel.OTel,
 	vault *vault.Vault,
 ) (*Processor, error) {
@@ -60,7 +59,6 @@ func NewProcessor(
 		messengerSvc:      messengerSvc,
 		fetcher:           fetcher,
 		dupmanCredentials: cred,
-		dupmanAPIService:  dupmanAPIService,
 		ot:                ot,
 		vault:             vault,
 	}, nil
@@ -205,11 +203,11 @@ func (proc *Processor) updateWebsiteStatus(websiteID uuid.UUID, status dto.Statu
 		zap.String("websiteID", websiteID.String()),
 	)
 
-	if err := proc.dupmanAPIService.CreateSession(proc.dupmanCredentials); err != nil {
-		return fmt.Errorf("unable to create dupman session: %w", err)
-	}
+	systemSvc := system.New(dupman.NewConfig(
+		dupman.WithCredentials(proc.dupmanCredentials),
+	))
 
-	_, err := proc.dupmanAPIService.SystemSvc.UpdateWebsiteStatus(websiteID, &status, &updates)
+	_, err := systemSvc.UpdateWebsiteStatus(websiteID, &status, &updates)
 	if err != nil {
 		return fmt.Errorf("unable to create Website Updates: %w", err)
 	}
