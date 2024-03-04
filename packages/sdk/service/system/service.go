@@ -20,7 +20,7 @@ type System struct {
 }
 
 // New creates a new instance of the System service.
-func New(conf *dupman.Config) *System {
+func New(conf dupman.Config) *System {
 	svc := new(System)
 
 	svc.SetConfig(conf)

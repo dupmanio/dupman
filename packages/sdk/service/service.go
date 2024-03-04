@@ -9,9 +9,9 @@ import (
 
 type Service interface {
 	// SetConfig sets the Service configuration.
-	SetConfig(conf *dupman.Config)
+	SetConfig(conf dupman.Config)
 	// GetConfig gets the Service configuration.
-	GetConfig() *dupman.Config
+	GetConfig() dupman.Config
 
 	// SetClient sets the HTTP Client for Service.
 	SetClient(client *resty.Client)
@@ -23,15 +23,15 @@ type Service interface {
 }
 
 type Base struct {
-	config *dupman.Config
+	config dupman.Config
 	client *resty.Client
 }
 
-func (svc *Base) SetConfig(conf *dupman.Config) {
+func (svc *Base) SetConfig(conf dupman.Config) {
 	svc.config = conf
 }
 
-func (svc *Base) GetConfig() *dupman.Config {
+func (svc *Base) GetConfig() dupman.Config {
 	return svc.config
 }
 

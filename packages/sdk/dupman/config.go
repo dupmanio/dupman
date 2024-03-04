@@ -20,14 +20,14 @@ type Config struct {
 }
 
 // NewConfig creates a dupman reusable dupman service configuration.
-func NewConfig(options ...Option) *Config {
-	config := &Config{
+func NewConfig(options ...Option) Config {
+	config := Config{
 		Timeout:    defaultTimeout,
 		RetryCount: defaultRetryCount,
 	}
 
 	for _, opt := range options {
-		opt(config)
+		opt(&config)
 	}
 
 	return config

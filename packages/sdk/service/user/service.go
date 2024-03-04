@@ -18,7 +18,7 @@ type User struct {
 }
 
 // New creates a new instance of the User service.
-func New(conf *dupman.Config) *User {
+func New(conf dupman.Config) *User {
 	svc := new(User)
 
 	svc.SetConfig(conf)

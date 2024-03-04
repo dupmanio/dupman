@@ -17,7 +17,7 @@ type Notify struct {
 }
 
 // New creates a new instance of the Notify service.
-func New(conf *dupman.Config) *Notify {
+func New(conf dupman.Config) *Notify {
 	svc := new(Notify)
 
 	svc.SetConfig(conf)

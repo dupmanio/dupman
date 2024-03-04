@@ -20,7 +20,7 @@ type Website struct {
 }
 
 // New creates a new instance of the Website client with a session.
-func New(conf *dupman.Config) *Website {
+func New(conf dupman.Config) *Website {
 	svc := new(Website)
 
 	svc.SetConfig(conf)

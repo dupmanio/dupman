@@ -5,7 +5,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func NewAPIClient(config *dupman.Config) *resty.Client {
+func NewAPIClient(config dupman.Config) *resty.Client {
 	if config.BaseURL == "" {
 		config.BaseURL = "http://gateway.dupman.localhost/api"
 	}

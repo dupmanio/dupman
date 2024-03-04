@@ -8,7 +8,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func getBaseClient(config *dupman.Config) *resty.Client {
+func getBaseClient(config dupman.Config) *resty.Client {
 	httpClient := resty.New()
 	httpClient.
 		SetBaseURL(config.BaseURL).
