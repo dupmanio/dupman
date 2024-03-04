@@ -129,6 +129,7 @@ func (mid *Middleware) createDupmanUserSvc(token string) (*user.User, error) {
 		return nil, fmt.Errorf("unable to create Dupman Credentials: %w", err)
 	}
 
+	// @todo: pass User API URL.
 	return user.New(dupman.NewConfig(
 		dupman.WithCredentials(cred),
 	)), nil

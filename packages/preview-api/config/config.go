@@ -15,8 +15,9 @@ type ChromeConfig struct {
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	Server    config.ServerConfig    `mapstructure:",squash"`
-	Telemetry config.TelemetryConfig `mapstructure:",squash"`
+	Server     config.ServerConfig     `mapstructure:",squash"`
+	Telemetry  config.TelemetryConfig  `mapstructure:",squash"`
+	ServiceURL config.ServiceURLConfig `mapstructure:",squash"`
 
 	Chrome ChromeConfig `mapstructure:",squash"`
 }

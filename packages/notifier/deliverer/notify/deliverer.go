@@ -15,6 +15,7 @@ import (
 type Deliverer struct {
 	notificationSettingsMapping NotificationSettingsMapping
 	dupmanCredentials           credentials.Provider
+	config                      *config.Config
 }
 
 func New(config *config.Config) (*Deliverer, error) {
@@ -33,6 +34,7 @@ func New(config *config.Config) (*Deliverer, error) {
 	return &Deliverer{
 		notificationSettingsMapping: getNotificationSettingsMapping(),
 		dupmanCredentials:           cred,
+		config:                      config,
 	}, nil
 }
 
@@ -47,6 +49,7 @@ func (del *Deliverer) Deliver(message dto.NotificationMessage, _ *dto.ContactInf
 	}
 
 	notifySvc := notify.New(dupman.NewConfig(
+		dupman.WithBaseURL(del.config.ServiceURL.Notify),
 		dupman.WithCredentials(del.dupmanCredentials),
 	))
 

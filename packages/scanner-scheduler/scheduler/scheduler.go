@@ -31,12 +31,13 @@ func New(
 ) (*Scheduler, error) {
 	cred, err := credentials.NewClientCredentials(ctx, conf.Dupman.ClientID, conf.Dupman.ClientSecret, []string{})
 	if err != nil {
-		return nil, fmt.Errorf("unable to initiate credentials provider: %w", err)
+		return nil, fmt.Errorf("unable to initialize credentials provider: %w", err)
 	}
 
 	return &Scheduler{
 		logger: logger,
 		systemService: system.New(dupman.NewConfig(
+			dupman.WithBaseURL(conf.ServiceURL.API),
 			dupman.WithCredentials(cred),
 		)),
 		messengerSvc: messengerSvc,

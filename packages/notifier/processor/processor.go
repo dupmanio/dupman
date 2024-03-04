@@ -112,6 +112,7 @@ func (proc *Processor) processDelivery(delivery amqp.Delivery) error {
 
 func (proc *Processor) getUserContactInfo(userID uuid.UUID) (*dto.ContactInfo, error) {
 	userSvc := user.New(dupman.NewConfig(
+		dupman.WithBaseURL(proc.config.ServiceURL.UserAPI),
 		dupman.WithCredentials(proc.dupmanCredentials),
 	))
 

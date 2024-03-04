@@ -12,6 +12,7 @@ go_library(
         "//packages/common/otel",
         "//packages/common/service",
         "//packages/domain/dto",
+        "//packages/preview-api/config",
         "//packages/preview-api/service",
         "//packages/sdk/dupman",
         "//packages/sdk/dupman/credentials",

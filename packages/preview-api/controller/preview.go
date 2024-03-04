@@ -8,6 +8,7 @@ import (
 	"github.com/dupmanio/dupman/packages/common/otel"
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/domain/dto"
+	"github.com/dupmanio/dupman/packages/preview-api/config"
 	"github.com/dupmanio/dupman/packages/preview-api/service"
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
@@ -19,17 +20,20 @@ import (
 type PreviewController struct {
 	chromeSvc *service.ChromeService
 	httpSvc   *commonServices.HTTPService
+	config    *config.Config
 	ot        *otel.OTel
 }
 
 func NewPreviewController(
 	chromeSvc *service.ChromeService,
 	httpSvc *commonServices.HTTPService,
+	config *config.Config,
 	ot *otel.OTel,
 ) (*PreviewController, error) {
 	return &PreviewController{
 		chromeSvc: chromeSvc,
 		httpSvc:   httpSvc,
+		config:    config,
 		ot:        ot,
 	}, nil
 }
@@ -64,6 +68,7 @@ func (ctrl *PreviewController) Preview(ctx *gin.Context) { //nolint: funlen
 	}
 
 	websiteSvc := website.New(dupman.NewConfig(
+		dupman.WithBaseURL(ctrl.config.ServiceURL.API),
 		dupman.WithCredentials(cred),
 	))
 

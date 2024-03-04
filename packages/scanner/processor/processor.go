@@ -204,6 +204,7 @@ func (proc *Processor) updateWebsiteStatus(websiteID uuid.UUID, status dto.Statu
 	)
 
 	systemSvc := system.New(dupman.NewConfig(
+		dupman.WithBaseURL(proc.config.ServiceURL.API),
 		dupman.WithCredentials(proc.dupmanCredentials),
 	))
 

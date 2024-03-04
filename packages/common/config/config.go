@@ -64,6 +64,14 @@ type VaultConfig struct {
 	SecretID      string `mapstructure:"VAULT_SECRET_ID"`
 }
 
+type ServiceURLConfig struct {
+	// @todo: update URLs.
+	API        string `mapstructure:"SERVICE_API_URL" default:"http://gateway.dupman.localhost/api"`
+	UserAPI    string `mapstructure:"SERVICE_USER_API_URL" default:"http://gateway.dupman.localhost/user-api"`
+	PreviewAPI string `mapstructure:"SERVICE_PREVIEW_API_URL" default:"http://gateway.dupman.localhost/preview-api"`
+	Notify     string `mapstructure:"SERVICE_NOTIFY_URL" default:"http://gateway.dupman.localhost/notify"`
+}
+
 type Config interface {
 	SetAppName(appName string)
 }
