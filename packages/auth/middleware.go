@@ -9,7 +9,6 @@ import (
 	domainErrors "github.com/dupmanio/dupman/packages/domain/errors"
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
-	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
 	sdkErrors "github.com/dupmanio/dupman/packages/sdk/errors"
 	"github.com/dupmanio/dupman/packages/sdk/service/user"
 	"github.com/gin-gonic/gin"
@@ -130,12 +129,9 @@ func (mid *Middleware) createDupmanUserSvc(token string) (*user.User, error) {
 		return nil, fmt.Errorf("unable to create Dupman Credentials: %w", err)
 	}
 
-	sess, err := session.New(&dupman.Config{Credentials: cred})
-	if err != nil {
-		return nil, fmt.Errorf("unable to creaet Dupman Session: %w", err)
-	}
-
-	return user.New(sess), nil
+	return user.New(dupman.NewConfig(
+		dupman.WithCredentials(cred),
+	)), nil
 }
 
 func (mid *Middleware) applyFilters(ctx *gin.Context) (int, error) {

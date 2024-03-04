@@ -11,7 +11,6 @@ import (
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/messenger"
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
-	"github.com/dupmanio/dupman/packages/sdk/dupman/session"
 	"github.com/dupmanio/dupman/packages/sdk/service/system"
 	"go.uber.org/zap"
 )
@@ -35,14 +34,13 @@ func New(
 		return nil, fmt.Errorf("unable to initiate credentials provider: %w", err)
 	}
 
-	sess, err := session.New(&dupman.Config{Credentials: cred})
-	if err != nil {
-		return nil, fmt.Errorf("unable to create dupman session: %w", err)
-	}
+	dupmanConf := dupman.NewConfig(
+		dupman.WithCredentials(cred),
+	)
 
 	return &Scheduler{
 		logger:        logger,
-		systemService: system.New(sess),
+		systemService: system.New(dupmanConf),
 		messengerSvc:  messengerSvc,
 		ot:            ot,
 	}, nil

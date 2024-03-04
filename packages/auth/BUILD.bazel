@@ -15,7 +15,6 @@ go_library(
         "//packages/domain/errors",
         "//packages/sdk/dupman",
         "//packages/sdk/dupman/credentials",
-        "//packages/sdk/dupman/session",
         "//packages/sdk/errors",
         "//packages/sdk/service/user",
         "@com_github_gin_gonic_gin//:gin",
