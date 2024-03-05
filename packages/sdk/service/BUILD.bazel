@@ -2,11 +2,15 @@ load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "service",
-    srcs = ["service.go"],
+    srcs = [
+        "service.go",
+        "service_options.go",
+    ],
     importpath = "github.com/dupmanio/dupman/packages/sdk/service",
     visibility = ["//visibility:public"],
     deps = [
         "//packages/sdk/dupman",
+        "@com_github_gin_gonic_gin//:gin",
         "@com_github_go_resty_resty_v2//:resty",
     ],
 )

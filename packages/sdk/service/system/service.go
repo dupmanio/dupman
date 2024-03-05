@@ -33,6 +33,7 @@ func New(conf dupman.Config) *System {
 // Returns paginated response. You can specify the page argument.
 func (svc *System) GetWebsites(
 	page int,
+	options ...service.Option,
 ) (*dto.WebsitesOnSystemResponse, *pagination.Pagination, error) {
 	var response *dto.HTTPResponse[*dto.WebsitesOnSystemResponse]
 
@@ -40,6 +41,8 @@ func (svc *System) GetWebsites(
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).
@@ -62,6 +65,7 @@ func (svc *System) UpdateWebsiteStatus(
 	websiteID uuid.UUID,
 	status *dto.Status,
 	updates *dto.Updates,
+	options ...service.Option,
 ) (*dto.WebsiteStatusUpdateResponse, error) {
 	var (
 		response *dto.HTTPResponse[*dto.WebsiteStatusUpdateResponse]
@@ -78,6 +82,8 @@ func (svc *System) UpdateWebsiteStatus(
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).

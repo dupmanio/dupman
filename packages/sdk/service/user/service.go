@@ -28,13 +28,15 @@ func New(conf dupman.Config) *User {
 }
 
 // Create creates new user.
-func (svc *User) Create(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
+func (svc *User) Create(payload *dto.UserOnCreate, options ...service.Option) (*dto.UserAccount, error) {
 	var response *dto.HTTPResponse[*dto.UserAccount]
 
 	req, err := svc.Request()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).
@@ -52,13 +54,15 @@ func (svc *User) Create(payload *dto.UserOnCreate) (*dto.UserAccount, error) {
 }
 
 // Update updates the user.
-func (svc *User) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
+func (svc *User) Update(payload *dto.UserOnUpdate, options ...service.Option) (*dto.UserAccount, error) {
 	var response *dto.HTTPResponse[*dto.UserAccount]
 
 	req, err := svc.Request()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).
@@ -76,13 +80,15 @@ func (svc *User) Update(payload *dto.UserOnUpdate) (*dto.UserAccount, error) {
 }
 
 // GetContactInfo gets user contact info.
-func (svc *User) GetContactInfo(id uuid.UUID) (*dto.ContactInfo, error) {
+func (svc *User) GetContactInfo(id uuid.UUID, options ...service.Option) (*dto.ContactInfo, error) {
 	var response *dto.HTTPResponse[*dto.ContactInfo]
 
 	req, err := svc.Request()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).
@@ -100,13 +106,15 @@ func (svc *User) GetContactInfo(id uuid.UUID) (*dto.ContactInfo, error) {
 }
 
 // Me gets current authenticated user's data.
-func (svc *User) Me() (*dto.UserAccount, error) {
+func (svc *User) Me(options ...service.Option) (*dto.UserAccount, error) {
 	var response *dto.HTTPResponse[*dto.UserAccount]
 
 	req, err := svc.Request()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).

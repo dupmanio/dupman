@@ -30,13 +30,18 @@ func New(conf dupman.Config) *Website {
 }
 
 // Create creates new website.
-func (svc *Website) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnCreateResponse, error) {
+func (svc *Website) Create(
+	payload *dto.WebsiteOnCreate,
+	options ...service.Option,
+) (*dto.WebsiteOnCreateResponse, error) {
 	var response *dto.HTTPResponse[*dto.WebsiteOnCreateResponse]
 
 	req, err := svc.Request()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).
@@ -55,13 +60,18 @@ func (svc *Website) Create(payload *dto.WebsiteOnCreate) (*dto.WebsiteOnCreateRe
 
 // GetAll gets user websites.
 // Returns paginated response. You can specify the page argument.
-func (svc *Website) GetAll(page int) (*dto.WebsitesOnResponse, *pagination.Pagination, error) {
+func (svc *Website) GetAll(
+	page int,
+	options ...service.Option,
+) (*dto.WebsitesOnResponse, *pagination.Pagination, error) {
 	var response *dto.HTTPResponse[*dto.WebsitesOnResponse]
 
 	req, err := svc.Request()
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).
@@ -80,13 +90,15 @@ func (svc *Website) GetAll(page int) (*dto.WebsitesOnResponse, *pagination.Pagin
 }
 
 // Get gets single website.
-func (svc *Website) Get(id uuid.UUID) (*dto.WebsiteOnResponse, error) {
+func (svc *Website) Get(id uuid.UUID, options ...service.Option) (*dto.WebsiteOnResponse, error) {
 	var response *dto.HTTPResponse[*dto.WebsiteOnResponse]
 
 	req, err := svc.Request()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).

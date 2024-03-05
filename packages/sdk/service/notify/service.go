@@ -27,13 +27,18 @@ func New(conf dupman.Config) *Notify {
 }
 
 // Create creates new notification.
-func (svc *Notify) Create(payload *dto.NotificationOnCreate) (*dto.NotificationOnResponse, error) {
+func (svc *Notify) Create(
+	payload *dto.NotificationOnCreate,
+	options ...service.Option,
+) (*dto.NotificationOnResponse, error) {
 	var response *dto.HTTPResponse[*dto.NotificationOnResponse]
 
 	req, err := svc.Request()
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize request: %w", err)
 	}
+
+	service.ApplyOptions(req, options)
 
 	resp, err := req.
 		SetResult(&response).
