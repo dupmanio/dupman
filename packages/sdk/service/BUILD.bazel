@@ -10,7 +10,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/sdk/dupman",
-        "@com_github_gin_gonic_gin//:gin",
         "@com_github_go_resty_resty_v2//:resty",
     ],
 )

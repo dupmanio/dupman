@@ -17,6 +17,7 @@ type Config struct {
 	Timeout     time.Duration
 	RetryCount  int
 	BaseURL     string
+	OTelEnabled bool
 }
 
 // NewConfig creates a dupman reusable dupman service configuration.

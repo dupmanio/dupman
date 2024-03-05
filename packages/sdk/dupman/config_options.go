@@ -20,9 +20,16 @@ func WithBaseURL(url string) Option {
 	}
 }
 
-// WithDebug defines Debug option for dupman Config.
-func WithDebug(debug bool) Option {
+// WithDebug sets Debug option for dupman Config.
+func WithDebug() Option {
 	return func(config *Config) {
-		config.Debug = debug
+		config.Debug = true
+	}
+}
+
+// WithOTelEnabled sets OTelEnabled option for dupman Config.
+func WithOTelEnabled() Option {
+	return func(config *Config) {
+		config.OTelEnabled = true
 	}
 }
