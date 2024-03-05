@@ -16,6 +16,7 @@ go_library(
         "//packages/sdk/dupman",
         "//packages/sdk/dupman/credentials",
         "//packages/sdk/errors",
+        "//packages/sdk/service",
         "//packages/sdk/service/user",
         "@com_github_gin_gonic_gin//:gin",
         "@com_github_golang_jwt_jwt_v5//:jwt",

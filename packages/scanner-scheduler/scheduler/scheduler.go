@@ -11,6 +11,7 @@ import (
 	"github.com/dupmanio/dupman/packages/scanner-scheduler/messenger"
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
+	sdkService "github.com/dupmanio/dupman/packages/sdk/service"
 	"github.com/dupmanio/dupman/packages/sdk/service/system"
 	"go.uber.org/zap"
 )
@@ -39,6 +40,7 @@ func New(
 		systemService: system.New(dupman.NewConfig(
 			dupman.WithBaseURL(conf.ServiceURL.API),
 			dupman.WithCredentials(cred),
+			dupman.WithOTelEnabled(),
 		)),
 		messengerSvc: messengerSvc,
 		ot:           ot,
@@ -54,7 +56,7 @@ func (scheduler *Scheduler) Process(ctx context.Context) error {
 	var wg sync.WaitGroup
 
 	for currentPage <= totalPages {
-		websites, pager, err := scheduler.systemService.GetWebsites(currentPage)
+		websites, pager, err := scheduler.systemService.GetWebsites(currentPage, sdkService.WithContext(ctx))
 		if err != nil {
 			scheduler.logger.Error("unable to get Websites", zap.Error(err))
 		}

@@ -30,6 +30,7 @@ go_library(
         "//packages/scanner-scheduler/messenger",
         "//packages/sdk/dupman",
         "//packages/sdk/dupman/credentials",
+        "//packages/sdk/service",
         "//packages/sdk/service/system",
         "@org_uber_go_zap//:zap",
     ],

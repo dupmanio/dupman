@@ -114,6 +114,7 @@ func (proc *Processor) getUserContactInfo(userID uuid.UUID) (*dto.ContactInfo, e
 	userSvc := user.New(dupman.NewConfig(
 		dupman.WithBaseURL(proc.config.ServiceURL.UserAPI),
 		dupman.WithCredentials(proc.dupmanCredentials),
+		dupman.WithOTelEnabled(),
 	))
 
 	proc.logger.Info(

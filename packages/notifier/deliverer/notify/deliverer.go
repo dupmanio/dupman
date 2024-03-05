@@ -51,6 +51,7 @@ func (del *Deliverer) Deliver(message dto.NotificationMessage, _ *dto.ContactInf
 	notifySvc := notify.New(dupman.NewConfig(
 		dupman.WithBaseURL(del.config.ServiceURL.Notify),
 		dupman.WithCredentials(del.dupmanCredentials),
+		dupman.WithOTelEnabled(),
 	))
 
 	_, err := notifySvc.Create(&dto.NotificationOnCreate{

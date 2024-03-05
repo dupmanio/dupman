@@ -12,6 +12,7 @@ import (
 	"github.com/dupmanio/dupman/packages/preview-api/service"
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
+	sdkService "github.com/dupmanio/dupman/packages/sdk/service"
 	"github.com/dupmanio/dupman/packages/sdk/service/website"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -70,10 +71,10 @@ func (ctrl *PreviewController) Preview(ctx *gin.Context) { //nolint: funlen
 	websiteSvc := website.New(dupman.NewConfig(
 		dupman.WithBaseURL(ctrl.config.ServiceURL.API),
 		dupman.WithCredentials(cred),
+		dupman.WithOTelEnabled(),
 	))
 
-	// @todo: add tracing data to sdk request headers.
-	websiteInstance, err := websiteSvc.Get(websiteID)
+	websiteInstance, err := websiteSvc.Get(websiteID, sdkService.WithContext(ctx))
 	if err != nil {
 		ctrl.httpSvc.HTTPErrorWithOTelLog(
 			ctx,

@@ -14,6 +14,7 @@ import (
 	"github.com/dupmanio/dupman/packages/scanner/service"
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
+	sdkService "github.com/dupmanio/dupman/packages/sdk/service"
 	"github.com/dupmanio/dupman/packages/sdk/service/system"
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
@@ -186,14 +187,19 @@ func (proc *Processor) processScanning(ctx context.Context, delivery amqp.Delive
 		status.State = dto.StatusStateNeedsUpdate
 	}
 
-	if err = proc.updateWebsiteStatus(message.WebsiteID, status, updates); err != nil {
+	if err = proc.updateWebsiteStatus(ctx, message.WebsiteID, status, updates); err != nil {
 		return fmt.Errorf("unable to create Website Updates: %w", err)
 	}
 
 	return nil
 }
 
-func (proc *Processor) updateWebsiteStatus(websiteID uuid.UUID, status dto.Status, updatesRaw []model.Update) error {
+func (proc *Processor) updateWebsiteStatus(
+	ctx context.Context,
+	websiteID uuid.UUID,
+	status dto.Status,
+	updatesRaw []model.Update,
+) error {
 	var updates dto.Updates
 
 	_ = copier.Copy(&updates, &updatesRaw)
@@ -206,9 +212,10 @@ func (proc *Processor) updateWebsiteStatus(websiteID uuid.UUID, status dto.Statu
 	systemSvc := system.New(dupman.NewConfig(
 		dupman.WithBaseURL(proc.config.ServiceURL.API),
 		dupman.WithCredentials(proc.dupmanCredentials),
+		dupman.WithOTelEnabled(),
 	))
 
-	_, err := systemSvc.UpdateWebsiteStatus(websiteID, &status, &updates)
+	_, err := systemSvc.UpdateWebsiteStatus(websiteID, &status, &updates, sdkService.WithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("unable to create Website Updates: %w", err)
 	}

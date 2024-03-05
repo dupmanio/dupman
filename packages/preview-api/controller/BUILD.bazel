@@ -16,6 +16,7 @@ go_library(
         "//packages/preview-api/service",
         "//packages/sdk/dupman",
         "//packages/sdk/dupman/credentials",
+        "//packages/sdk/service",
         "//packages/sdk/service/website",
         "@com_github_gin_gonic_gin//:gin",
         "@com_github_google_uuid//:uuid",

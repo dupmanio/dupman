@@ -10,6 +10,7 @@ import (
 	"github.com/dupmanio/dupman/packages/sdk/dupman"
 	"github.com/dupmanio/dupman/packages/sdk/dupman/credentials"
 	sdkErrors "github.com/dupmanio/dupman/packages/sdk/errors"
+	sdkService "github.com/dupmanio/dupman/packages/sdk/service"
 	"github.com/dupmanio/dupman/packages/sdk/service/user"
 	"github.com/gin-gonic/gin"
 )
@@ -68,7 +69,7 @@ func (mid *Middleware) getGinHandler() gin.HandlerFunc {
 		}
 
 		if mid.fetchUserData {
-			if userData, code, err = mid.getUserData(rawToken); err != nil {
+			if userData, code, err = mid.getUserData(ctx, rawToken); err != nil {
 				mid.httpErrorHandler(ctx, code, err.Error())
 
 				return
@@ -102,13 +103,13 @@ func (mid *Middleware) checkAuthHeader(ctx *gin.Context) (Claims, string, error)
 	return claims, authHeader, nil
 }
 
-func (mid *Middleware) getUserData(token string) (*dto.UserAccount, int, error) {
+func (mid *Middleware) getUserData(ctx *gin.Context, token string) (*dto.UserAccount, int, error) {
 	svc, err := mid.createDupmanUserSvc(token)
 	if err != nil {
 		return nil, http.StatusInternalServerError, domainErrors.ErrSomethingWentWrong
 	}
 
-	data, err := svc.Me()
+	data, err := svc.Me(sdkService.WithContext(ctx))
 	if err != nil {
 		var sdkErr *sdkErrors.HTTPError
 		if errors.As(err, &sdkErr) {
@@ -132,6 +133,7 @@ func (mid *Middleware) createDupmanUserSvc(token string) (*user.User, error) {
 	// @todo: pass User API URL.
 	return user.New(dupman.NewConfig(
 		dupman.WithCredentials(cred),
+		dupman.WithOTelEnabled(),
 	)), nil
 }
 
