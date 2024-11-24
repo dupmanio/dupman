@@ -9,7 +9,7 @@ interface IWebsiteRepository {
   create: (payload: WebsiteOnCreate) => Promise<HTTPResponse<Website>>;
   getSingle: (id: string) => Promise<HTTPResponse<Website>>;
   getAll: (page: number, limit: number) => Promise<HTTPResponse<Website[]>>;
-  update: (payload: WebsiteOnUpdate) => Promise<HTTPResponse<null>>;
+  update: (id: string, payload: WebsiteOnUpdate) => Promise<HTTPResponse<null>>;
   delete: (id: string) => Promise<HTTPResponse<Website>>;
 }
 
@@ -18,7 +18,7 @@ const servicePrefix = "/api";
 function UseRepositoryFactory(http: AxiosInstance): IWebsiteRepository {
   return {
     create: async (payload: WebsiteOnCreate) => {
-      const response = await http.post(`${servicePrefix}/website/`, payload, {
+      const response = await http.post(`${servicePrefix}/website`, payload, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -30,17 +30,21 @@ function UseRepositoryFactory(http: AxiosInstance): IWebsiteRepository {
       return response.data;
     },
     getAll: async (page, limit) => {
-      const response = await http.get(`${servicePrefix}/website/`, {
+      const response = await http.get(`${servicePrefix}/website`, {
         params: { page, limit },
       });
       return response.data;
     },
-    update: async (payload: WebsiteOnUpdate) => {
-      const response = await http.patch(`${servicePrefix}/website/`, payload, {
-        headers: {
-          "Content-Type": "application/json",
+    update: async (id: string, payload: WebsiteOnUpdate) => {
+      const response = await http.patch(
+        `${servicePrefix}/website/${id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
       return response.data;
     },
     delete: async (id) => {

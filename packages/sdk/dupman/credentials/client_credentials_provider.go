@@ -3,6 +3,7 @@ package credentials
 import (
 	"context"
 	"fmt"
+	"net/url"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
@@ -22,19 +23,26 @@ func NewClientCredentials(
 	clientID string,
 	clientSecret string,
 	scopes []string,
+	audience []string,
 ) (*ClientCredentialsProvider, error) {
 	// @todo: update url!
-	provider, err := oidc.NewProvider(ctx, "http://id.dupman.localhost/realms/dupman")
+	provider, err := oidc.NewProvider(ctx, "http://id.dupman.localhost")
 	if err != nil {
 		return nil, fmt.Errorf("unable to create OIDC provider: %w", err)
 	}
 
+	endpointParams := url.Values{}
+	if len(audience) > 0 {
+		endpointParams["audience"] = audience
+	}
+
 	return &ClientCredentialsProvider{
 		config: clientcredentials.Config{
-			TokenURL:     provider.Endpoint().TokenURL,
-			ClientID:     clientID,
-			ClientSecret: clientSecret,
-			Scopes:       scopes,
+			TokenURL:       provider.Endpoint().TokenURL,
+			ClientID:       clientID,
+			ClientSecret:   clientSecret,
+			Scopes:         scopes,
+			EndpointParams: endpointParams,
 		},
 	}, nil
 }

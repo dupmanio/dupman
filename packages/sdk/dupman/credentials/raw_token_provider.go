@@ -1,11 +1,8 @@
 package credentials
 
 import (
-	"context"
-	"fmt"
 	"strings"
 
-	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/dupmanio/dupman/packages/domain/errors"
 	"golang.org/x/oauth2"
 )
@@ -18,26 +15,27 @@ type RawTokenProvider struct {
 
 // NewRawTokenCredentials creates a new instance of the RawTokenProvider.
 func NewRawTokenCredentials(rawToken string) (*RawTokenProvider, error) {
-	ctx := context.Background()
+	// @todo: integrate with hydra.
+	// ctx := context.Background()
 	// @todo: update url!
-	provider, err := oidc.NewProvider(ctx, "http://id.dupman.localhost/realms/dupman")
-	if err != nil {
-		return nil, fmt.Errorf("unable to create OIDC provider: %w", err)
-	}
+	// provider, err := oidc.NewProvider(ctx, "http://id.dupman.localhost")
+	// if err != nil {
+	// 	return nil, fmt.Errorf("unable to create OIDC provider: %w", err)
+	// }
 
-	verifier := provider.Verifier(&oidc.Config{SkipClientIDCheck: true})
+	// verifier := provider.Verifier(&oidc.Config{SkipClientIDCheck: true})
 	token := strings.Fields(rawToken)
 
-	idToken, err := verifier.Verify(ctx, token[1])
-	if err != nil {
-		return nil, fmt.Errorf("unable to verify token: %w", err)
-	}
+	// idToken, err := verifier.Verify(ctx, token[1])
+	// if err != nil {
+	// 	return nil, fmt.Errorf("unable to verify token: %w", err)
+	// }
 
 	return &RawTokenProvider{
 		token: &oauth2.Token{
 			TokenType:   token[0],
 			AccessToken: token[1],
-			Expiry:      idToken.Expiry,
+			// Expiry:      idToken.Expiry,
 		},
 	}, nil
 }

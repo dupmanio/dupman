@@ -11,8 +11,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//packages/api/controller",
-        "//packages/auth",
-        "//packages/auth/filter",
         "//packages/common/helper/fx",
         "//packages/common/otel",
         "//packages/common/service",

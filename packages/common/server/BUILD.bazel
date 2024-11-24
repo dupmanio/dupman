@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/common/server",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/auth",
         "//packages/common/config",
         "//packages/common/helper/fx",
         "//packages/common/logger/wrapper",

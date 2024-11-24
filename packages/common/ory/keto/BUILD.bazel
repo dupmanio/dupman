@@ -1,0 +1,16 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "keto",
+    srcs = [
+        "config.go",
+        "keto.go",
+    ],
+    importpath = "github.com/dupmanio/dupman/packages/common/ory/keto",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/common/otel",
+        "@com_github_ory_client_go//:client-go",
+        "@org_uber_go_zap//:zap",
+    ],
+)

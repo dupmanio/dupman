@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/dupmanio/dupman/packages/common/ory/keto"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
@@ -22,6 +23,7 @@ type NotificationService struct {
 	redisClient      *redis.Client
 	authSvc          *commonServices.AuthService
 	ot               *otel.OTel
+	keto             *keto.Keto
 }
 
 func NewNotificationService(
@@ -29,6 +31,7 @@ func NewNotificationService(
 	config *config.Config,
 	authSvc *commonServices.AuthService,
 	ot *otel.OTel,
+	keto *keto.Keto,
 ) (*NotificationService, error) {
 	redisOptions, err := redis.ParseURL(fmt.Sprintf(
 		"redis://%s:%s@%s/%s",
@@ -51,6 +54,7 @@ func NewNotificationService(
 		redisClient:      redisClient,
 		authSvc:          authSvc,
 		ot:               ot,
+		keto:             keto,
 	}, nil
 }
 
@@ -62,6 +66,18 @@ func (svc *NotificationService) Create(ctx context.Context, entity *model.Notifi
 		svc.ot.ErrorEvent(ctx, "Unable to create Notification", err)
 
 		return nil, fmt.Errorf("unable to create Notification: %w", err)
+	}
+
+	if err := svc.keto.CreateRelationship(
+		ctx,
+		"Notification",
+		entity.ID.String(),
+		"recipients",
+		entity.UserID.String(),
+	); err != nil {
+		svc.ot.ErrorEvent(ctx, "Unable to Create Notification Recipient Relationship", err)
+
+		return nil, fmt.Errorf("unable to Create Notification Recipient Relationship: %w", err)
 	}
 
 	return entity, nil
@@ -131,6 +147,8 @@ func (svc *NotificationService) DeleteAllForCurrentUser(ctx context.Context) err
 
 		return fmt.Errorf("unable to delete Notifications: %w", err)
 	}
+
+	// @todo: list all the affected relationships and remove them.
 
 	return nil
 }

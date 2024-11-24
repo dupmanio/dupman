@@ -1,20 +1,45 @@
 import NextAuth from "next-auth";
 import { type NextAuthOptions } from "next-auth";
-import KeycloakProvider from "next-auth/providers/keycloak";
 import { JWT } from "next-auth/jwt";
 import axios from "axios";
 
 import { Route } from "@/config/routes";
 
+const dupmanScopes = [
+  "openid",
+  "offline",
+  "email",
+  "profile",
+
+  "api:website:create",
+  "api:website:read",
+  "api:website:update",
+  "api:website:delete",
+
+  "notify:notification:read",
+  "notify:notification:update",
+  "notify:notification:delete",
+
+  "preview_api:preview:get",
+];
+
+const dupmanAudiences = [
+  "https://dupman.io/api",
+  "https://dupman.io/notify",
+  "https://dupman.io/preview-api",
+];
+
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
     const { data: newToken, status } = await axios.post(
-      `${process.env.OIDC_ISSUER}/protocol/openid-connect/token`,
+      `${process.env.OIDC_ISSUER}/oauth2/token`,
       {
         grant_type: "refresh_token",
         client_id: process.env.OIDC_CLIENT_ID ?? "",
         client_secret: process.env.OIDC_CLIENT_SECRET ?? "",
         refresh_token: token.refreshToken,
+        scope: dupmanScopes.join(" "),
+        audience: dupmanAudiences.join(" "),
       },
       {
         headers: {
@@ -47,11 +72,38 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    KeycloakProvider({
+    {
+      id: "dupman",
+      name: "dupman",
+      wellKnown: `${process.env.OIDC_ISSUER}/.well-known/openid-configuration`,
+      type: "oauth",
+      authorization: {
+        params: {
+          scope: dupmanScopes.join(" "),
+          audience: dupmanAudiences.join(" "),
+        },
+      },
+      checks: ["pkce", "state"],
+      idToken: true,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: `${profile.given_name} ${profile.family_name}`,
+          email: profile.email,
+        };
+      },
+      style: {
+        logo: "",
+        logoDark: "",
+        bg: "#fff",
+        text: "#000",
+        bgDark: "#fff",
+        textDark: "#000",
+      },
       issuer: process.env.OIDC_ISSUER,
       clientId: process.env.OIDC_CLIENT_ID ?? "",
       clientSecret: process.env.OIDC_CLIENT_SECRET ?? "",
-    }),
+    },
   ],
   pages: {
     signIn: Route.LOGIN,
@@ -96,19 +148,17 @@ export const authOptions: NextAuthOptions = {
     },
     redirect: async ({ url, baseUrl }) => {
       // Redirect to Keycloak logout page.
-      if (url.startsWith(Route.LOGOUT)) {
-        const url = new URL(
-          `${process.env.OIDC_ISSUER}/protocol/openid-connect/logout`,
-        );
+      // if (url.startsWith(Route.LOGOUT)) {
+      //   // const url = new URL(
+      //   //   `${process.env.OIDC_ISSUER}/protocol/openid-connect/logout`,
+      //   // );
 
-        url.searchParams.append(
-          "post_logout_redirect_uri",
-          process.env.DUPMAN_LANDING ?? baseUrl,
-        );
-        url.searchParams.append("client_id", process.env.OIDC_CLIENT_ID ?? "");
-
-        return url.toString();
-      }
+      //   // url.searchParams.append(
+      //   //   "post_logout_redirect_uri",
+      //   //   process.env.DUPMAN_LANDING ?? baseUrl,
+      //   // );
+      //   // url.searchParams.append("client_id", process.env.OIDC_CLIENT_ID ?? "");
+      // }
 
       if (url.startsWith(baseUrl)) {
         return url;

@@ -127,13 +127,25 @@ func (ctrl *WebsiteController) Update(ctx *gin.Context) {
 
 	ctrl.httpSvc.EnrichSpanWithControllerAttributes(ctx)
 
-	if err := ctx.ShouldBind(&payload); err != nil {
+	websiteID, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctrl.httpSvc.HTTPErrorWithOTelLog(
+			ctx,
+			"Invalid Website ID",
+			http.StatusBadRequest,
+			fmt.Errorf("invalid Website ID: %w", err),
+		)
+
+		return
+	}
+
+	if err = ctx.ShouldBind(&payload); err != nil {
 		ctrl.httpSvc.HTTPValidationErrorWithOTelLog(ctx, err)
 
 		return
 	}
 
-	website, err := ctrl.websiteSvc.GetSingleForCurrentUser(ctx, payload.ID)
+	website, err := ctrl.websiteSvc.GetSingleForCurrentUser(ctx, websiteID)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		if errors.Is(err, domainErrors.ErrWebsiteNotFound) || errors.Is(err, domainErrors.ErrAccessIsForbidden) {
@@ -141,7 +153,7 @@ func (ctrl *WebsiteController) Update(ctx *gin.Context) {
 			err = domainErrors.ErrWebsiteNotFound
 		}
 
-		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to load Website", statusCode, err, otel.WebsiteID(payload.ID))
+		ctrl.httpSvc.HTTPErrorWithOTelLog(ctx, "Unable to load Website", statusCode, err, otel.WebsiteID(websiteID))
 
 		return
 	}
@@ -152,7 +164,7 @@ func (ctrl *WebsiteController) Update(ctx *gin.Context) {
 			"Unable to update Website",
 			http.StatusInternalServerError,
 			err,
-			otel.WebsiteID(payload.ID),
+			otel.WebsiteID(websiteID),
 		)
 
 		return

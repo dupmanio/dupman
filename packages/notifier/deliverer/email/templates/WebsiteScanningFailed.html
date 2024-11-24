@@ -1,4 +1,4 @@
-<p>Hello {{ .UserContactInfo.Username }},</p>
+<p>Hello {{ .UserContactInfo.FirstName }} {{ .UserContactInfo.LastName }},</p>
 <p></p>
 
 <p>We are not able to scan your drupal website <a target="_blank" href="{{ .NotificationMessage.Meta.WebsiteURL }}">{{ .NotificationMessage.Meta.WebsiteURL }}</a>. It might be down!</p>

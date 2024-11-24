@@ -30,7 +30,13 @@ func New(
 	messengerSvc *messenger.Service,
 	ot *otel.OTel,
 ) (*Scheduler, error) {
-	cred, err := credentials.NewClientCredentials(ctx, conf.Dupman.ClientID, conf.Dupman.ClientSecret, []string{})
+	cred, err := credentials.NewClientCredentials(
+		ctx,
+		conf.Dupman.ClientID,
+		conf.Dupman.ClientSecret,
+		conf.Dupman.Scopes,
+		conf.Dupman.Audience,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize credentials provider: %w", err)
 	}

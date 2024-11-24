@@ -9,6 +9,7 @@ go_library(
     importpath = "github.com/dupmanio/dupman/packages/notify/service",
     visibility = ["//visibility:public"],
     deps = [
+        "//packages/common/ory/keto",
         "//packages/common/otel",
         "//packages/common/pagination",
         "//packages/common/service",

@@ -46,7 +46,7 @@ function WebsiteFormDialog({ website, open, onClose }: WebsiteFormDialogProps) {
       const request =
         website === null
           ? WebsiteRepository.create({ url, token })
-          : WebsiteRepository.update({ id: website.id, url, token });
+          : WebsiteRepository.update(website.id, { url, token });
 
       request
         .then(() => {

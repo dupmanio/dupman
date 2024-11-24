@@ -26,6 +26,9 @@ type TemplateData struct {
 func New(config *config.Config) (*Deliverer, error) {
 	dialer := mail.NewDialer(config.Mailer.Host, config.Mailer.Port, config.Mailer.Username, config.Mailer.Password)
 
+	// @todo: embed templates. Maybe move it to config.
+	// @todo: configure TLS.
+
 	return &Deliverer{
 		config:                      config,
 		dialer:                      dialer,

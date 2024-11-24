@@ -1,8 +1,6 @@
 package route
 
 import (
-	"github.com/dupmanio/dupman/packages/auth"
-	"github.com/dupmanio/dupman/packages/auth/filter"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/preview-api/controller"
@@ -31,21 +29,8 @@ func NewPreviewRoute(
 func (route *PreviewRoute) Register(engine *gin.Engine) {
 	route.logger.Debug("Setting up route", zap.String(string(otel.RouteKey), "preview"))
 
-	authMiddleware := auth.NewMiddleware(
-		auth.WithHTTPErrorHandler(route.httpService.HTTPError),
-	)
-
 	group := engine.Group("/preview")
 	{
-		group.GET(
-			":id",
-			authMiddleware.Handler(
-				auth.WithFilters(
-					filter.NewRoleFilter("website-get-preview"),
-					filter.NewScopeFilter("preview_api", "preview_api:preview", "preview_api:preview:get"),
-				),
-			),
-			route.controller.Preview,
-		)
+		group.GET(":id", route.controller.Preview)
 	}
 }

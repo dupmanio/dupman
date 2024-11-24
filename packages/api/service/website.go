@@ -6,6 +6,7 @@ import (
 
 	"github.com/dupmanio/dupman/packages/api/model"
 	"github.com/dupmanio/dupman/packages/api/repository"
+	"github.com/dupmanio/dupman/packages/common/ory/keto"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/common/pagination"
 	commonService "github.com/dupmanio/dupman/packages/common/service"
@@ -23,6 +24,7 @@ type WebsiteService struct {
 	logger       *zap.Logger
 	ot           *otel.OTel
 	vault        *vault.Vault
+	keto         *keto.Keto
 }
 
 func NewWebsiteService(
@@ -32,6 +34,7 @@ func NewWebsiteService(
 	logger *zap.Logger,
 	ot *otel.OTel,
 	vault *vault.Vault,
+	keto *keto.Keto,
 ) *WebsiteService {
 	return &WebsiteService{
 		websiteRepo:  websiteRepo,
@@ -40,6 +43,7 @@ func NewWebsiteService(
 		logger:       logger,
 		ot:           ot,
 		vault:        vault,
+		keto:         keto,
 	}
 }
 
@@ -62,6 +66,18 @@ func (svc *WebsiteService) Create(ctx context.Context, entity *model.Website) (*
 		svc.ot.ErrorEvent(ctx, "Unable to create Website", err)
 
 		return nil, fmt.Errorf("unable to create Website: %w", err)
+	}
+
+	if err = svc.keto.CreateRelationship(
+		ctx,
+		"Website",
+		entity.ID.String(),
+		"owners",
+		entity.UserID.String(),
+	); err != nil {
+		svc.ot.ErrorEvent(ctx, "Unable to Create Website Owner Relationship", err)
+
+		return nil, fmt.Errorf("unable to Create Website Owner Relationship: %w", err)
 	}
 
 	if err = svc.messengerSvc.SendScanWebsiteMessage(ctx, entity); err != nil {
@@ -129,6 +145,18 @@ func (svc *WebsiteService) DeleteForCurrentUser(
 		svc.ot.ErrorEvent(ctx, "Unable to delete Websites", err)
 
 		return fmt.Errorf("unable to delete Websites: %w", err)
+	}
+
+	if err := svc.keto.DeleteRelationship(
+		ctx,
+		"Website",
+		websiteID.String(),
+		"owners",
+		currentUserID.String(),
+	); err != nil {
+		svc.ot.ErrorEvent(ctx, "Unable to Delete Website Owner Relationship", err)
+
+		return fmt.Errorf("unable to Delete Website Owner Relationship: %w", err)
 	}
 
 	return nil

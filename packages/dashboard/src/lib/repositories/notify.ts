@@ -25,7 +25,7 @@ function UseRepositoryFactory(http: AxiosInstance): INotifyRepository {
       return response.data;
     },
     getAll: async (page, limit) => {
-      const response = await http.get(`${servicePrefix}/notification/`, {
+      const response = await http.get(`${servicePrefix}/notification`, {
         params: { page, limit },
       });
       return response.data;
@@ -43,7 +43,7 @@ function UseRepositoryFactory(http: AxiosInstance): INotifyRepository {
       return response.data;
     },
     deleteAll: async () => {
-      const response = await http.delete(`${servicePrefix}/notification/`);
+      const response = await http.delete(`${servicePrefix}/notification`);
       return response.data;
     },
   };

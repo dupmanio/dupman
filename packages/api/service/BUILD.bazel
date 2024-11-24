@@ -14,6 +14,7 @@ go_library(
         "//packages/api/model",
         "//packages/api/repository",
         "//packages/common/broker",
+        "//packages/common/ory/keto",
         "//packages/common/otel",
         "//packages/common/pagination",
         "//packages/common/service",

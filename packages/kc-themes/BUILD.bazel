@@ -1,4 +1,0 @@
-java_library(
-    name = "themes",
-    resources = glob(["src/main/resources/**"]),
-)

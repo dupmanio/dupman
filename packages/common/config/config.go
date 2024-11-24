@@ -54,14 +54,20 @@ type WorkerConfig struct {
 }
 
 type DupmanConfig struct {
-	ClientID     string `mapstructure:"DUPMAN_CLIENT_ID"`
-	ClientSecret string `mapstructure:"DUPMAN_CLIENT_SECRET"`
+	ClientID     string   `mapstructure:"DUPMAN_CLIENT_ID"`
+	ClientSecret string   `mapstructure:"DUPMAN_CLIENT_SECRET"`
+	Scopes       []string `mapstructure:"DUPMAN_CLIENT_SCOPES"`
+	Audience     []string `mapstructure:"DUPMAN_CLIENT_AUDIENCE"`
 }
 
 type VaultConfig struct {
 	ServerAddress string `mapstructure:"VAULT_SERVER_ADDRESS"`
 	RoleID        string `mapstructure:"VAULT_ROLE_ID"`
 	SecretID      string `mapstructure:"VAULT_SECRET_ID"`
+}
+
+type KetoConfig struct {
+	WriteURL string `mapstructure:"KETO_WRITE_URL"`
 }
 
 type ServiceURLConfig struct {
@@ -81,8 +87,10 @@ func (conf *BaseConfig) SetAppName(appName string) {
 }
 
 func Load(appName string, conf Config) error {
+	// @todo: move to YAML format.
 	conf.SetAppName(appName)
 
+	viper.AddConfigPath(".")
 	viper.AddConfigPath(fmt.Sprintf("packages/%s", appName))
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")

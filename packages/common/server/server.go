@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/dupmanio/dupman/packages/auth"
 	"github.com/dupmanio/dupman/packages/common/config"
 	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	logWrapper "github.com/dupmanio/dupman/packages/common/logger/wrapper"
@@ -42,6 +43,7 @@ func New(
 	engine.Use(ot.GetOTelGinMiddleware())
 	engine.Use(ginLogWrapper.GetGinzapMiddleware())
 	engine.Use(ginLogWrapper.GetGinzapRecoveryMiddleware())
+	engine.Use(auth.SetUserID)
 
 	fxHelper.RegisterRoutes(engine, routes...)
 

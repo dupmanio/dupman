@@ -4,7 +4,6 @@ type WebsiteOnCreate = {
 };
 
 type WebsiteOnUpdate = {
-  id: string;
   url: string;
   token: string;
 };

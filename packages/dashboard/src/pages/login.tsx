@@ -6,11 +6,14 @@ function Login() {
   const router = useRouter();
   const { status } = useSession();
 
-  const authProvider = "keycloak";
+  const authProvider = "dupman";
 
   useEffect(() => {
     if (status === "authenticated" || status === "loading") {
-      void router.push("/");
+      const callbackUrl = Array.isArray(router.query.callbackUrl)
+        ? router.query.callbackUrl[0]
+        : router.query.callbackUrl;
+      void router.push(callbackUrl || "/");
     }
 
     if (status === "unauthenticated") {

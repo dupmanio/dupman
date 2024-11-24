@@ -1,7 +1,4 @@
 load("@rules_go//go:def.bzl", "go_binary", "go_library")
-load("@rules_oci//oci:defs.bzl", "oci_image", "oci_tarball")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
-load("//:variables.bzl", "BASE_DOCKER_REGISTRY")
 
 go_library(
     name = "scanner_lib",
@@ -29,24 +26,4 @@ go_binary(
         "github.com/dupmanio/dupman/packages/scanner/version.GitCommit": "{STABLE_GIT_COMMIT}",
         "github.com/dupmanio/dupman/packages/scanner/version.Version": "{STABLE_VERSION}",
     },
-)
-
-pkg_tar(
-    name = "scanner_layer",
-    srcs = [":scanner"],
-)
-
-oci_image(
-    name = "image",
-    base = "@distroless_base",
-    entrypoint = ["/scanner"],
-    tars = [":scanner_layer"],
-)
-
-oci_tarball(
-    name = "tarball",
-    image = ":image",
-    repo_tags = [
-        "%s/%s:latest" % (BASE_DOCKER_REGISTRY, "scanner"),
-    ],
 )

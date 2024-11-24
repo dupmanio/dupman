@@ -25,7 +25,8 @@ func New(config *config.Config) (*Deliverer, error) {
 		ctx,
 		config.Dupman.ClientID,
 		config.Dupman.ClientSecret,
-		[]string{},
+		config.Dupman.Scopes,
+		config.Dupman.Audience,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create dupman credentials provider: %w", err)

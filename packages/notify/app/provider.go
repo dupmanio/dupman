@@ -8,6 +8,7 @@ import (
 	"github.com/dupmanio/dupman/packages/common/database"
 	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/logger"
+	"github.com/dupmanio/dupman/packages/common/ory/keto"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	commonServer "github.com/dupmanio/dupman/packages/common/server"
 	"github.com/dupmanio/dupman/packages/notify/config"
@@ -57,6 +58,19 @@ func databaseProvider(conf *config.Config, logger *zap.Logger, ot *otel.OTel) (*
 	return db, nil
 }
 
+func ketoProvider(conf *config.Config, logger *zap.Logger, ot *otel.OTel) (*keto.Keto, error) {
+	ketoConf := keto.Config{
+		WriteURL: conf.Keto.WriteURL,
+	}
+
+	ketoInst, err := keto.New(ketoConf, logger, ot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize Keto: %w", err)
+	}
+
+	return ketoInst, nil
+}
+
 func serverProvider(
 	routes []fxHelper.IRoute,
 	logger *zap.Logger,
@@ -78,6 +92,7 @@ func Provide() fx.Option {
 			loggerProvider,
 			oTelProvider,
 			databaseProvider,
+			ketoProvider,
 			fxHelper.AsRouteReceiver(serverProvider),
 		),
 		controller.Provide(),

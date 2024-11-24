@@ -34,6 +34,11 @@ const (
 	RenewedAtKey = attribute.Key(AttributeKeyPrefix + "renewed_at")
 
 	VaultPathKey = attribute.Key(AttributeKeyPrefix + "vault.path")
+
+	OryKetoNamespaceKey = attribute.Key(AttributeKeyPrefix + "ory.keto.namespace")
+	OryKetoObjectKey    = attribute.Key(AttributeKeyPrefix + "ory.keto.object")
+	OryKetoRelationKey  = attribute.Key(AttributeKeyPrefix + "ory.keto.relation")
+	OryKetoSubjectIDKey = attribute.Key(AttributeKeyPrefix + "ory.keto.subject_id")
 )
 
 func TraceID(val string) attribute.KeyValue {
@@ -70,4 +75,20 @@ func UserID(val uuid.UUID) attribute.KeyValue {
 
 func VaultPath(val string) attribute.KeyValue {
 	return VaultPathKey.String(val)
+}
+
+func OryKetoNamespace(val string) attribute.KeyValue {
+	return OryKetoNamespaceKey.String(val)
+}
+
+func OryKetoObject(val string) attribute.KeyValue {
+	return OryKetoObjectKey.String(val)
+}
+
+func OryKetoRelation(val string) attribute.KeyValue {
+	return OryKetoRelationKey.String(val)
+}
+
+func OryKetoSubjectID(val string) attribute.KeyValue {
+	return OryKetoSubjectIDKey.String(val)
 }

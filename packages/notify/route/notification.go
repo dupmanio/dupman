@@ -1,8 +1,6 @@
 package route
 
 import (
-	"github.com/dupmanio/dupman/packages/auth"
-	"github.com/dupmanio/dupman/packages/auth/filter"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	commonServices "github.com/dupmanio/dupman/packages/common/service"
 	"github.com/dupmanio/dupman/packages/notify/controller"
@@ -28,84 +26,17 @@ func NewNotificationRoute(
 	}
 }
 
-func (route *NotificationRoute) Register(engine *gin.Engine) { //nolint: funlen
+func (route *NotificationRoute) Register(engine *gin.Engine) {
 	route.logger.Debug("Setting up route", zap.String(string(otel.RouteKey), "notification"))
-
-	authMiddleware := auth.NewMiddleware(
-		auth.WithHTTPErrorHandler(route.httpService.HTTPError),
-	)
 
 	group := engine.Group("/notification")
 	{
-		group.POST(
-			"",
-			authMiddleware.Handler(
-				auth.WithFilters(
-					filter.NewRoleFilter("notification-create"),
-					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:create"),
-				),
-			),
-			route.controller.Create,
-		)
-		group.GET(
-			"",
-			authMiddleware.Handler(
-				auth.WithFilters(
-					filter.NewRoleFilter("notification-read"),
-					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:read"),
-				),
-			),
-			route.controller.GetAll,
-		)
-		group.GET(
-			"/count",
-			authMiddleware.Handler(
-				auth.WithFilters(
-					filter.NewRoleFilter("notification-read"),
-					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:read"),
-				),
-			),
-			route.controller.GetCount,
-		)
-		group.GET(
-			"/realtime",
-			authMiddleware.Handler(
-				auth.WithFilters(
-					filter.NewRoleFilter("notification-read"),
-					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:read"),
-				),
-			),
-			route.controller.Realtime,
-		)
-		group.POST(
-			"/:id/mark-as-read",
-			authMiddleware.Handler(
-				auth.WithFilters(
-					filter.NewRoleFilter("notification-update"),
-					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:update"),
-				),
-			),
-			route.controller.MarkAsRead,
-		)
-		group.POST(
-			"/mark-all-as-read",
-			authMiddleware.Handler(
-				auth.WithFilters(
-					filter.NewRoleFilter("notification-update"),
-					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:update"),
-				),
-			),
-			route.controller.MarkAllAsRead,
-		)
-		group.DELETE(
-			"",
-			authMiddleware.Handler(
-				auth.WithFilters(
-					filter.NewRoleFilter("notification-delete"),
-					filter.NewScopeFilter("notify", "notify:notification", "notify:notification:delete"),
-				),
-			),
-			route.controller.DeleteAll,
-		)
+		group.POST("", route.controller.Create)
+		group.GET("", route.controller.GetAll)
+		group.GET("/count", route.controller.GetCount)
+		group.GET("/realtime", route.controller.Realtime)
+		group.POST("/:id/mark-as-read", route.controller.MarkAsRead)
+		group.POST("/mark-all-as-read", route.controller.MarkAllAsRead)
+		group.DELETE("", route.controller.DeleteAll)
 	}
 }

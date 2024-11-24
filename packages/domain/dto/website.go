@@ -36,7 +36,6 @@ type WebsiteOnSystemResponse struct {
 type WebsitesOnSystemResponse []WebsiteOnSystemResponse
 
 type WebsiteOnUpdate struct {
-	ID    uuid.UUID `json:"id" binding:"required"`
-	URL   string    `json:"url" binding:"required,url"`
-	Token string    `json:"token,omitempty"`
+	URL   string `json:"url" binding:"required,url"`
+	Token string `json:"token,omitempty"`
 }

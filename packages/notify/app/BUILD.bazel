@@ -12,6 +12,7 @@ go_library(
         "//packages/common/database",
         "//packages/common/helper/fx",
         "//packages/common/logger",
+        "//packages/common/ory/keto",
         "//packages/common/otel",
         "//packages/common/server",
         "//packages/notify/config",

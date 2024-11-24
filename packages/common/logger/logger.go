@@ -24,6 +24,7 @@ func New(env, appName, appVersion, logPath string) (*zap.Logger, error) {
 }
 
 func getCores(logPath string) ([]zapcore.Core, error) {
+	// @todo: remove file logger.
 	fileCore, err := getFileCore(logPath)
 	if err != nil {
 		return nil, err

@@ -8,7 +8,6 @@ import (
 
 type UserOnCreate struct {
 	ID        uuid.UUID `json:"id" binding:"required"`
-	Username  string    `json:"username" binding:"required"`
 	Email     string    `json:"email" binding:"required,email"`
 	FirstName string    `json:"firstName" binding:"required"`
 	LastName  string    `json:"lastName" binding:"required"`
@@ -18,7 +17,6 @@ type UserOnUpdate UserOnCreate
 
 type UserAccount struct {
 	ID        uuid.UUID `json:"id" binding:"required"`
-	Username  string    `json:"username" binding:"required"`
 	Email     string    `json:"email" binding:"required"`
 	FirstName string    `json:"firstName" binding:"required"`
 	LastName  string    `json:"lastName" binding:"required"`
@@ -27,7 +25,6 @@ type UserAccount struct {
 }
 
 type ContactInfo struct {
-	Username  string `json:"username" binding:"required"`
 	Email     string `json:"email" binding:"required"`
 	FirstName string `json:"firstName" binding:"required"`
 	LastName  string `json:"lastName" binding:"required"`

@@ -13,6 +13,7 @@ type Config struct {
 	Database  config.DatabaseConfig  `mapstructure:",squash"`
 	Redis     config.RedisConfig     `mapstructure:",squash"`
 	Telemetry config.TelemetryConfig `mapstructure:",squash"`
+	Keto      config.KetoConfig      `mapstructure:",squash"`
 }
 
 func New() (*Config, error) {
