@@ -7,9 +7,10 @@ import (
 )
 
 type ChromeConfig struct {
-	ResolutionX int `mapstructure:"CHROME_RESOLUTION_X" default:"1920"`
-	ResolutionY int `mapstructure:"CHROME_RESOLUTION_Y" default:"1080"`
-	Timeout     int `mapstructure:"CHROME_TIMEOUT" default:"10"`
+	RemoteURL   string `mapstructure:"CHROME_REMOTE_URL" default:"ws://127.0.0.1:3000"`
+	ResolutionX int    `mapstructure:"CHROME_RESOLUTION_X" default:"1920"`
+	ResolutionY int    `mapstructure:"CHROME_RESOLUTION_Y" default:"1080"`
+	Timeout     int    `mapstructure:"CHROME_TIMEOUT" default:"10"`
 }
 
 type Config struct {

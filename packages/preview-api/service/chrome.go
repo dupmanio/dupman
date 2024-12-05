@@ -15,7 +15,8 @@ import (
 
 type ChromeService struct {
 	timeout int
-	options []chromedp.ExecAllocatorOption
+	options []chromedp.RemoteAllocatorOption
+	config  *config.Config
 	logger  *zap.Logger
 	ot      *otel.OTel
 }
@@ -23,15 +24,11 @@ type ChromeService struct {
 func NewChromeService(conf *config.Config, logger *zap.Logger, ot *otel.OTel) *ChromeService {
 	svc := &ChromeService{
 		timeout: conf.Chrome.Timeout,
+		config:  conf,
 		logger:  logger,
 		ot:      ot,
-		options: []chromedp.ExecAllocatorOption{
-			chromedp.WindowSize(conf.Chrome.ResolutionX, conf.Chrome.ResolutionY),
-			chromedp.DisableGPU,
-		},
+		options: []chromedp.RemoteAllocatorOption{},
 	}
-
-	svc.options = append(svc.options, chromedp.DefaultExecAllocatorOptions[:]...)
 
 	return svc
 }
@@ -42,7 +39,7 @@ func (svc *ChromeService) Screenshot(ctx context.Context, url string, id uuid.UU
 	ctx, span := svc.ot.GetSpanForFunctionCall(ctx, 1)
 	defer span.End()
 
-	allocatorCtx, allocatorCancel := chromedp.NewExecAllocator(ctx, svc.options...)
+	allocatorCtx, allocatorCancel := chromedp.NewRemoteAllocator(ctx, svc.config.Chrome.RemoteURL, svc.options...)
 	defer allocatorCancel()
 
 	browserCtx, cancelBrowserCtx := chromedp.NewContext(allocatorCtx)
@@ -83,6 +80,7 @@ func (svc *ChromeService) Screenshot(ctx context.Context, url string, id uuid.UU
 
 func (svc *ChromeService) makeScreenshot(url string, res *[]byte) chromedp.Tasks {
 	return chromedp.Tasks{
+		chromedp.EmulateViewport(int64(svc.config.Chrome.ResolutionX), int64(svc.config.Chrome.ResolutionY)),
 		chromedp.Navigate(url),
 		chromedp.CaptureScreenshot(res),
 	}
