@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"os"
 
 	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
@@ -9,58 +8,36 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func New(env, appName, appVersion, logPath string) (*zap.Logger, error) {
-	cores, err := getCores(logPath)
-	if err != nil {
-		return nil, err
-	}
+func New(env, appName, appVersion string) (*zap.Logger, error) {
+	core := zapcore.NewCore(
+		getEncoder(env),
+		zapcore.Lock(os.Stdout),
+		getLevelEnablerFunc(env),
+	)
 
 	return zap.New(
-		zapcore.NewTee(cores...),
+		core,
 		zap.Fields(zap.String(string(semconv.ServiceNameKey), appName)),
 		zap.Fields(zap.String(string(semconv.ServiceVersionKey), appVersion)),
 		zap.Fields(zap.String(string(semconv.DeploymentEnvironmentKey), env)),
 	), nil
 }
 
-func getCores(logPath string) ([]zapcore.Core, error) {
-	// @todo: remove file logger.
-	fileCore, err := getFileCore(logPath)
-	if err != nil {
-		return nil, err
+func getEncoder(env string) zapcore.Encoder {
+	if env == "prod" {
+		return zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig())
 	}
 
-	consoleCore := getConsoleCore()
-
-	return []zapcore.Core{
-		consoleCore,
-		fileCore,
-	}, nil
+	return zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 }
 
-func getFileCore(logPath string) (zapcore.Core, error) {
-	file, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o644)
-	if err != nil {
-		return nil, fmt.Errorf("unable to open log file: %w", err)
+func getLevelEnablerFunc(env string) zap.LevelEnablerFunc {
+	minLevel := zapcore.DebugLevel
+	if env == "prod" {
+		minLevel = zapcore.InfoLevel
 	}
 
-	encoderConfig := zap.NewProductionEncoderConfig()
-	encoder := zapcore.NewJSONEncoder(encoderConfig)
-	writeSyncer := zapcore.Lock(file)
-	lvlEnabler := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= zapcore.InfoLevel
-	})
-
-	return zapcore.NewCore(encoder, writeSyncer, lvlEnabler), nil
-}
-
-func getConsoleCore() zapcore.Core {
-	encoderConfig := zap.NewDevelopmentEncoderConfig()
-	encoder := zapcore.NewConsoleEncoder(encoderConfig)
-	writeSyncer := zapcore.Lock(os.Stdout)
-	lvlEnabler := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= zapcore.DebugLevel
-	})
-
-	return zapcore.NewCore(encoder, writeSyncer, lvlEnabler)
+	return func(lvl zapcore.Level) bool {
+		return lvl >= minLevel
+	}
 }

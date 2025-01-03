@@ -16,7 +16,7 @@ import (
 )
 
 func loggerProvider(conf *config.Config) (*zap.Logger, error) {
-	loggerInst, err := logger.New(conf.Env, conf.AppName, version.Version, conf.LogPath)
+	loggerInst, err := logger.New(conf.Env, conf.AppName, version.Version)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create logger: %w", err)
 	}

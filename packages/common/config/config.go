@@ -10,7 +10,6 @@ import (
 type BaseConfig struct {
 	Env     string `mapstructure:"ENV" default:"prod"`
 	AppName string `mapstructure:"APP_NAME"`
-	LogPath string `mapstructure:"LOG_PATH" default:"/var/log/app.log"`
 }
 
 type TelemetryConfig struct {

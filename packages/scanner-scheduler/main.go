@@ -18,7 +18,7 @@ func process(ctx context.Context) error {
 		return fmt.Errorf("unable to create config: %w", err)
 	}
 
-	loggerInst, err := logger.New(conf.Env, conf.AppName, version.Version, conf.LogPath)
+	loggerInst, err := logger.New(conf.Env, conf.AppName, version.Version)
 	if err != nil {
 		return fmt.Errorf("unable to create logger: %w", err)
 	}
