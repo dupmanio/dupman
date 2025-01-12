@@ -10,7 +10,7 @@ import (
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/common/vault"
 	"github.com/dupmanio/dupman/packages/user-api/config"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -30,7 +30,7 @@ func Run(params Params, lc fx.Lifecycle) error {
 	vaultRenewerCtx, vaultRenewerCtxCancel := context.WithCancel(context.Background())
 
 	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
+		OnStart: func(_ context.Context) error {
 			params.Logger.Info("Starting Migrator")
 			fxHelper.Migrate(params.Logger, params.Migrators...)
 

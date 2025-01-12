@@ -8,21 +8,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
+	"go.opentelemetry.io/contrib/bridges/otelzap"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/log"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
+	sdkLog "go.opentelemetry.io/otel/sdk/log"
 	sdkMetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdkTrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/gorm"
@@ -36,7 +38,6 @@ type OTel struct {
 	serviceName    string
 	serviceVersion string
 	collectorURL   string
-	logger         *zap.Logger
 
 	grpcConnection *grpc.ClientConn
 
@@ -45,9 +46,11 @@ type OTel struct {
 
 	tracerProvider  *sdkTrace.TracerProvider
 	metricsProvider *sdkMetric.MeterProvider
+	loggerProvider  *sdkLog.LoggerProvider
 
 	Tracer trace.Tracer
 	Meter  metric.Meter
+	Logger log.Logger
 }
 
 func NewOTel(
@@ -56,14 +59,12 @@ func NewOTel(
 	serviceName string,
 	serviceVersion string,
 	collectorURL string,
-	logger *zap.Logger,
 ) (*OTel, error) {
 	ot := &OTel{
 		env:            env,
 		serviceName:    serviceName,
 		serviceVersion: serviceVersion,
 		collectorURL:   collectorURL,
-		logger:         logger,
 	}
 
 	if err := ot.setupGRPCConnection(ctx); err != nil {
@@ -84,8 +85,13 @@ func NewOTel(
 		return nil, err
 	}
 
+	if err := ot.setupLogProvider(ctx); err != nil {
+		return nil, err
+	}
+
 	ot.Tracer = ot.tracerProvider.Tracer(fmt.Sprintf("dupman.io/service/%s", serviceName))
 	ot.Meter = ot.metricsProvider.Meter(fmt.Sprintf("dupman.io/service/%s", serviceName))
+	ot.Logger = ot.loggerProvider.Logger(fmt.Sprintf("dupman.io/service/%s", serviceName))
 
 	return ot, nil
 }
@@ -175,6 +181,23 @@ func (ot *OTel) setupMeterProvider(ctx context.Context) error {
 	return nil
 }
 
+func (ot *OTel) setupLogProvider(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, connectionTimeout)
+	defer cancel()
+
+	logExporter, err := otlploggrpc.New(ctx, otlploggrpc.WithGRPCConn(ot.grpcConnection))
+	if err != nil {
+		return fmt.Errorf("failed to create log exporter: %w", err)
+	}
+
+	ot.loggerProvider = sdkLog.NewLoggerProvider(
+		sdkLog.WithResource(ot.resource),
+		sdkLog.WithProcessor(sdkLog.NewBatchProcessor(logExporter)),
+	)
+
+	return nil
+}
+
 func (ot *OTel) GetOTelGinMiddleware() gin.HandlerFunc {
 	return otelgin.Middleware(
 		ot.serviceName,
@@ -190,6 +213,13 @@ func (ot *OTel) GetGormPlugin(dbName string) gorm.Plugin {
 	)
 }
 
+func (ot *OTel) GetZapCore() *otelzap.Core {
+	return otelzap.NewCore(
+		fmt.Sprintf("dupman.io/service/%s", ot.serviceName),
+		otelzap.WithLoggerProvider(ot.loggerProvider),
+	)
+}
+
 func (ot *OTel) InstrumentRedis(redisClient redis.UniversalClient) error {
 	if err := redisotel.InstrumentTracing(redisClient, redisotel.WithTracerProvider(ot.tracerProvider)); err != nil {
 		return fmt.Errorf("unable to instrument redis tracing: %w", err)
@@ -202,10 +232,10 @@ func (ot *OTel) InstrumentRedis(redisClient redis.UniversalClient) error {
 	return nil
 }
 
-// LogInfoEvent combines InfoEvent and InfoLog actions.
+// @todo: refactor/re-plan logging.
+
 func (ot *OTel) LogInfoEvent(ctx context.Context, message string, attributes ...attribute.KeyValue) {
 	ot.InfoEvent(ctx, message, attributes...)
-	ot.InfoLog(ctx, message, attributes...)
 }
 
 func (ot *OTel) InfoEvent(ctx context.Context, message string, attributes ...attribute.KeyValue) {
@@ -214,31 +244,8 @@ func (ot *OTel) InfoEvent(ctx context.Context, message string, attributes ...att
 	}
 }
 
-func (ot *OTel) InfoLog(ctx context.Context, message string, attributes ...attribute.KeyValue) {
-	ot.logInfoOrError(ctx, message, nil, attributes...)
-}
-
-func (ot *OTel) logInfoOrError(ctx context.Context, message string, err error, attributes ...attribute.KeyValue) {
-	fields := ot.convertAttributesToZapFields(
-		append(
-			attributes,
-			ot.getCommonLogAttributes(ctx)...,
-		),
-	)
-
-	if err == nil {
-		ot.logger.Info(message, fields...)
-
-		return
-	}
-
-	ot.logger.Error(message, append(fields, zap.Error(err))...)
-}
-
-// LogErrorEvent combines ErrorEvent and ErrorLog actions.
 func (ot *OTel) LogErrorEvent(ctx context.Context, message string, err error, attributes ...attribute.KeyValue) {
 	ot.ErrorEvent(ctx, message, err, attributes...)
-	ot.ErrorLog(ctx, message, err, attributes...)
 }
 
 func (ot *OTel) ErrorEvent(ctx context.Context, message string, err error, attributes ...attribute.KeyValue) {
@@ -246,28 +253,6 @@ func (ot *OTel) ErrorEvent(ctx context.Context, message string, err error, attri
 		span.RecordError(err, trace.WithAttributes(attributes...))
 		span.SetStatus(codes.Error, message)
 	}
-}
-
-func (ot *OTel) ErrorLog(ctx context.Context, message string, err error, attributes ...attribute.KeyValue) {
-	ot.logInfoOrError(ctx, message, err, attributes...)
-}
-
-func (ot *OTel) getCommonLogAttributes(ctx context.Context) []attribute.KeyValue {
-	spanContext := trace.SpanFromContext(ctx).SpanContext()
-
-	return []attribute.KeyValue{
-		TraceID(spanContext.TraceID().String()),
-		SpanID(spanContext.SpanID().String()),
-	}
-}
-
-func (ot *OTel) convertAttributesToZapFields(attributes []attribute.KeyValue) []zapcore.Field {
-	fields := make([]zapcore.Field, len(attributes))
-	for i, attr := range attributes {
-		fields[i] = zap.Any(string(attr.Key), attr.Value.AsInterface())
-	}
-
-	return fields
 }
 
 func (ot *OTel) GetSpanForFunctionCall(
@@ -292,6 +277,10 @@ func (ot *OTel) Shutdown(ctx context.Context) error {
 
 	if err := ot.tracerProvider.Shutdown(ctx); err != nil {
 		return fmt.Errorf("unable to shutdown Traces Provider: %w", err)
+	}
+
+	if err := ot.loggerProvider.Shutdown(ctx); err != nil {
+		return fmt.Errorf("unable to shutdown Log Provider: %w", err)
 	}
 
 	if err := ot.grpcConnection.Close(); err != nil {

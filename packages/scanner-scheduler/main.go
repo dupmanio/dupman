@@ -18,21 +18,20 @@ func process(ctx context.Context) error {
 		return fmt.Errorf("unable to create config: %w", err)
 	}
 
-	loggerInst, err := logger.New(conf.Env, conf.AppName, version.Version)
-	if err != nil {
-		return fmt.Errorf("unable to create logger: %w", err)
-	}
-
 	ot, err := otel.NewOTel(
 		ctx,
 		conf.Env,
 		conf.AppName,
 		version.Version,
 		conf.Telemetry.CollectorURL,
-		loggerInst,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to initialize Telemetry service: %w", err)
+	}
+
+	loggerInst, err := logger.New(conf.Env, ot)
+	if err != nil {
+		return fmt.Errorf("unable to create logger: %w", err)
 	}
 
 	mess, err := messenger.NewMessengerService(loggerInst, conf, ot)

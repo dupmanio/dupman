@@ -3,23 +3,17 @@ package logger
 import (
 	"os"
 
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	"github.com/dupmanio/dupman/packages/common/otel"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func New(env, appName, appVersion string) (*zap.Logger, error) {
-	core := zapcore.NewCore(
-		getEncoder(env),
-		zapcore.Lock(os.Stdout),
-		getLevelEnablerFunc(env),
-	)
-
+func New(env string, ot *otel.OTel) (*zap.Logger, error) {
 	return zap.New(
-		core,
-		zap.Fields(zap.String(string(semconv.ServiceNameKey), appName)),
-		zap.Fields(zap.String(string(semconv.ServiceVersionKey), appVersion)),
-		zap.Fields(zap.String(string(semconv.DeploymentEnvironmentKey), env)),
+		zapcore.NewTee(
+			zapcore.NewCore(getEncoder(env), zapcore.AddSync(os.Stdout), getLevelEnablerFunc(env)),
+			ot.GetZapCore(),
+		),
 	), nil
 }
 
@@ -31,13 +25,10 @@ func getEncoder(env string) zapcore.Encoder {
 	return zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
 }
 
-func getLevelEnablerFunc(env string) zap.LevelEnablerFunc {
-	minLevel := zapcore.DebugLevel
+func getLevelEnablerFunc(env string) zapcore.Level {
 	if env == "prod" {
-		minLevel = zapcore.InfoLevel
+		return zapcore.InfoLevel
 	}
 
-	return func(lvl zapcore.Level) bool {
-		return lvl >= minLevel
-	}
+	return zapcore.DebugLevel
 }

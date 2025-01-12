@@ -9,14 +9,14 @@ import (
 
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/preview-api/config"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 func Run(server *http.Server, lc fx.Lifecycle, logger *zap.Logger, config *config.Config, ot *otel.OTel) error {
 	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
+		OnStart: func(_ context.Context) error {
 			logger.Info(
 				"Starting HTTP Server",
 				zap.String(string(semconv.ServerAddressKey), config.Server.ListenAddr),

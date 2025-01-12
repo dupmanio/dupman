@@ -19,7 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	amqp "github.com/rabbitmq/amqp091-go"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 )
@@ -87,7 +87,7 @@ func (proc *Processor) processMessage(delivery amqp.Delivery) {
 		fmt.Sprintf("%s receive", proc.config.Worker.QueueName),
 		trace.WithSpanKind(trace.SpanKindConsumer),
 		trace.WithAttributes(
-			semconv.MessagingOperationReceive,
+			semconv.MessagingOperationTypeReceive,
 			semconv.MessagingMessageID(delivery.MessageId),
 
 			// semconv.MessagingSystem("rabbitmq"),

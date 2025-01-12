@@ -21,7 +21,7 @@ func Run(
 	vaultRenewerCtx, vaultRenewerCtxCancel := context.WithCancel(context.Background())
 
 	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
+		OnStart: func(_ context.Context) error {
 			logger.Info("Starting Vault Renewer")
 
 			go func() {

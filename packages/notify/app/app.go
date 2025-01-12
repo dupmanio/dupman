@@ -9,7 +9,7 @@ import (
 	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/notify/config"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -26,7 +26,7 @@ type Params struct {
 
 func Run(params Params, lc fx.Lifecycle) error {
 	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
+		OnStart: func(_ context.Context) error {
 			fxHelper.Migrate(params.Logger, params.Migrators...)
 
 			params.Logger.Info(

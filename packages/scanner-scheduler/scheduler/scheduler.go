@@ -73,6 +73,7 @@ func (scheduler *Scheduler) Process(ctx context.Context) error {
 			zap.Int("currentPage", currentPage),
 			zap.Int("totalPages", totalPages),
 		)
+
 		currentPage++
 
 		for _, website := range *websites {
@@ -98,6 +99,7 @@ func (scheduler *Scheduler) Process(ctx context.Context) error {
 			}(website)
 		}
 	}
+
 	wg.Wait()
 
 	return nil

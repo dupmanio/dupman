@@ -22,8 +22,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func loggerProvider(conf *config.Config) (*zap.Logger, error) {
-	loggerInst, err := logger.New(conf.Env, conf.AppName, version.Version)
+func loggerProvider(conf *config.Config, ot *otel.OTel) (*zap.Logger, error) {
+	loggerInst, err := logger.New(conf.Env, ot)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create logger: %w", err)
 	}
@@ -31,7 +31,7 @@ func loggerProvider(conf *config.Config) (*zap.Logger, error) {
 	return loggerInst, nil
 }
 
-func oTelProvider(conf *config.Config, logger *zap.Logger) (*otel.OTel, error) {
+func oTelProvider(conf *config.Config) (*otel.OTel, error) {
 	ctx := context.Background()
 
 	ot, err := otel.NewOTel(
@@ -40,7 +40,6 @@ func oTelProvider(conf *config.Config, logger *zap.Logger) (*otel.OTel, error) {
 		conf.AppName,
 		version.Version,
 		conf.Telemetry.CollectorURL,
-		logger,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize Telemetry service: %w", err)

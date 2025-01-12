@@ -13,7 +13,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -69,7 +69,7 @@ func (brk *RabbitMQ) PublishToExchange(ctx context.Context, exchangeName string,
 		trace.WithSpanKind(trace.SpanKindProducer),
 		trace.WithAttributes(brk.getCommonOTelAttributes()...),
 		trace.WithAttributes(
-			semconv.MessagingOperationPublish,
+			semconv.MessagingOperationTypePublish,
 			semconv.MessagingMessageID(messageID),
 			semconv.MessagingDestinationName(exchangeName),
 			semconv.MessagingRabbitmqDestinationRoutingKey(routingKey),
@@ -118,7 +118,7 @@ func (brk *RabbitMQ) PublishToExchange(ctx context.Context, exchangeName string,
 
 func (brk *RabbitMQ) getCommonOTelAttributes() []attribute.KeyValue {
 	fields := []attribute.KeyValue{
-		semconv.MessagingSystem("rabbitmq"),
+		semconv.MessagingSystemRabbitmq,
 		semconv.MessagingClientID(brk.config.AppID),
 		semconv.ServerAddress(brk.config.Host),
 	}

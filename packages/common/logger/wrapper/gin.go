@@ -8,7 +8,7 @@ import (
 	"github.com/dupmanio/dupman/packages/common/otel"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -48,7 +48,7 @@ func (wrap *GinWrapper) logGinDebug(message string) {
 	if matches := re.FindStringSubmatch(message); len(matches) > 0 {
 		wrap.logger.Debug(
 			"New handler added",
-			zap.String(string(semconv.HTTPMethodKey), matches[1]),
+			zap.String(string(semconv.HTTPRequestMethodKey), matches[1]),
 			zap.String(string(semconv.HTTPRouteKey), matches[2]),
 			zap.String(string(otel.GinHandlerKey), matches[3]),
 			zap.String(string(otel.GinHandlerNumKey), matches[4]),

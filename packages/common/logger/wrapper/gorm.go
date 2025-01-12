@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/dupmanio/dupman/packages/common/otel"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/zap"
 	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
@@ -70,7 +70,7 @@ func (wrap *GormWrapper) Trace( //nolint: cyclop
 	elapsed := time.Since(begin)
 	sql, rows := fc()
 	logFields := []zap.Field{
-		zap.String(string(semconv.DBStatementKey), sql),
+		zap.String(string(semconv.DBQueryTextKey), sql),
 		zap.Int64("rows", rows),
 		zap.String("elapsed", elapsed.String()),
 	}

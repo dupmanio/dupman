@@ -11,7 +11,7 @@ import (
 	fxHelper "github.com/dupmanio/dupman/packages/common/helper/fx"
 	"github.com/dupmanio/dupman/packages/common/otel"
 	"github.com/dupmanio/dupman/packages/common/vault"
-	semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
