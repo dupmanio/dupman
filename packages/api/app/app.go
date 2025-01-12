@@ -32,7 +32,7 @@ func Run(params Params, lc fx.Lifecycle) error {
 	vaultRenewerCtx, vaultRenewerCtxCancel := context.WithCancel(context.Background())
 
 	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
+		OnStart: func(_ context.Context) error {
 			fxHelper.Migrate(params.Logger, params.Migrators...)
 
 			params.Logger.Info("Starting Vault Renewer")

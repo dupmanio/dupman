@@ -17,7 +17,7 @@ func Run(
 	messengerSvc *service.MessengerService,
 ) error {
 	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
+		OnStart: func(_ context.Context) error {
 			logger.Info("Starting Worker")
 
 			go func() {
@@ -30,7 +30,7 @@ func Run(
 
 			return nil
 		},
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			logger.Info("Shutting down Worker")
 
 			if err := messengerSvc.Close(); err != nil {

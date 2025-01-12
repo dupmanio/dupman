@@ -67,7 +67,7 @@ func NewOTel(
 		collectorURL:   collectorURL,
 	}
 
-	if err := ot.setupGRPCConnection(ctx); err != nil {
+	if err := ot.setupGRPCConnection(); err != nil {
 		return nil, err
 	}
 
@@ -96,17 +96,12 @@ func NewOTel(
 	return ot, nil
 }
 
-func (ot *OTel) setupGRPCConnection(ctx context.Context) error {
+func (ot *OTel) setupGRPCConnection() error {
 	var err error
 
-	ctx, cancel := context.WithTimeout(ctx, connectionTimeout)
-	defer cancel()
-
-	ot.grpcConnection, err = grpc.DialContext(
-		ctx,
+	ot.grpcConnection, err = grpc.NewClient(
 		ot.collectorURL,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create gRPC connection to collector: %w", err)
@@ -262,6 +257,7 @@ func (ot *OTel) GetSpanForFunctionCall(
 ) (context.Context, trace.Span) {
 	function, functionAttributes := GetFunctionCallAttributes(skipCaller)
 
+	//nolint: spancheck
 	return ot.Tracer.Start(
 		ctx,
 		function,

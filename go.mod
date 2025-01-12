@@ -1,8 +1,6 @@
 module github.com/dupmanio/dupman
 
-go 1.22.7
-
-toolchain go1.23.4
+go 1.23
 
 require (
 	github.com/chromedp/cdproto v0.0.0-20230802225258-3cf4e6d46a89

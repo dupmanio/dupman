@@ -6,7 +6,7 @@ run:
   allow-parallel-runners: true
 
 output:
-  format: tab
+  formats: tab
 
 linters-settings:
   varnamelen:
@@ -39,6 +39,9 @@ linters-settings:
     ignored-numbers:
       - '0o644'
 
+  perfsprint:
+    strconcat: false
+
 linters:
   enable-all: true
   disable:
@@ -49,16 +52,7 @@ linters:
     - depguard
 
     # Deprecated.
-    - exhaustivestruct
-    - scopelint
-    - interfacer
-    - maligned
-    - golint
-    - varcheck
-    - deadcode
-    - ifshort
-    - nosnakecase
-    - structcheck
+    - exportloopref
 
     # Disabled because of generics.
     - rowserrcheck

@@ -42,7 +42,7 @@ func Run(
 
 			return nil
 		},
-		OnStop: func(ctx context.Context) error {
+		OnStop: func(_ context.Context) error {
 			logger.Info("Shutting down Worker")
 
 			if err := messengerSvc.Close(); err != nil {
