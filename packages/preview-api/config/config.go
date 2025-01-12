@@ -7,20 +7,20 @@ import (
 )
 
 type ChromeConfig struct {
-	RemoteURL   string `mapstructure:"CHROME_REMOTE_URL" default:"ws://127.0.0.1:3000"`
-	ResolutionX int    `mapstructure:"CHROME_RESOLUTION_X" default:"1920"`
-	ResolutionY int    `mapstructure:"CHROME_RESOLUTION_Y" default:"1080"`
-	Timeout     int    `mapstructure:"CHROME_TIMEOUT" default:"10"`
+	RemoteURL   string `mapstructure:"remote_url" default:"ws://127.0.0.1:3000"`
+	ResolutionX int    `mapstructure:"resolution_x" default:"1920"`
+	ResolutionY int    `mapstructure:"resolution_y" default:"1080"`
+	Timeout     int    `mapstructure:"timeout" default:"10"`
 }
 
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	Server     config.ServerConfig     `mapstructure:",squash"`
-	Telemetry  config.TelemetryConfig  `mapstructure:",squash"`
-	ServiceURL config.ServiceURLConfig `mapstructure:",squash"`
+	Server     config.ServerConfig
+	Telemetry  config.TelemetryConfig
+	ServiceURL config.ServiceURLConfig
 
-	Chrome ChromeConfig `mapstructure:",squash"`
+	Chrome ChromeConfig
 }
 
 func New() (*Config, error) {

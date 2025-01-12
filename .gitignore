@@ -4,5 +4,6 @@ bazel-*
 .ijwb
 
 .env
+config.yaml
 
 .DS_Store

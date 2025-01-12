@@ -9,10 +9,10 @@ import (
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	Server    config.ServerConfig    `mapstructure:",squash"`
-	Database  config.DatabaseConfig  `mapstructure:",squash"`
-	Telemetry config.TelemetryConfig `mapstructure:",squash"`
-	Vault     config.VaultConfig     `mapstructure:",squash"`
+	Server    config.ServerConfig
+	Database  config.DatabaseConfig
+	Telemetry config.TelemetryConfig
+	Vault     config.VaultConfig
 }
 
 func New() (*Config, error) {

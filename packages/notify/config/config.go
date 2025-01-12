@@ -9,11 +9,11 @@ import (
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	Server    config.ServerConfig    `mapstructure:",squash"`
-	Database  config.DatabaseConfig  `mapstructure:",squash"`
-	Redis     config.RedisConfig     `mapstructure:",squash"`
-	Telemetry config.TelemetryConfig `mapstructure:",squash"`
-	Keto      config.KetoConfig      `mapstructure:",squash"`
+	Server    config.ServerConfig
+	Database  config.DatabaseConfig
+	Redis     config.RedisConfig
+	Telemetry config.TelemetryConfig
+	Keto      config.KetoConfig
 }
 
 func New() (*Config, error) {

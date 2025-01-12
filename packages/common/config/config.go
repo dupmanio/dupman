@@ -2,79 +2,86 @@ package config
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
 )
 
 type BaseConfig struct {
-	Env     string `mapstructure:"ENV" default:"prod"`
-	AppName string `mapstructure:"APP_NAME"`
+	Env     string `validate:"oneof=dev test prod" default:"prod"`
+	AppName string
 }
 
 type TelemetryConfig struct {
-	CollectorURL string `mapstructure:"TELEMETRY_COLLECTOR_URL"`
+	CollectorURL string `mapstructure:"collector_url"`
 }
 
 type ServerConfig struct {
-	ListenAddr     string   `mapstructure:"SERVER_ADDR" default:"0.0.0.0"`
-	Port           string   `mapstructure:"SERVER_PORT" default:"8080"`
-	TrustedProxies []string `mapstructure:"TRUSTED_PROXIES"`
+	ListenAddr     string   `mapstructure:"address" default:"0.0.0.0"`
+	Port           string   `mapstructure:"port" default:"8080"`
+	TrustedProxies []string `mapstructure:"trusted_proxies"`
 }
 
 type DatabaseConfig struct {
-	Host     string `mapstructure:"DB_HOST"`
-	User     string `mapstructure:"DB_USER"`
-	Password string `mapstructure:"DB_PASSWORD"`
-	Database string `mapstructure:"DB_NAME"`
-	Port     string `mapstructure:"DB_PORT"`
+	Host     string
+	User     string
+	Password string
+	Database string
+	Port     string
 }
 
 type RedisConfig struct {
-	Host     string `mapstructure:"REDIS_HOST"`
-	User     string `mapstructure:"REDIS_USER"`
-	Password string `mapstructure:"REDIS_PASSWORD"`
-	Database string `mapstructure:"REDIS_DB"`
-	Port     string `mapstructure:"REDIS_PORT"`
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Database string
 }
 
 type RabbitMQConfig struct {
-	Host     string `mapstructure:"RMQ_HOST" default:"127.0.0.1"`
-	Port     string `mapstructure:"RMQ_PORT" default:"5672"`
-	User     string `mapstructure:"RMQ_USER"`
-	Password string `mapstructure:"RMQ_PASSWORD"`
+	Host     string `default:"127.0.0.1"`
+	Port     string `default:"5672"`
+	User     string
+	Password string
 }
 
 type WorkerConfig struct {
-	QueueName     string `mapstructure:"WORKER_QUEUE_NAME"`
-	PrefetchCount int    `mapstructure:"WORKER_PREFETCH_COUNT" default:"1"`
-	PrefetchSize  int    `mapstructure:"WORKER_PREFETCH_SIZE" default:"0"`
-	RetryAttempts int    `mapstructure:"WORKER_RETRY_ATTEMPTS" default:"3"`
+	QueueName     string `mapstructure:"queue_name"`
+	PrefetchCount int    `mapstructure:"prefetch_count" default:"1"`
+	PrefetchSize  int    `mapstructure:"prefetch_size" default:"0"`
+	RetryAttempts int    `mapstructure:"retry_attempts" default:"3"`
 }
 
 type DupmanConfig struct {
-	ClientID     string   `mapstructure:"DUPMAN_CLIENT_ID"`
-	ClientSecret string   `mapstructure:"DUPMAN_CLIENT_SECRET"`
-	Scopes       []string `mapstructure:"DUPMAN_CLIENT_SCOPES"`
-	Audience     []string `mapstructure:"DUPMAN_CLIENT_AUDIENCE"`
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
+	Scopes       []string
+	Audience     []string
 }
 
 type VaultConfig struct {
-	ServerAddress string `mapstructure:"VAULT_SERVER_ADDRESS"`
-	RoleID        string `mapstructure:"VAULT_ROLE_ID"`
-	SecretID      string `mapstructure:"VAULT_SECRET_ID"`
+	ServerAddress string `mapstructure:"address"`
+	RoleID        string `mapstructure:"role_id"`
+	SecretID      string `mapstructure:"secret_id"`
 }
 
 type KetoConfig struct {
-	WriteURL string `mapstructure:"KETO_WRITE_URL"`
+	WriteURL string `mapstructure:"write_url"`
+}
+
+type Exchange struct {
+	ExchangeName string `mapstructure:"exchange_name"`
+	RoutingKey   string `mapstructure:"routing_key"`
 }
 
 type ServiceURLConfig struct {
 	// @todo: update URLs.
-	API        string `mapstructure:"SERVICE_API_URL" default:"http://gateway.dupman.localhost/api"`
-	UserAPI    string `mapstructure:"SERVICE_USER_API_URL" default:"http://gateway.dupman.localhost/user-api"`
-	PreviewAPI string `mapstructure:"SERVICE_PREVIEW_API_URL" default:"http://gateway.dupman.localhost/preview-api"`
-	Notify     string `mapstructure:"SERVICE_NOTIFY_URL" default:"http://gateway.dupman.localhost/notify"`
+	API        string `mapstructure:"api" default:"http://gateway.dupman.localhost/api"`
+	UserAPI    string `mapstructure:"user_api" default:"http://gateway.dupman.localhost/user-api"`
+	PreviewAPI string `mapstructure:"preview_api" default:"http://gateway.dupman.localhost/preview-api"`
+	Notify     string `mapstructure:"notify" default:"http://gateway.dupman.localhost/notify"`
 }
 
 type Config interface {
@@ -86,25 +93,34 @@ func (conf *BaseConfig) SetAppName(appName string) {
 }
 
 func Load(appName string, conf Config) error {
-	// @todo: move to YAML format.
 	conf.SetAppName(appName)
 
-	viper.AddConfigPath(".")
-	viper.AddConfigPath(fmt.Sprintf("packages/%s", appName))
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
+	viperInstance := viper.NewWithOptions(
+		viper.EnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_")),
+	)
 
-	viper.AllowEmptyEnv(true)
-	viper.AutomaticEnv()
+	// @todo: add config path from CLI argument
+	viperInstance.AddConfigPath(".")
+	viperInstance.AddConfigPath(fmt.Sprintf("packages/%s", appName))
+	viperInstance.SetConfigName("config")
+	viperInstance.SetConfigType("yaml")
+
+	viperInstance.AllowEmptyEnv(true)
+	viperInstance.AutomaticEnv()
 
 	defaults.SetDefaults(conf)
 
-	if err := viper.ReadInConfig(); err != nil {
+	if err := viperInstance.ReadInConfig(); err != nil {
 		return fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	if err := viper.Unmarshal(conf); err != nil {
+	if err := viperInstance.Unmarshal(conf); err != nil {
 		return fmt.Errorf("failed to unmarshal config: %w", err)
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(conf); err != nil {
+		return fmt.Errorf("failed to validate config: %w", err)
 	}
 
 	return nil

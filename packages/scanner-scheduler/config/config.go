@@ -6,20 +6,14 @@ import (
 	"github.com/dupmanio/dupman/packages/common/config"
 )
 
-type Scanner struct {
-	ExchangeName string `mapstructure:"SCANNER_EXCHANGE_NAME"`
-	RoutingKey   string `mapstructure:"SCANNER_ROUTING_KEY"`
-}
-
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	RabbitMQ   config.RabbitMQConfig   `mapstructure:",squash"`
-	Dupman     config.DupmanConfig     `mapstructure:",squash"`
-	Telemetry  config.TelemetryConfig  `mapstructure:",squash"`
-	ServiceURL config.ServiceURLConfig `mapstructure:",squash"`
-
-	Scanner Scanner `mapstructure:",squash"`
+	RabbitMQ   config.RabbitMQConfig
+	Dupman     config.DupmanConfig
+	Telemetry  config.TelemetryConfig
+	ServiceURL config.ServiceURLConfig
+	Scanner    config.Exchange
 }
 
 func New() (*Config, error) {

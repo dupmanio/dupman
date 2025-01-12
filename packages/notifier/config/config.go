@@ -7,27 +7,27 @@ import (
 )
 
 type Mailer struct {
-	Host     string `mapstructure:"MAILER_HOST"`
-	Port     int    `mapstructure:"MAILER_PORT"`
-	Username string `mapstructure:"MAILER_USERNAME"`
-	Password string `mapstructure:"MAILER_PASSWORD"`
+	Host     string
+	Port     int
+	Username string
+	Password string
 }
 
 type Email struct {
-	From string `mapstructure:"EMAIL_FROM"`
+	From string
 }
 
 type Config struct {
 	config.BaseConfig `mapstructure:",squash"`
 
-	RabbitMQ   config.RabbitMQConfig   `mapstructure:",squash"`
-	Worker     config.WorkerConfig     `mapstructure:",squash"`
-	Dupman     config.DupmanConfig     `mapstructure:",squash"`
-	Telemetry  config.TelemetryConfig  `mapstructure:",squash"`
-	ServiceURL config.ServiceURLConfig `mapstructure:",squash"`
+	RabbitMQ   config.RabbitMQConfig
+	Worker     config.WorkerConfig
+	Dupman     config.DupmanConfig
+	Telemetry  config.TelemetryConfig
+	ServiceURL config.ServiceURLConfig `mapstructure:"service_url"`
 
-	Mailer Mailer `mapstructure:",squash"`
-	Email  Email  `mapstructure:",squash"`
+	Mailer Mailer
+	Email  Email
 }
 
 func New() (*Config, error) {
